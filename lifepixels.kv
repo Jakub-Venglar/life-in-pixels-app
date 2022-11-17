@@ -1,0 +1,69 @@
+<Label>:
+    background_normal: ''
+    font_size: 20
+    background_color:(1,1,1,.2)
+    canvas:
+        Color: 
+            rgba: self.background_color
+        Rectangle: 
+            size: self.size
+            pos: self.pos
+        Line:
+            width: 2
+            rectangle: self.x, self.y, self.width, self.height
+    canvas:
+        Color: 
+            rgba: (1,1,1,.8)
+        Line:
+            width: 2
+            rectangle: self.x, self.y, self.width, self.height
+
+<LifeLayout>:
+    canvas:
+        Color: 
+            rgba: (1,1,1,1)
+        Rectangle:
+            size: 3/2*root.height, root.height
+            pos: self.width/2-3/2*root.height/2, self.height/2 - root.height/2
+            source: 'pict/norsko.jpg'
+    BoxLayout:
+        size: root.width, root.height
+        orientation: 'vertical'
+        GridLayout:
+            cols: 7
+            rows: 5
+            size_hint: .9, .9
+            pos_hint: {'center_x': .5} 
+            Label:
+                text: 'U'
+            Label:
+                text: 'B'
+            Label:
+                text: 'B'
+            Label:
+                text: 'B'
+            Label:
+                text: 'B'
+            Label:
+                text: 'U'
+            Label:
+                text: 'B'
+            Label:
+                text: 'B'
+            Label:
+                text: 'B'
+            Label:
+                text: 'B'
+            Label:
+                text: 'U'
+            Label:
+                text: 'B'
+            Label:
+                text: 'B'
+            Label:
+                text: 'B'
+            Label:
+                text: 'B'
+                
+        Button:
+            text: 'press'
