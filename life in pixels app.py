@@ -19,12 +19,14 @@ class LifeLayout(MDWidget):
         for weeknum, week in enumerate(calList):
             for daynum, day in enumerate(week):
                 id = calList[weeknum][daynum]
-                self.ids[id].text = str(currentCal[weeknum][daynum].day)
-    def cal_Click(self,text):
+                setDate = currentCal[weeknum][daynum]
+                self.ids[id].text = str(setDate.day)
+                self.ids[id].date_id = str(setDate)
+    def cal_Click(self, date_id, my_id):
         popup = Factory.MoodPopup()
         popup.open()
-        print(text)
-        self.ids[text].text = 'juch'
+        print(date_id)
+        self.ids[my_id].text = 'juch'
 
 #TODO: save selected to clicked button as color
 #TODO: add option to change months
