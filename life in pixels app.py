@@ -1,6 +1,6 @@
 #! python3
 import calendar
-from datetime import datetime
+import datetime
 from kivymd.app import MDApp
 from kivymd.uix.widget import MDWidget
 from kivy.factory import Factory # because we need popup
@@ -12,9 +12,10 @@ badColor=()
 
 keepResults={}
 
+
 class LifeLayout(MDWidget):
     #create calendar view - default is current date and set a list of field ids
-    def make_Cal(self):        
+    def make_Cal(self,now=False, year=2020, month=6):        
         c = calendar.Calendar(0)
         calList = [['1-1','1-2','1-3','1-4','1-5','1-6','1-7'],
                     ['2-1','2-2','2-3','2-4','2-5','2-6','2-7'],
@@ -23,8 +24,13 @@ class LifeLayout(MDWidget):
                     ['5-1','5-2','5-3','5-4','5-5','5-6','5-7']]
 
         #this creates list of date objects
-        currentCal = c.monthdatescalendar(datetime.now().year, datetime.now().month)
-
+        if now==True:
+            currentCal = c.monthdatescalendar(datetime.datetime.now().year, datetime.datetime.now().month)
+            monthToShow = datetime.datetime.now().strftime("%B")
+        else:
+            currentCal = c.monthdatescalendar(year, month)
+            myDate = datetime.date(year, month, 7)
+            monthToShow = myDate.strftime("%B")
         #iterate through crated calendar and set a day number for every field
         #also sed date id for every field
         for weeknum, week in enumerate(calList):
@@ -32,11 +38,12 @@ class LifeLayout(MDWidget):
                 id = calList[weeknum][daynum]
                 setDate = currentCal[weeknum][daynum]
                 self.ids[id].text = str(setDate.day)
+                self.ids.CurrentMonth_label.text = str(monthToShow)
                 self.ids[id].date_id = str(setDate)
 
                 #make current day more visible
 
-                if setDate == datetime.date(datetime.now()):
+                if setDate == datetime.datetime.date(datetime.datetime.now()):
                     self.ids[id].newsize=50
                     self.ids[id].newOutWidth=1.2
                     self.ids[id].newTextColor= (.8,.8,.8,1)
@@ -56,10 +63,18 @@ class LifeLayout(MDWidget):
         self.ids[self.my_id].text = str(value)
         keepResults[self.date_id] = value
         print(keepResults)
+    
+    def move_month(self,direction):
+        pass
+
+    def move_year(self,direction):
+        pass
 
 #TODO: save selected to clicked button as color --> cuurently used words
 #TODO: add option to change months
 #TODO: save everything to database or file
+#TODO: add comment, which can be opened
+#TODO: add picture
 
 # run app and construct calendar
 

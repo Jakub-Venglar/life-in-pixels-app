@@ -15,11 +15,18 @@
     canvas.before:
         Color: 
             rgba: (1,1,1,.8)
-        Rectangle:
-            size: 50, 50
         Line:
             width: 1
             rectangle: self.x, self.y, self.width, self.height
+<DayLabel@Label>:
+    font_size: 30
+    canvas.before:
+        Color: 
+            rgba: (1,1,1,.8)
+        Line:
+            width: 1
+            rectangle: self.x, self.y, self.width, self.height
+<MoveButton@Button>:
 
 <MoodPopup@Popup>:
     auto_dismiss: True
@@ -58,11 +65,56 @@
     BoxLayout:
         size: root.width, root.height
         orientation: 'vertical'
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint: .9, .2
+            pos_hint: {'center_x': .5}
+            canvas.before:
+                Color: 
+                    rgba: (.5,1,1,.5)
+                Rectangle:
+                    size: self.size
+                    pos:self.pos
+            MoveButton:
+                text:'<'
+            MoveButton:
+                text:'<<<'
+            Label:
+                id: CurrentMonth_label
+                text: ''
+            MoveButton:
+                text:'>'
+            MoveButton:
+                text:'>>>'
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint: .9, .2
+            pos_hint: {'center_x': .5}
+            canvas.before:
+                Color: 
+                    rgba: (.5,1,1,.5)
+                Rectangle:
+                    size: self.size
+                    pos:self.pos
+            DayLabel:
+                text: 'Po'
+            DayLabel:
+                text:'Út'
+            DayLabel:
+                text:'St'
+            DayLabel:
+                text:'Čt'
+            DayLabel:
+                text:'Pá'
+            DayLabel:
+                text:'So'
+            DayLabel:
+                text:'Ne'
         GridLayout:
             cols: 7
             rows: 5
             size_hint: .9, .9
-            pos_hint: {'center_x': .5} 
+            pos_hint: {'center_x': .5}
             CalButton:
                 date_id: ''
                 id: 1-1
@@ -275,4 +327,6 @@
                 on_release: root.cal_click(self.date_id, self.my_id)
         Button:
             id: pokus
+            size_hint:  (.9,.1)
+            pos_hint: {'center_x': .5}
             text: 'press'
