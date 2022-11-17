@@ -3,9 +3,12 @@ import calendar
 from datetime import datetime
 from kivymd.app import MDApp
 from kivymd.uix.widget import MDWidget
+from kivy.factory import Factory
+
+
 
 class LifeLayout(MDWidget):
-    def makeCal(self):
+    '''def make_Cal(self):
         c = calendar.Calendar(0)
         calList = [['1-1','1-2','1-3','1-4','1-5','1-6','1-7'],
                     ['2-1','2-2','2-3','2-4','2-5','2-6','2-7'],
@@ -16,16 +19,21 @@ class LifeLayout(MDWidget):
         for weeknum, week in enumerate(calList):
             for daynum, day in enumerate(week):
                 id = calList[weeknum][daynum]
-                self.ids[id].text = str(currentCal[weeknum][daynum].day)
+                self.ids[id].text = str(currentCal[weeknum][daynum].day)'''
+    def cal_Click(self,text):
+        popup = Factory.MoodPopup()
+        popup.open()
+        print(text)
+        self.ids[text].text = 'osajfao'
 
+#TODO: save selected to clicked button
 
-        #print(currentCal[0][0].day)
 
 class LifePixels(MDApp):
     def build(self):
         return LifeLayout()
-    def on_start(self):
-        self.root.makeCal()
+    #def on_start(self):
+     #   self.root.make_Cal()
 
 if __name__ == "__main__":
 
