@@ -3,7 +3,13 @@ import calendar
 from datetime import datetime
 from kivymd.app import MDApp
 from kivymd.uix.widget import MDWidget
-from kivy.factory import Factory
+from kivy.factory import Factory # because we need popup
+
+superColor= ()
+goodColor=()
+averageColor=()
+badColor=()
+
 
 class LifeLayout(MDWidget):
     #create calendar view - default is current date and set a list of field ids
@@ -31,23 +37,27 @@ class LifeLayout(MDWidget):
                 if setDate == datetime.date(datetime.now()):
                     self.ids[id].newsize=50
                     self.ids[id].newOutWidth=1.2
-                    self.ids[id].newTextColor= (.8,.8,.8,1) 
+                    self.ids[id].newTextColor= (.8,.8,.8,1)
 
     
-    #open pup up and handle variables
+    #open popup and handle variables
 
     def cal_click(self, date_id, my_id):
         popup = Factory.MoodPopup()
         popup.open()
+        """
         global id_var
         global date_var
         id_var = my_id
         date_var = date_id
+        print(id_var)
+        print(date_var)"""
+        return date_id, my_id
     
     def pop_click(self,value):
         global id_var
         global date_var
-        global keepResults
+        keepResults
         self.ids[id_var].text = str(value)
         keepResults[date_var] = value
         id_var=''
