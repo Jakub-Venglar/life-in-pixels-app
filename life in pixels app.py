@@ -26,14 +26,16 @@ class LifeLayout(MDWidget):
         print(text)
         self.ids[text].text = 'juch'
 
-#TODO: save selected to clicked button
+#TODO: save selected to clicked button as color
+#TODO: add option to change months
+#TODO: save everything to database or file
 
 
 class LifePixels(MDApp):
     def build(self):
         return LifeLayout()
-    #def on_start(self):
-     #   self.root.make_Cal()
+    def on_start(self):
+        self.root.make_Cal()
 
 if __name__ == "__main__":
 
