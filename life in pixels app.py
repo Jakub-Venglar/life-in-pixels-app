@@ -5,17 +5,16 @@ from kivymd.app import MDApp
 from kivymd.uix.widget import MDWidget
 from kivy.factory import Factory # because we need popup
 
-superColor= ()
-goodColor=()
-averageColor=()
-badColor=()
+superColor= (.2,.3,.6,1)
+goodColor=(0,.5,1,1)
+averageColor=(.9,0,1,1)
+badColor=(.1,.1,.1,1)
 
-keepResults={}
-
+keepResults={'2022-11-09': 'bad', '2022-11-15': 'good', '2022-11-18': 'good', '2022-11-24': 'good', '2022-11-10': 'super', '2022-11-17': 'good', '2022-11-22': 'bad', '2022-11-25': 'average', '2022-11-26': 'super'}
 
 class LifeLayout(MDWidget):
-    #create calendar view - default is current date and set a list of field ids
-    def make_Cal(self,now=False, year=2020, month=6):        
+    #create calendar view
+    def make_Cal(self,now=True, year=2020, month=6):        
         c = calendar.Calendar(0)
         calList = [['1-1','1-2','1-3','1-4','1-5','1-6','1-7'],
                     ['2-1','2-2','2-3','2-4','2-5','2-6','2-7'],
@@ -47,9 +46,21 @@ class LifeLayout(MDWidget):
                     self.ids[id].newsize=50
                     self.ids[id].newOutWidth=1.2
                     self.ids[id].newTextColor= (.8,.8,.8,1)
+                
+                if self.ids[id].date_id in keepResults:
+                    self.ids[id].background_color = self.choose_color(keepResults[self.ids[id].date_id])
 
     
     #open popup and handle variables
+    def choose_color(self, value):
+        if value == 'super':
+            return superColor
+        if value == 'good':
+            return goodColor
+        if value == 'average':
+            return averageColor
+        if value == 'bad':
+            return badColor
 
     def cal_click(self, date_id, my_id):
         popup = Factory.MoodPopup()
@@ -60,7 +71,7 @@ class LifeLayout(MDWidget):
     def pop_click(self,value):
         print(self.date_id)
         print(self.my_id)
-        self.ids[self.my_id].text = str(value)
+        self.ids[self.my_id].background_color = self.choose_color(value)
         keepResults[self.date_id] = value
         print(keepResults)
     
