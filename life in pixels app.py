@@ -10,12 +10,11 @@ goodColor=()
 averageColor=()
 badColor=()
 
+keepResults={}
 
 class LifeLayout(MDWidget):
     #create calendar view - default is current date and set a list of field ids
-    def make_Cal(self):
-        global keepResults
-        keepResults={}
+    def make_Cal(self):        
         c = calendar.Calendar(0)
         calList = [['1-1','1-2','1-3','1-4','1-5','1-6','1-7'],
                     ['2-1','2-2','2-3','2-4','2-5','2-6','2-7'],
@@ -34,6 +33,9 @@ class LifeLayout(MDWidget):
                 setDate = currentCal[weeknum][daynum]
                 self.ids[id].text = str(setDate.day)
                 self.ids[id].date_id = str(setDate)
+
+                #make current day more visible
+
                 if setDate == datetime.date(datetime.now()):
                     self.ids[id].newsize=50
                     self.ids[id].newOutWidth=1.2
@@ -45,25 +47,15 @@ class LifeLayout(MDWidget):
     def cal_click(self, date_id, my_id):
         popup = Factory.MoodPopup()
         popup.open()
-        """
-        global id_var
-        global date_var
-        id_var = my_id
-        date_var = date_id
-        print(id_var)
-        print(date_var)"""
-        return date_id, my_id
-    
+        self.date_id = date_id
+        self.my_id = my_id
+        
     def pop_click(self,value):
-        global id_var
-        global date_var
-        keepResults
-        self.ids[id_var].text = str(value)
-        keepResults[date_var] = value
-        id_var=''
-        date_var = ''
+        print(self.date_id)
+        print(self.my_id)
+        self.ids[self.my_id].text = str(value)
+        keepResults[self.date_id] = value
         print(keepResults)
-
 
 #TODO: save selected to clicked button as color --> cuurently used words
 #TODO: add option to change months
