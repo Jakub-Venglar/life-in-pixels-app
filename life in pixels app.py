@@ -10,9 +10,11 @@ goodColor=(0,.5,1,1)
 averageColor=(.9,0,1,1)
 badColor=(.1,.1,.1,1)
 
+#for experiments only, later load from file
 keepResults={'2022-11-09': 'bad', '2022-11-15': 'good', '2022-11-18': 'good', '2022-11-24': 'good', '2022-11-10': 'super', '2022-11-17': 'good', '2022-11-22': 'bad', '2022-11-25': 'average', '2022-11-26': 'super'}
 
 class LifeLayout(MDWidget):
+
     #create calendar view
     def make_Cal(self,now=True, year=2020, month=6):        
         c = calendar.Calendar(0)
@@ -22,16 +24,20 @@ class LifeLayout(MDWidget):
                     ['4-1','4-2','4-3','4-4','4-5','4-6','4-7'],
                     ['5-1','5-2','5-3','5-4','5-5','5-6','5-7']]
 
-        #this creates list of date objects
+        #this creates list of date objects for current month at program start or home press
+
         if now==True:
             currentCal = c.monthdatescalendar(datetime.datetime.now().year, datetime.datetime.now().month)
             monthToShow = datetime.datetime.now().strftime("%B")
+        #this will create list of date objects for given year and month
         else:
             currentCal = c.monthdatescalendar(year, month)
             myDate = datetime.date(year, month, 7)
             monthToShow = myDate.strftime("%B")
+
         #iterate through crated calendar and set a day number for every field
         #also sed date id for every field
+        
         for weeknum, week in enumerate(calList):
             for daynum, day in enumerate(week):
                 id = calList[weeknum][daynum]
@@ -43,10 +49,13 @@ class LifeLayout(MDWidget):
                 #make current day more visible
 
                 if setDate == datetime.datetime.date(datetime.datetime.now()):
-                    self.ids[id].newsize=50
+                    #self.ids[id].newsize=50
                     self.ids[id].newOutWidth=1.2
-                    self.ids[id].newTextColor= (.8,.8,.8,1)
+                    #self.ids[id].newTextColor= (.8,.8,.8,1)
+                    self.ids[id].text = '[b]>' + self.ids[id].text + '<[/b]'
                 
+                # if date already set then render it
+
                 if self.ids[id].date_id in keepResults:
                     self.ids[id].background_color = self.choose_color(keepResults[self.ids[id].date_id])
 
@@ -62,12 +71,16 @@ class LifeLayout(MDWidget):
         if value == 'bad':
             return badColor
 
+    #click on any date, call popup 
+
     def cal_click(self, date_id, my_id):
         popup = Factory.MoodPopup()
         popup.open()
         self.date_id = date_id
         self.my_id = my_id
-        
+    
+    #click at pop pop up write values into calendar
+
     def pop_click(self,value):
         print(self.date_id)
         print(self.my_id)
@@ -81,8 +94,9 @@ class LifeLayout(MDWidget):
     def move_year(self,direction):
         pass
 
-#TODO: save selected to clicked button as color --> cuurently used words
-#TODO: add option to change months
+#TODO: improve pop up - vertical layout AND label with date and description
+#TODO: improve colors and overal layout
+#TODO: add option to change months, also home button
 #TODO: save everything to database or file
 #TODO: add comment, which can be opened
 #TODO: add picture
