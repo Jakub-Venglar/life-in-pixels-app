@@ -9,7 +9,7 @@ goodColor=(0,.5,1,1)
 averageColor=(.9,0,1,1)
 badColor=(.1,.1,.1,1)
 
-dateData = {
+"""dateData = {
     "2022-11-09": "bad",
     "2022-11-15": "good",
     "2022-11-18": "good",
@@ -21,7 +21,7 @@ dateData = {
     "2022-11-26": "super",
     "2022-11-08": "bad",
     "2022-11-14": "good"
-}
+}"""
 
 class LifeLayout(MDWidget):
 
@@ -34,21 +34,28 @@ class LifeLayout(MDWidget):
         except FileExistsError:
             pass
 
-    def save_data(self):
+    def pass_data(self):        
+            try:   
+                with open('./userdata/caldata.json', 'r', encoding='utf-8') as file:
+                    return eval(file.read())
+            except FileNotFoundError: 
+                with open('./userdata/caldata.json', 'w', encoding='utf-8') as file:
+                    file.write('{}')
+                    return {}
+
+    def save_data(self, newData):
         with open('./userdata/caldata.json', 'w', encoding='utf-8') as file:
-            json.dump(dateData, file, indent = 4)
+            json.dump(newData, file, indent = 4)
+    
+    def delete_data(self):
+        with open('./userdata/caldata.json', 'w', encoding='utf-8') as file:
+            file.write('{}')
+        self.make_Cal()
 
     #create calendar view
 
     def make_Cal(self,now=True, year=2020, month=6):
-        try:   
-            with open('./userdata/caldata.json', 'r', encoding='utf-8') as file:
-                pass
-                dateData=eval(file.read())
-        except FileNotFoundError: 
-            with open('./userdata/caldata.json', 'w', encoding='utf-8') as file:
-                file.write('')
-                #dateData= {}
+        dateData = self.pass_data()
         c = calendar.Calendar(0)
         calList = [['1-1','1-2','1-3','1-4','1-5','1-6','1-7'],
                     ['2-1','2-2','2-3','2-4','2-5','2-6','2-7'],
@@ -152,10 +159,12 @@ class LifeLayout(MDWidget):
     #click at pop pop up write values into calendar
 
     def pop_click(self,value):
+        dateData = self.pass_data()
         print(self.date_id)
         print(self.my_id)
         self.ids[self.my_id].background_color = self.choose_color(value)
         dateData[self.date_id] = value
+        self.save_data(dateData)
         print(dateData)
         #with open('./userdata/caldata.txt', 'w', encoding='utf-8') as file:
         #    file.write(dateData)
