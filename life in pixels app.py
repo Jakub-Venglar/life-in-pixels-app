@@ -8,6 +8,7 @@ superColor= (.2,.3,.6,1)
 goodColor=(0,.5,1,1)
 averageColor=(.9,0,1,1)
 badColor=(.1,.1,.1,1)
+clearColor = (1,1,1,.25)
 
 """dateData = {
     "2022-11-09": "bad",
@@ -98,10 +99,11 @@ class LifeLayout(MDWidget):
                     #self.ids[id].newTextColor= (.8,.8,.8,1)
                     self.ids[id].text = '[b]>' + self.ids[id].text + '<[/b]'
                 
-                # if mood for date already set then render it
+                # if mood for date already set then render it, otherwise make field clear
 
                 if self.ids[id].date_id in dateData:
                     self.ids[id].background_color = self.choose_color(dateData[self.ids[id].date_id])
+                else: self.ids[id].background_color = clearColor
 
     # next or previous month after click
 
@@ -166,8 +168,6 @@ class LifeLayout(MDWidget):
         dateData[self.date_id] = value
         self.save_data(dateData)
         print(dateData)
-        #with open('./userdata/caldata.txt', 'w', encoding='utf-8') as file:
-        #    file.write(dateData)
 
 #TODO: improve pop up - vertical layout AND label with date and description
 #TODO: improve colors and overal layout
