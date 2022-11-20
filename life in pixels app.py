@@ -1,6 +1,5 @@
 #! python3
-import calendar
-import datetime
+import calendar, datetime, os, sys, json
 from kivymd.app import MDApp
 from kivymd.uix.widget import MDWidget
 from kivy.factory import Factory # because we need popup
@@ -10,14 +9,46 @@ goodColor=(0,.5,1,1)
 averageColor=(.9,0,1,1)
 badColor=(.1,.1,.1,1)
 
-#for experiments only, later load from file
-keepResults={'2022-11-09': 'bad', '2022-11-15': 'good', '2022-11-18': 'good', '2022-11-24': 'good', '2022-11-10': 'super', '2022-11-17': 'good', '2022-11-22': 'bad', '2022-11-25': 'average', '2022-11-26': 'super'}
+dateData = {
+    "2022-11-09": "bad",
+    "2022-11-15": "good",
+    "2022-11-18": "good",
+    "2022-11-24": "good",
+    "2022-11-10": "super",
+    "2022-11-17": "good",
+    "2022-11-22": "bad",
+    "2022-11-25": "good",
+    "2022-11-26": "super",
+    "2022-11-08": "bad",
+    "2022-11-14": "good"
+}
 
 class LifeLayout(MDWidget):
 
+    def create_user_directory(self):
+        #make sure working directory is set the same as file directory
+        os.chdir(os.path.dirname(sys.argv[0]))
+        #create directory if not existing
+        try:
+            os.mkdir('./userdata/')
+        except FileExistsError:
+            pass
+
+    def save_data(self):
+        with open('./userdata/caldata.json', 'w', encoding='utf-8') as file:
+            json.dump(dateData, file, indent = 4)
+
     #create calendar view
 
-    def make_Cal(self,now=True, year=2020, month=6):        
+    def make_Cal(self,now=True, year=2020, month=6):
+        try:   
+            with open('./userdata/caldata.json', 'r', encoding='utf-8') as file:
+                pass
+                dateData=eval(file.read())
+        except FileNotFoundError: 
+            with open('./userdata/caldata.json', 'w', encoding='utf-8') as file:
+                file.write('')
+                #dateData= {}
         c = calendar.Calendar(0)
         calList = [['1-1','1-2','1-3','1-4','1-5','1-6','1-7'],
                     ['2-1','2-2','2-3','2-4','2-5','2-6','2-7'],
@@ -32,7 +63,7 @@ class LifeLayout(MDWidget):
             monthLabel = datetime.datetime.now().strftime("%B %Y")
             self.monthID = str(datetime.datetime.now().month)
             self.yearID = str(datetime.datetime.now().year)
-            
+
         #this will create list of date objects for given year and month
         else:
             currentCal = c.monthdatescalendar(year, month)
@@ -62,8 +93,8 @@ class LifeLayout(MDWidget):
                 
                 # if mood for date already set then render it
 
-                if self.ids[id].date_id in keepResults:
-                    self.ids[id].background_color = self.choose_color(keepResults[self.ids[id].date_id])
+                if self.ids[id].date_id in dateData:
+                    self.ids[id].background_color = self.choose_color(dateData[self.ids[id].date_id])
 
     # next or previous month after click
 
@@ -124,12 +155,13 @@ class LifeLayout(MDWidget):
         print(self.date_id)
         print(self.my_id)
         self.ids[self.my_id].background_color = self.choose_color(value)
-        keepResults[self.date_id] = value
-        print(keepResults)
+        dateData[self.date_id] = value
+        print(dateData)
+        #with open('./userdata/caldata.txt', 'w', encoding='utf-8') as file:
+        #    file.write(dateData)
 
 #TODO: improve pop up - vertical layout AND label with date and description
 #TODO: improve colors and overal layout
-#TODO: add option to change months, also home button
 #TODO: save everything to database or file
 #TODO: add comment, which can be opened
 #TODO: add picture
@@ -140,6 +172,7 @@ class LifePixels(MDApp):
     def build(self):
         return LifeLayout()
     def on_start(self):
+        self.root.create_user_directory()
         self.root.make_Cal()
 
 if __name__ == "__main__":

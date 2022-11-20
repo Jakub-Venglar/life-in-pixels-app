@@ -378,3 +378,9 @@
             pos_hint: {'center_x': .5}
             text: 'Vrať mě do současnosti'
             on_press: root.present_click()
+        Button:
+            id: pokus
+            size_hint:  (.9,.1)
+            pos_hint: {'center_x': .5}
+            text: 'Uloz'
+            on_press: root.save_data()
