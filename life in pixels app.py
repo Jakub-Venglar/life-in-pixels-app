@@ -102,7 +102,7 @@ class LifeLayout(MDWidget):
                 # if mood for date already set then render it, otherwise make field clear
 
                 if self.ids[id].date_id in dateData:
-                    self.ids[id].background_color = self.choose_color(dateData[self.ids[id].date_id])
+                    self.ids[id].background_color = self.choose_color(dateData[self.ids[id].date_id]['mood'])
                 else: self.ids[id].background_color = clearColor
 
     # next or previous month after click
@@ -157,15 +157,18 @@ class LifeLayout(MDWidget):
         popup.open()
         self.date_id = date_id
         self.my_id = my_id
+        dateData = self.pass_data()
+        popup.ids.comment.text = dateData[self.date_id]['comment']
     
     #click at pop pop up write values into calendar
 
-    def pop_click(self,value):
+    def pop_click(self,value, text):
         dateData = self.pass_data()
         print(self.date_id)
         print(self.my_id)
         self.ids[self.my_id].background_color = self.choose_color(value)
-        dateData[self.date_id] = value
+        dateData[self.date_id] = dateData.setdefault(self.date_id, {'mood':'average','comment':''})
+        dateData[self.date_id]['mood'], dateData[self.date_id]['comment'] = value, text
         self.save_data(dateData)
         print(dateData)
 
