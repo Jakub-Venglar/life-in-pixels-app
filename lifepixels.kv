@@ -59,7 +59,9 @@
             on_release: root.dismiss()
         TextInput:
             id: comment
-            text: 'Napis neco'
+            text: ''
+            default_text: 'Jaký byl tvůj den? (Nemusíš napsat nic a poznámka zůstane prázdná)'
+            on_focus: self.text = "" if self.text == self.default_text else self.text
             #size: self.width, self.height/2
 
 <LifeLayout>:
@@ -81,7 +83,7 @@
             pos_hint: {'center_x': .5}
             canvas.before:
                 Color: 
-                    rgba: (.5,1,1,.5)
+                    rgba: (53/255,85/255,166/255,.65)
                 Rectangle:
                     size: self.size
                     pos:self.pos
@@ -112,7 +114,7 @@
             pos_hint: {'center_x': .5}
             canvas.before:
                 Color: 
-                    rgba: (.5,1,1,.5)
+                    rgba: (53/255,85/255,166/255,.65)
                 Rectangle:
                     size: self.size
                     pos:self.pos

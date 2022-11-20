@@ -4,10 +4,10 @@ from kivymd.app import MDApp
 from kivymd.uix.widget import MDWidget
 from kivy.factory import Factory # because we need popup
 
-superColor= (.2,.3,.6,1)
-goodColor=(0,.5,1,1)
-averageColor=(.9,0,1,1)
-badColor=(.1,.1,.1,1)
+superColor= (227/255,65/255,25/255,.8)
+goodColor=(43/255,168/255,8/255,.8)
+averageColor=(138/255,153/255,184/255,.8)
+badColor=(56/255,56/255,56/255,.8)
 clearColor = (1,1,1,.25)
 
 """dateData = {
@@ -158,24 +158,25 @@ class LifeLayout(MDWidget):
         self.date_id = date_id
         self.my_id = my_id
         dateData = self.pass_data()
+        dateData[self.date_id] = dateData.setdefault(self.date_id, {'mood':'average','comment': popup.ids.comment.default_text})
         popup.ids.comment.text = dateData[self.date_id]['comment']
     
     #click at pop pop up write values into calendar
 
     def pop_click(self,value, text):
         dateData = self.pass_data()
-        print(self.date_id)
-        print(self.my_id)
         self.ids[self.my_id].background_color = self.choose_color(value)
         dateData[self.date_id] = dateData.setdefault(self.date_id, {'mood':'average','comment':''})
-        dateData[self.date_id]['mood'], dateData[self.date_id]['comment'] = value, text
+        dateData[self.date_id]['mood'] =  value
+        if text == Factory.MoodPopup().ids.comment.default_text:
+            dateData[self.date_id]['comment'] = ''
+        else:
+            dateData[self.date_id]['comment'] = text
         self.save_data(dateData)
         print(dateData)
 
 #TODO: improve pop up - vertical layout AND label with date and description
 #TODO: improve colors and overal layout
-#TODO: save everything to database or file
-#TODO: add comment, which can be opened
 #TODO: add picture
 
 # run app and construct calendar
