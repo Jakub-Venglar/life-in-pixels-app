@@ -16,6 +16,7 @@ keepResults={'2022-11-09': 'bad', '2022-11-15': 'good', '2022-11-18': 'good', '2
 class LifeLayout(MDWidget):
 
     #create calendar view
+
     def make_Cal(self,now=True, year=2020, month=6):        
         c = calendar.Calendar(0)
         calList = [['1-1','1-2','1-3','1-4','1-5','1-6','1-7'],
@@ -28,12 +29,17 @@ class LifeLayout(MDWidget):
 
         if now==True:
             currentCal = c.monthdatescalendar(datetime.datetime.now().year, datetime.datetime.now().month)
-            monthToShow = datetime.datetime.now().strftime("%B")
+            monthLabel = datetime.datetime.now().strftime("%B %Y")
+            self.monthID = str(datetime.datetime.now().month)
+            self.yearID = str(datetime.datetime.now().year)
+            
         #this will create list of date objects for given year and month
         else:
             currentCal = c.monthdatescalendar(year, month)
-            myDate = datetime.date(year, month, 7)
-            monthToShow = myDate.strftime("%B")
+            newDate = datetime.date(year, month, 7)
+            monthLabel = newDate.strftime("%B %Y")
+            self.monthID = str(month)
+            self.yearID = str(year)
 
         #iterate through crated calendar and set a day number for every field
         #also sed date id for every field
@@ -43,23 +49,56 @@ class LifeLayout(MDWidget):
                 id = calList[weeknum][daynum]
                 setDate = currentCal[weeknum][daynum]
                 self.ids[id].text = str(setDate.day)
-                self.ids.CurrentMonth_label.text = str(monthToShow)
+                self.ids.month_Label.text = str(monthLabel)
                 self.ids[id].date_id = str(setDate)
 
                 #make current day more visible
 
                 if setDate == datetime.datetime.date(datetime.datetime.now()):
                     #self.ids[id].newsize=50
-                    self.ids[id].newOutWidth=1.2
+                    #self.ids[id].newOutWidth=1.2
                     #self.ids[id].newTextColor= (.8,.8,.8,1)
                     self.ids[id].text = '[b]>' + self.ids[id].text + '<[/b]'
                 
-                # if date already set then render it
+                # if mood for date already set then render it
 
                 if self.ids[id].date_id in keepResults:
                     self.ids[id].background_color = self.choose_color(keepResults[self.ids[id].date_id])
 
+    # next or previous month after click
+
+    def move_month(self,direction):
+        if direction == 'forward':
+            month = int(self.monthID)
+            month +=1
+            if month > 12:
+                year = int(self.yearID) + 1
+                month = 1
+            else:
+                year = int(self.yearID)
+        else:
+            month = int(self.monthID)
+            month -=1
+            if month < 1:
+                year= int(self.yearID) - 1
+                month = 12
+            else:
+                year = int(self.yearID)
+
+        self.make_Cal(now=False, year=year, month=month)
+
+    def move_year(self,direction):
+        month = int(self.monthID)
+        if direction == 'forward':
+            year = int(self.yearID) + 1
+        else: 
+            year= int(self.yearID) - 1
+        self.make_Cal(now=False, year=year, month=month)
     
+    def present_click(self):
+        self.make_Cal(now=True)
+
+
     #open popup and handle variables
     def choose_color(self, value):
         if value == 'super':
@@ -87,12 +126,6 @@ class LifeLayout(MDWidget):
         self.ids[self.my_id].background_color = self.choose_color(value)
         keepResults[self.date_id] = value
         print(keepResults)
-    
-    def move_month(self,direction):
-        pass
-
-    def move_year(self,direction):
-        pass
 
 #TODO: improve pop up - vertical layout AND label with date and description
 #TODO: improve colors and overal layout

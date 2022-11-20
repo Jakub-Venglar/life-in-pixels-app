@@ -55,6 +55,8 @@
             on_release: root.dismiss()
 
 <LifeLayout>:
+    yearID: ''
+    monthID: ''
     canvas:
         Color: 
             rgba: (1,1,1,1)
@@ -76,11 +78,13 @@
                     size: self.size
                     pos:self.pos
             MoveButton:
-                text:'<'
-            MoveButton:
                 text:'<<<'
+                on_press: root.move_year('backward')
+            MoveButton:
+                text:'<'
+                on_press: root.move_month('backward')
             Label:
-                id: CurrentMonth_label
+                id: month_Label
                 text: ''
                 halign: 'center'
                 valign: 'middle'
@@ -90,8 +94,10 @@
                 font_size: 40
             MoveButton:
                 text:'>'
+                on_press: root.move_month('forward')
             MoveButton:
                 text:'>>>'
+                on_press: root.move_year('forward')
         BoxLayout:
             orientation: 'horizontal'
             size_hint: .9, .2
@@ -370,4 +376,5 @@
             id: pokus
             size_hint:  (.9,.1)
             pos_hint: {'center_x': .5}
-            text: 'press'
+            text: 'Vrať mě do současnosti'
+            on_press: root.present_click()
