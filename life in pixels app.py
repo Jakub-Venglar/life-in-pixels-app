@@ -3,6 +3,20 @@ import calendar, datetime, os, sys, json
 from kivymd.app import MDApp
 from kivymd.uix.widget import MDWidget
 from kivy.factory import Factory # because we need popup
+from kivy.utils import platform
+
+if platform == 'android':
+    from android.storage import app_storage_path
+    settings_path = app_storage_path()
+
+    from android.storage import primary_external_storage_path
+    primary_ext_storage = primary_external_storage_path()
+
+    from android.storage import secondary_external_storage_path
+    secondary_ext_storage = secondary_external_storage_path()
+    from android.permissions import request_permissions, Permission
+    request_permissions([Permission.WRITE_EXTERNAL_STORAGE, Permission.READ_EXTERNAL_STORAGE])
+    
 
 superColor= (227/255,65/255,25/255,.8)
 goodColor=(43/255,168/255,8/255,.8)
@@ -27,29 +41,38 @@ clearColor = (1,1,1,.25)
 class LifeLayout(MDWidget):
 
     def create_user_directory(self):
-        #make sure working directory is set the same as file directory
-        os.chdir(os.path.dirname(sys.argv[0]))
-        #create directory if not existing
-        try:
-            os.mkdir('./userdata/')
-        except FileExistsError:
-            pass
+        if platform == 'android':
+            path = os.path.join(settings_path, 'userdata')
+            try:
+                os.mkdir(path)
+                os.chdir(path)
+            except FileExistsError:
+                os.chdir(path)
+
+        else:
+            path = os.path.join(os.path.dirname(sys.argv[0]), 'userdata')
+            #create directory if not existing
+            try:
+                os.mkdir(path)
+                os.chdir(path)
+            except FileExistsError:
+                os.chdir(path)
 
     def pass_data(self):        
             try:   
-                with open('./userdata/caldata.json', 'r', encoding='utf-8') as file:
+                with open('caldata.json', 'r', encoding='utf-8') as file:
                     return eval(file.read())
             except FileNotFoundError: 
-                with open('./userdata/caldata.json', 'w', encoding='utf-8') as file:
+                with open('caldata.json', 'w', encoding='utf-8') as file:
                     file.write('{}')
                     return {}
 
     def save_data(self, newData):
-        with open('./userdata/caldata.json', 'w', encoding='utf-8') as file:
+        with open('caldata.json', 'w', encoding='utf-8') as file:
             json.dump(newData, file, indent = 4)
     
     def delete_data(self):
-        with open('./userdata/caldata.json', 'w', encoding='utf-8') as file:
+        with open('caldata.json', 'w', encoding='utf-8') as file:
             file.write('{}')
         self.make_Cal()
 
