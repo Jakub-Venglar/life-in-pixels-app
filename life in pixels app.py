@@ -1,9 +1,10 @@
 #! python3
-import calendar, datetime, os, sys, json
+import calendar, datetime, os, sys, json, ast
 from kivymd.app import MDApp
 from kivymd.uix.widget import MDWidget
 from kivy.factory import Factory # because we need popup
 from kivy.utils import platform
+from babel.dates import format_date, format_datetime, format_time
 
 if platform == 'android':
     from android.storage import app_storage_path
@@ -17,29 +18,14 @@ if platform == 'android':
     from android.permissions import request_permissions, Permission
     request_permissions([Permission.WRITE_EXTERNAL_STORAGE, Permission.READ_EXTERNAL_STORAGE])
     
-
 superColor= (227/255,65/255,25/255,.8)
 goodColor=(43/255,168/255,8/255,.8)
 averageColor=(138/255,153/255,184/255,.8)
 badColor=(56/255,56/255,56/255,.8)
 clearColor = (1,1,1,.25)
 
-"""dateData = {
-    "2022-11-09": "bad",
-    "2022-11-15": "good",
-    "2022-11-18": "good",
-    "2022-11-24": "good",
-    "2022-11-10": "super",
-    "2022-11-17": "good",
-    "2022-11-22": "bad",
-    "2022-11-25": "good",
-    "2022-11-26": "super",
-    "2022-11-08": "bad",
-    "2022-11-14": "good"
-}"""
-
 class LifeLayout(MDWidget):
-
+    
     def create_user_directory(self):
         if platform == 'android':
             path = os.path.join(settings_path, 'userdata')
@@ -91,17 +77,19 @@ class LifeLayout(MDWidget):
 
         if now==True:
             currentCal = c.monthdatescalendar(datetime.datetime.now().year, datetime.datetime.now().month)
-            monthLabel = datetime.datetime.now().strftime("%B %Y")
+            monthLabel = format_date(datetime.datetime.now(),"LLLL y", locale='cs')
             self.monthID = str(datetime.datetime.now().month)
             self.yearID = str(datetime.datetime.now().year)
+            self.dateToShow = format_date(datetime.datetime.now(), format='long', locale='cs')
 
         #this will create list of date objects for given year and month
         else:
             currentCal = c.monthdatescalendar(year, month)
             newDate = datetime.date(year, month, 7)
-            monthLabel = newDate.strftime("%B %Y")
+            monthLabel = format_date(newDate,"LLLL y", locale='cs')
             self.monthID = str(month)
             self.yearID = str(year)
+            self.dateToShow = format_date(newDate,format='long', locale='cs')
 
         #iterate through crated calendar and set a day number for every field
         #also sed date id for every field
@@ -113,6 +101,7 @@ class LifeLayout(MDWidget):
                 self.ids[id].text = str(setDate.day)
                 self.ids.month_Label.text = str(monthLabel)
                 self.ids[id].date_id = str(setDate)
+                
 
                 #make current day more visible
 
@@ -161,8 +150,8 @@ class LifeLayout(MDWidget):
     def present_click(self):
         self.make_Cal(now=True)
 
+    # make colors
 
-    #open popup and handle variables
     def choose_color(self, value):
         if value == 'super':
             return superColor
@@ -172,7 +161,9 @@ class LifeLayout(MDWidget):
             return averageColor
         if value == 'bad':
             return badColor
-
+        if value == '':
+            return clearColor
+    
     #click on any date, call popup 
 
     def cal_click(self, date_id, my_id):
@@ -180,9 +171,15 @@ class LifeLayout(MDWidget):
         popup.open()
         self.date_id = date_id
         self.my_id = my_id
+        popup.current_date = format_date(datetime.date(int(date_id[:4]), int(date_id[5:7]), int(date_id[8:])),format='long', locale='cs')
+        popup.ids.bad.background_color = badColor
+        popup.ids.average.background_color = averageColor
+        popup.ids.good.background_color = goodColor
+        popup.ids.super.background_color = superColor
         dateData = self.pass_data()
-        dateData[self.date_id] = dateData.setdefault(self.date_id, {'mood':'average','comment': popup.ids.comment.default_text})
-        popup.ids.comment.text = dateData[self.date_id]['comment']
+        dateData[date_id] = dateData.setdefault(date_id, {'mood':'average','comment': ''})
+        popup.ids.comment.text = dateData[date_id]['comment']
+
     
     #click at pop pop up write values into calendar
 
@@ -191,13 +188,26 @@ class LifeLayout(MDWidget):
         self.ids[self.my_id].background_color = self.choose_color(value)
         dateData[self.date_id] = dateData.setdefault(self.date_id, {'mood':'average','comment':''})
         dateData[self.date_id]['mood'] =  value
-        if text == Factory.MoodPopup().ids.comment.default_text:
-            dateData[self.date_id]['comment'] = ''
-        else:
-            dateData[self.date_id]['comment'] = text
+        dateData[self.date_id]['comment'] = text
         self.save_data(dateData)
         print(dateData)
+    
+    def save_text(self, text):
+        dateData = self.pass_data()
+        dateData[self.date_id] = dateData.setdefault(self.date_id, {'mood':'average','comment':''})
+        dateData[self.date_id]['comment'] = text
+        self.save_data(dateData)
 
+    def delete_day(self):
+        dateData = self.pass_data()
+        dateData[self.date_id] = {'mood':'','comment':''}
+        self.save_data(dateData)
+        self.ids[self.my_id].background_color = self.choose_color('')
+        print(dateData)
+
+    
+
+#TODO: opravit co jde do dat
 #TODO: improve pop up - vertical layout AND label with date and description
 #TODO: improve colors and overal layout
 #TODO: add picture

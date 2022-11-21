@@ -1,6 +1,5 @@
 #:import Factory kivy.factory.Factory
 
-
 <CalButton@Button>:
     newsize: 30
     font_size: self.newsize
@@ -10,8 +9,6 @@
     outline_width: self.newOutWidth
     outline_colour: (0, 0, 0, 1)
     background_normal: ''
-    newBG: (1,1,1,.25)
-    background_color: self.newBG
     canvas.before:
         Color: 
             rgba: (1,1,1,.8)
@@ -30,43 +27,64 @@
 
 <MoodPopup@Popup>:
     auto_dismiss: True
-    size_hint: .7,.7
-    title: 'Hola'
+    name: 'MoodPopup'
+    size_hint: .8,.8
+    title: f'Jaký byl tvůj den {root.current_date} ?'
+    current_date: ''
+    title_size: 20
     BoxLayout:
         orientation: 'vertical'
-        Label:
-
-            id: popisek
-            text:''
-        Button:         
-            text: 'Na houby'
-            on_press: app.root.pop_click('bad', comment.text)
-            on_release: root.dismiss()
-        Button:         
-            text: 'Šeď'
-            on_press: app.root.pop_click('average', comment.text)
-            on_release: root.dismiss()
-        Button:         
-            text: 'Dobre'
-            on_press: app.root.pop_click('good', comment.text)
-            on_release: root.dismiss()
-        Button:         
-            text: 'Bozi'
-            on_press: app.root.pop_click('super', comment.text)
-            on_release: root.dismiss()
-        Button:         
-            text: 'close'
-            on_release: root.dismiss()
         TextInput:
             id: comment
             text: ''
-            default_text: 'Jaký byl tvůj den? (Nemusíš napsat nic a poznámka zůstane prázdná)'
-            on_focus: self.text = "" if self.text == self.default_text else self.text
-            #size: self.width, self.height/2
+            size_hint: (1, None)
+            height: root.height/3
+        BoxLayout:
+            orientation: 'horizontal'
+            Button:
+                id: bad
+                background_normal: ''
+                backgroud_color: (1,1,1,1)       
+                text: 'Na houby'
+                on_press: app.root.pop_click('bad', comment.text)
+                on_release: root.dismiss()
+            Button:
+                id: average
+                background_normal: ''
+                backgroud_color: (1,1,1,1)
+                multiline: True                    
+                text: 'Šedivý průměr'
+                on_press: app.root.pop_click('average', comment.text)
+                on_release: root.dismiss()
+            Button:
+                id: good
+                background_normal: ''
+                backgroud_color: (1,1,1,1)             
+                text: 'Užil(a) jsem si ho'
+                on_press: app.root.pop_click('good', comment.text)
+                on_release: root.dismiss()
+            Button:
+                id: super
+                background_normal: ''
+                backgroud_color: (1,1,1,1)
+                text: 'Boží!'
+                on_press: app.root.pop_click('super', comment.text)
+                on_release: root.dismiss()
+        Button:         
+            text: 'Uložit jen text a zavřít'
+            on_release: app.root.save_text(comment.text), root.dismiss()
+        Button:         
+            text: 'Vymazat vše o tomto dni'
+            on_press: app.root.delete_day(), root.dismiss(), app.root.cal_click(app.root.date_id, app.root.my_id)
+        Button:         
+            text: 'Zavřít'
+            on_release: root.dismiss(),
 
 <LifeLayout>:
+    name: 'LifeLayout'
     yearID: ''
     monthID: ''
+    dateToShow: 'default'
     canvas:
         Color: 
             rgba: (1,1,1,1)
@@ -392,5 +410,5 @@
             id: delete
             size_hint:  (.9,.1)
             pos_hint: {'center_x': .5}
-            text: 'Vymaz'
+            text: 'Vymaž celý kalendář'
             on_press: root.delete_data()
