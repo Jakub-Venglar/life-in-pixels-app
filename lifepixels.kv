@@ -1,20 +1,28 @@
 #:import Factory kivy.factory.Factory
 
 <CalButton@Button>:
-    newsize: 30
-    font_size: self.newsize
-    newTextColor: (1,1,1,1) 
-    color: self.newTextColor
-    newOutWidth: 0
-    outline_width: self.newOutWidth
+    font_size: 30
+    color: (1,1,1,1) 
+    outline_width: 0
     outline_colour: (0, 0, 0, 1)
     background_normal: ''
-    canvas.before:
+    pict_source: ''
+    canvas:
         Color: 
             rgba: (1,1,1,.8)
+        #Rectangle:
+            #source: self.pict_source
+            #size: (self.width/2, self.height/2)
+            #pos: self.pos
+        #Ellipse:
+            #angle_start: 20
+            #angle_end: 320
+            #size: (self.width/2, self.height/2)
+            #pos: self.pos
         Line:
             width: 1
             rectangle: self.x, self.y, self.width, self.height
+        
 <DayLabel@Label>:
     font_size: 30
     canvas.before:
@@ -26,7 +34,6 @@
 <MoveButton@Button>:
 
 <MoodPopup@Popup>:
-    randomProperty: None
     auto_dismiss: True
     name: 'MoodPopup'
     size_hint: .8,.8

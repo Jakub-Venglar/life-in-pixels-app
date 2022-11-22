@@ -106,9 +106,10 @@ class LifeLayout(MDWidget):
                 #make current day more visible
 
                 if setDate == datetime.datetime.date(datetime.datetime.now()):
-                    #self.ids[id].newsize=50
-                    #self.ids[id].newOutWidth=1.2
-                    #self.ids[id].newTextColor= (.8,.8,.8,1)
+                    #self.ids[id].font_size=50
+                    #self.ids[id].outline_width=1.2
+                    #self.ids[id].color= (.8,.8,.8,1)
+                    #self.ids[id].pict_source= 'pict/norsko.jpg'
                     self.ids[id].text = '[b]>' + self.ids[id].text + '<[/b]'
                 
                 # if mood for date already set then render it, otherwise make field clear
