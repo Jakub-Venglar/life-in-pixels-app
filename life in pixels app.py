@@ -1,10 +1,28 @@
 #! python3
-import calendar, datetime, os, sys, json, ast
+# Life in pixels project
+import calendar, datetime, os, sys, json
 from kivymd.app import MDApp
 from kivymd.uix.widget import MDWidget
-from kivy.factory import Factory # because we need popup
+from kivy.factory import Factory
 from kivy.utils import platform
 from babel.dates import format_date, format_datetime, format_time
+
+#TODO: learn how to properly comment and add comments and docstrings
+#TODO: ask for name at the begining and personalize saved files (because of possible multiuser in future)
+#TODO: finish tutorials so I have better idea what I am doing :)
+#TODO: circle around today
+#TODO: add 5th mood
+#TODO: improve pop up - colorize label according to set mood color
+#TODO: improve colors and overal layout
+#TODO: add option for set your own colors
+#TODO: choice from default pictures or your own as BG
+#TODO: add habits/activities, render them if accomplished on the main calendar - possibility to track them (show how many or just checkbox if accomplished)
+#TODO: picture of the day
+#TODO: make printable page, with summary of the year/month
+#TODO: sync between computer and mobile app - at PC you can see better bigger picture
+#TODO: backup possibilities
+# maybe todo: add location on the map, later show pins on the map
+
 
 if platform == 'android':
     from android.storage import app_storage_path
@@ -22,7 +40,7 @@ superColor= (227/255,65/255,25/255,.8)
 goodColor=(43/255,168/255,8/255,.8)
 averageColor=(138/255,153/255,184/255,.8)
 badColor=(56/255,56/255,56/255,.8)
-clearColor = (1,1,1,.25)
+clearColor = (.5,.5,.5,.35)
 
 class LifeLayout(MDWidget):
     
@@ -210,17 +228,6 @@ class LifeLayout(MDWidget):
         self.ids[self.my_id].background_color = self.choose_color('')
         print(dateData)
 
-    
-#TODO: learn how to properly comment and add comments
-#TODO: finish tutorials so I have better idea what I am doing :)
-#TODO: add 5th mood
-#TODO: improve pop up - colorize label according to set mood color
-#TODO: improve colors and overal layout
-#TODO: add option for set your own color
-#TODO: choice from default pictures or your own as BG
-#TODO: add habits/activities, render them if accomplished on the main calendar - possibility to track them (show how many or just checkbox if accomplished)
-#TODO: picture of the day
-# maybe todo: add location on the map, later show pins on the map
 
 # run app and construct calendar
 
