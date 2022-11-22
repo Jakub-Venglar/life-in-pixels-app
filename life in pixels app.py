@@ -180,8 +180,6 @@ class LifeLayout(MDWidget):
         dateData = self.pass_data()
         dateData[dateKey] = dateData.setdefault(dateKey, {'mood':'average','comment': ''})
         popup.ids.comment.text = dateData[dateKey]['comment']
-        popup.randomProperty = 50
-        print(popup.randomProperty)
 
     
     #click at pop pop up write values into calendar
@@ -212,7 +210,7 @@ class LifeLayout(MDWidget):
         print(dateData)
 
     
-
+#TODO: learn how to properly comment and add comments
 #TODO: finish tutorials so I have better idea what I am doing :)
 #TODO: add 5th mood
 #TODO: improve pop up - colorize label according to set mood color
