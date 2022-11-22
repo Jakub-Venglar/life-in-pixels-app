@@ -100,7 +100,7 @@ class LifeLayout(MDWidget):
                 setDate = currentCal[weeknum][daynum]
                 self.ids[id].text = str(setDate.day)
                 self.ids.month_Label.text = str(monthLabel)
-                self.ids[id].date_id = str(setDate)
+                self.ids[id].date_id = setDate
                 
 
                 #make current day more visible
@@ -169,48 +169,59 @@ class LifeLayout(MDWidget):
     def cal_click(self, date_id, my_id):
         popup = Factory.MoodPopup()
         popup.open()
+        dateKey = str(date_id)
         self.date_id = date_id
         self.my_id = my_id
-        popup.current_date = format_date(datetime.date(int(date_id[:4]), int(date_id[5:7]), int(date_id[8:])),format='long', locale='cs')
+        popup.current_date = format_date(date_id,format='long', locale='cs')
         popup.ids.bad.background_color = badColor
         popup.ids.average.background_color = averageColor
         popup.ids.good.background_color = goodColor
         popup.ids.super.background_color = superColor
         dateData = self.pass_data()
-        dateData[date_id] = dateData.setdefault(date_id, {'mood':'average','comment': ''})
-        popup.ids.comment.text = dateData[date_id]['comment']
+        dateData[dateKey] = dateData.setdefault(dateKey, {'mood':'average','comment': ''})
+        popup.ids.comment.text = dateData[dateKey]['comment']
+        popup.randomProperty = 50
+        print(popup.randomProperty)
 
     
     #click at pop pop up write values into calendar
 
-    def pop_click(self,value, text):
+    def mood_click(self,value, text):
         dateData = self.pass_data()
+        dateKey = str(self.date_id)
         self.ids[self.my_id].background_color = self.choose_color(value)
-        dateData[self.date_id] = dateData.setdefault(self.date_id, {'mood':'average','comment':''})
-        dateData[self.date_id]['mood'] =  value
-        dateData[self.date_id]['comment'] = text
+        dateData[dateKey] = dateData.setdefault(dateKey, {'mood':'average','comment':''})
+        dateData[dateKey]['mood'] =  value
+        dateData[dateKey]['comment'] = text
         self.save_data(dateData)
         print(dateData)
     
     def save_text(self, text):
         dateData = self.pass_data()
-        dateData[self.date_id] = dateData.setdefault(self.date_id, {'mood':'average','comment':''})
-        dateData[self.date_id]['comment'] = text
+        dateKey = str(self.date_id)
+        dateData[dateKey] = dateData.setdefault(dateKey, {'mood':'average','comment':''})
+        dateData[dateKey]['comment'] = text
         self.save_data(dateData)
 
     def delete_day(self):
         dateData = self.pass_data()
-        dateData[self.date_id] = {'mood':'','comment':''}
+        dateKey = str(self.date_id)
+        dateData[dateKey] = {'mood':'','comment':''}
         self.save_data(dateData)
         self.ids[self.my_id].background_color = self.choose_color('')
         print(dateData)
 
     
 
-#TODO: opravit co jde do dat
-#TODO: improve pop up - vertical layout AND label with date and description
+#TODO: finish tutorials so I have better idea what I am doing :)
+#TODO: add 5th mood
+#TODO: improve pop up - colorize label according to set mood color
 #TODO: improve colors and overal layout
-#TODO: add picture
+#TODO: add option for set your own color
+#TODO: choice from default pictures or your own as BG
+#TODO: add habits/activities, render them if accomplished on the main calendar - possibility to track them (show how many or just checkbox if accomplished)
+#TODO: picture of the day
+# maybe todo: add location on the map, later show pins on the map
 
 # run app and construct calendar
 
