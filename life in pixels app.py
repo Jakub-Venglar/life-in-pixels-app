@@ -1,6 +1,6 @@
 #! python3
 # Life in pixels project
-import calendar, datetime, os, sys, json
+import calendar, datetime, os, sys, json, time
 from kivymd.app import MDApp
 from kivymd.uix.widget import MDWidget
 from kivy.factory import Factory #popup
@@ -62,6 +62,7 @@ class CalendarWindow(Screen):
                 os.chdir(path)
             except FileExistsError:
                 os.chdir(path)
+
 
     def pass_data(self):        
             try:   
@@ -187,7 +188,9 @@ class CalendarWindow(Screen):
     #click on any date, call popup 
 
     def cal_click(self, date_id, my_id):
-        popup = Factory.MoodPopup()
+        self.manager.current = 'DayMood'
+        self.manager.current_screen.ids.comment.text = str(date_id)
+        """popup = Factory.MoodPopup()
         popup.open()
         dateKey = str(date_id)
         self.date_id = date_id
@@ -199,7 +202,7 @@ class CalendarWindow(Screen):
         popup.ids.super.background_color = superColor
         dateData = self.pass_data()
         dateData[dateKey] = dateData.setdefault(dateKey, {'mood':'average','comment': ''})
-        popup.ids.comment.text = dateData[dateKey]['comment']
+        popup.ids.comment.text = dateData[dateKey]['comment']"""
 
     
     #click at pop pop up write values into calendar
@@ -240,19 +243,22 @@ class WindowManager(ScreenManager):
 
 class LifePixels(MDApp):
     def build(self):
-        '''# Create the screen manager
+        # Create the screen manager
         sm = ScreenManager()
         sm.add_widget(CalendarWindow(name='Calendar'))
         sm.add_widget(DayWindow(name='DayMood'))
-
+        #sm.current = 'Calendar'
         return sm
         '''
     title = 'Life in pixels'
     def build(self):
-        return CalendarWindow()
+        return CalendarWindow()'''
     def on_start(self):
-        self.root.create_user_directory()
-        self.root.make_Cal()
+        #self.root.create_user_directory()
+        #self.root.make_Cal()
+        #self.root.get_screen('Calendar').create_user_directory()
+        self.root.current_screen.create_user_directory()
+        self.root.current_screen.make_Cal()
 
 
 
