@@ -84,6 +84,7 @@ class CalendarWindow(Screen):
     #create calendar view
 
     def make_Cal(self,now=True, year=2020, month=6):
+        
         dateData = self.pass_data()
         c = calendar.Calendar(0)
         calList = [['1-1','1-2','1-3','1-4','1-5','1-6','1-7'],
@@ -186,8 +187,6 @@ class CalendarWindow(Screen):
     #click on any date, call popup 
 
     def cal_click(self, date_id, my_id):
-        app.root.current = 'DayMood'
-        """
         popup = Factory.MoodPopup()
         popup.open()
         dateKey = str(date_id)
@@ -200,7 +199,7 @@ class CalendarWindow(Screen):
         popup.ids.super.background_color = superColor
         dateData = self.pass_data()
         dateData[dateKey] = dateData.setdefault(dateKey, {'mood':'average','comment': ''})
-        popup.ids.comment.text = dateData[dateKey]['comment']"""
+        popup.ids.comment.text = dateData[dateKey]['comment']
 
     
     #click at pop pop up write values into calendar
@@ -240,12 +239,22 @@ class WindowManager(ScreenManager):
 # run app and construct calendar
 
 class LifePixels(MDApp):
+    def build(self):
+        '''# Create the screen manager
+        sm = ScreenManager()
+        sm.add_widget(CalendarWindow(name='Calendar'))
+        sm.add_widget(DayWindow(name='DayMood'))
+
+        return sm
+        '''
     title = 'Life in pixels'
     def build(self):
         return CalendarWindow()
     def on_start(self):
         self.root.create_user_directory()
         self.root.make_Cal()
+
+
 
 if __name__ == "__main__":
 
