@@ -38,7 +38,6 @@
 <MoveButton@Button>:
 
 <MoodPopup@Popup>:
-    id: MoodPopup2
     auto_dismiss: True
     name: 'MoodPopup'
     size_hint: .8,.8
@@ -97,6 +96,10 @@
 
 <DayWindow>:
     name: 'DayMood'
+    title: f'Jaký byl tvůj den {root.current_date} ?'
+    id: daywin
+    current_date: ''
+    title_size: 20
     BoxLayout:
         orientation: 'vertical'
         TextInput:
@@ -104,6 +107,48 @@
             text: ''
             size_hint: (1, None)
             height: root.height/3
+        BoxLayout:
+            orientation: 'horizontal'
+            Button:
+                id: bad
+                background_normal: ''
+                backgroud_color: (1,1,1,1)       
+                text: 'Na houby'
+                on_press: app.root.current_screen.mood_click('bad', comment.text)
+                on_release: root.dismiss()
+            Button:
+                id: average
+                background_normal: ''
+                backgroud_color: (1,1,1,1)
+                multiline: True                    
+                text: 'Šedivý průměr'
+                on_press: app.root.current_screen.mood_click('average', comment.text)
+                on_release: root.dismiss()
+            Button:
+                id: good
+                background_normal: ''
+                backgroud_color: (1,1,1,1)             
+                text: 'Užil(a) jsem si ho'
+                on_press: app.root.current_screen.mood_click('good', comment.text)
+                on_release: root.dismiss()
+            Button:
+                id: super
+                background_normal: ''
+                backgroud_color: (1,1,1,1)
+                text: 'Boží!'
+                #on_press: app.root.current_screen.mood_click('super', comment.text)
+                on_release: app.root.current = 'Calendar'
+        Button:         
+            text: 'Uložit jen text a zavřít'
+            on_release: app.root.save_text(comment.text), root.dismiss()
+        Button:         
+            text: 'Vymazat vše o tomto dni'
+            on_press: app.root.delete_day(), root.dismiss(), app.root.cal_click(app.root.date_id, app.root.my_id)
+        Button:         
+            text: 'Zavřít'
+            on_release: 
+                app.root.transition.direction = 'right'
+                app.root.current = 'Calendar'
 
 
 <CalendarWindow>:
@@ -182,13 +227,13 @@
             size_hint: .9, .9
             pos_hint: {'center_x': .5}
             CalButton:
-                background_color: (.5,.5,.5,.5)
                 markup:True
                 date_id: None
                 id: 1-1
                 my_id: '1-1'
                 text: ''
-                on_release: root.cal_click(self.date_id, self.my_id)
+                on_release: 
+                    root.cal_click(self.date_id, self.my_id)
                 Label:
                     font_size: 10
                     text: 'ahoj'

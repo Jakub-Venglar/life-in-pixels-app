@@ -188,10 +188,11 @@ class CalendarWindow(Screen):
     #click on any date, call popup 
 
     def cal_click(self, date_id, my_id):
+        self.manager.transition.direction = 'left'
         self.manager.current = 'DayMood'
-        self.manager.current_screen.ids.comment.text = str(date_id)
+        popup = self.manager.current_screen
         """popup = Factory.MoodPopup()
-        popup.open()
+        popup.open()"""
         dateKey = str(date_id)
         self.date_id = date_id
         self.my_id = my_id
@@ -202,7 +203,7 @@ class CalendarWindow(Screen):
         popup.ids.super.background_color = superColor
         dateData = self.pass_data()
         dateData[dateKey] = dateData.setdefault(dateKey, {'mood':'average','comment': ''})
-        popup.ids.comment.text = dateData[dateKey]['comment']"""
+        popup.ids.comment.text = dateData[dateKey]['comment']
 
     
     #click at pop pop up write values into calendar
