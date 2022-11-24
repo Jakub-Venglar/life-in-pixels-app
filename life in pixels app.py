@@ -3,7 +3,8 @@
 import calendar, datetime, os, sys, json
 from kivymd.app import MDApp
 from kivymd.uix.widget import MDWidget
-from kivy.factory import Factory
+from kivy.factory import Factory #popup
+from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.utils import platform
 from babel.dates import format_date, format_datetime, format_time
 
@@ -42,8 +43,8 @@ averageColor=(138/255,153/255,184/255,.8)
 badColor=(56/255,56/255,56/255,.8)
 clearColor = (.5,.5,.5,.35)
 
-class LifeLayout(MDWidget):
-    
+#define screens
+class CalendarWindow(Screen):
     def create_user_directory(self):
         if platform == 'android':
             path = os.path.join(settings_path, 'userdata')
@@ -119,7 +120,6 @@ class LifeLayout(MDWidget):
                 self.ids[id].text = str(setDate.day)
                 self.ids.month_Label.text = str(monthLabel)
                 self.ids[id].date_id = setDate
-                
 
                 #make current day more visible
 
@@ -186,6 +186,8 @@ class LifeLayout(MDWidget):
     #click on any date, call popup 
 
     def cal_click(self, date_id, my_id):
+        app.root.current = 'DayMood'
+        """
         popup = Factory.MoodPopup()
         popup.open()
         dateKey = str(date_id)
@@ -198,7 +200,7 @@ class LifeLayout(MDWidget):
         popup.ids.super.background_color = superColor
         dateData = self.pass_data()
         dateData[dateKey] = dateData.setdefault(dateKey, {'mood':'average','comment': ''})
-        popup.ids.comment.text = dateData[dateKey]['comment']
+        popup.ids.comment.text = dateData[dateKey]['comment']"""
 
     
     #click at pop pop up write values into calendar
@@ -228,12 +230,19 @@ class LifeLayout(MDWidget):
         self.ids[self.my_id].background_color = self.choose_color('')
         print(dateData)
 
+class DayWindow(Screen):
+    pass
+
+class WindowManager(ScreenManager):
+    pass
+
 
 # run app and construct calendar
 
 class LifePixels(MDApp):
+    title = 'Life in pixels'
     def build(self):
-        return LifeLayout()
+        return CalendarWindow()
     def on_start(self):
         self.root.create_user_directory()
         self.root.make_Cal()

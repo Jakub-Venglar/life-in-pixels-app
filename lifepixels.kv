@@ -1,19 +1,23 @@
 #:import Factory kivy.factory.Factory
 
+WindowManager:
+    CalendarWindow:
+    DayWindow:
+
 <CalButton@Button>:
     font_size: 30
     color: (1,1,1,1) 
     outline_width: 0
     outline_colour: (0, 0, 0, 1)
     background_normal: ''
-    pict_source: ''
+    #pict_source: 'pict/norsko.jpg'
     canvas:
         Color: 
             rgba: (1,1,1,.8)
         #Rectangle:
-            #source: self.pict_source
-            #size: (self.width/2, self.height/2)
-            #pos: self.pos
+        #    source: self.pict_source
+        #    size: (self.width/2, self.height/2)
+        #    pos: self.pos
         #Ellipse:
             #angle_start: 20
             #angle_end: 320
@@ -34,6 +38,7 @@
 <MoveButton@Button>:
 
 <MoodPopup@Popup>:
+    id: MoodPopup2
     auto_dismiss: True
     name: 'MoodPopup'
     size_hint: .8,.8
@@ -88,8 +93,21 @@
             text: 'Zavřít'
             on_release: root.dismiss(),
 
-<LifeLayout>:
-    name: 'LifeLayout'
+
+
+<DayWindow>:
+    name: 'DayMood'
+    BoxLayout:
+        orientation: 'vertical'
+        TextInput:
+            id: comment
+            text: ''
+            size_hint: (1, None)
+            height: root.height/3
+
+
+<CalendarWindow>:
+    name: 'Calendar'
     yearID: ''
     monthID: ''
     dateToShow: ''
@@ -170,6 +188,10 @@
                 my_id: '1-1'
                 text: ''
                 on_release: root.cal_click(self.date_id, self.my_id)
+                Label:
+                    font_size: 10
+                    text: 'ahoj'
+                    pos: self.parent.pos
             CalButton:
                 markup:True
                 date_id: None
