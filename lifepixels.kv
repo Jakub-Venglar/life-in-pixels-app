@@ -3,6 +3,14 @@
 #WindowManager:
  #   CalendarWindow:
   #  DayWindow:
+<MoodButton@Button>:
+    background_normal: ''
+    font_size: 15
+    halign: 'center'
+    valign: 'middle'
+    #size_hint_x: None
+    text_size: self.size
+
 
 <CalButton@Button>:
     font_size: 30
@@ -37,71 +45,33 @@
             rectangle: self.x, self.y, self.width, self.height
 <MoveButton@Button>:
 
-<MoodPopup@Popup>:
-    auto_dismiss: True
-    name: 'MoodPopup'
-    size_hint: .8,.8
-    title: f'Jaký byl tvůj den {root.current_date} ?'
-    current_date: ''
-    title_size: 20
-    BoxLayout:
-        orientation: 'vertical'
-        TextInput:
-            id: comment
-            text: ''
-            size_hint: (1, None)
-            height: root.height/3
-        BoxLayout:
-            orientation: 'horizontal'
-            Button:
-                id: bad
-                background_normal: ''
-                backgroud_color: (1,1,1,1)       
-                text: 'Na houby'
-                on_press: app.root.current_screen.mood_click('bad', comment.text)
-                on_release: root.dismiss()
-            Button:
-                id: average
-                background_normal: ''
-                backgroud_color: (1,1,1,1)
-                multiline: True                    
-                text: 'Šedivý průměr'
-                on_press: app.root.current_screen.mood_click('average', comment.text)
-                on_release: root.dismiss()
-            Button:
-                id: good
-                background_normal: ''
-                backgroud_color: (1,1,1,1)             
-                text: 'Užil(a) jsem si ho'
-                on_press: app.root.current_screen.mood_click('good', comment.text)
-                on_release: root.dismiss()
-            Button:
-                id: super
-                background_normal: ''
-                backgroud_color: (1,1,1,1)
-                text: 'Boží!'
-                on_press: app.root.current_screen.mood_click('super', comment.text)
-                on_release: root.dismiss()
-        Button:         
-            text: 'Uložit jen text a zavřít'
-            on_release: app.root.save_text(comment.text), root.dismiss()
-        Button:         
-            text: 'Vymazat vše o tomto dni'
-            on_press: app.root.delete_day(), root.dismiss(), app.root.cal_click(app.root.date_id, app.root.my_id)
-        Button:         
-            text: 'Zavřít'
-            on_release: root.dismiss(),
-
-
-
 <DayWindow>:
     name: 'DayMood'
-    title: f'Jaký byl tvůj den {root.current_date} ?'
-    id: daywin
     current_date: ''
-    title_size: 20
+    canvas.before:
+    #Color: 
+    #    rgba: (1,1,1,1)
+        Rectangle:
+            size: 3/2*root.height, root.height
+            pos: self.width/2-3/2*root.height/2, self.height/2 - root.height/2
+            source: 'pict/norsko.jpg'
     BoxLayout:
         orientation: 'vertical'
+        Label:
+            canvas.before:
+                Color:
+                    rgba: (1,1,1,.5)
+                Rectangle:
+                    size: self.size
+                    pos:self.pos
+            id: question
+            color: (0,0,0,1)
+            font_size: 30
+            halign: 'center'
+            valign: 'middle'
+            #size_hint_x: None
+            text_size: self.size
+            text: f'Jaký byl tvůj den {root.current_date} ?'
         TextInput:
             id: comment
             text: ''
@@ -109,32 +79,23 @@
             height: root.height/3
         BoxLayout:
             orientation: 'horizontal'
-            Button:
+            MoodButton:
                 id: bad
-                background_normal: ''
-                backgroud_color: (1,1,1,1)       
                 text: 'Na houby'
                 on_press: app.root.current_screen.mood_click('bad', comment.text)
                 on_release: root.dismiss()
-            Button:
-                id: average
-                background_normal: ''
-                backgroud_color: (1,1,1,1)
-                multiline: True                    
+            MoodButton:
+                id: average  
                 text: 'Šedivý průměr'
                 on_press: app.root.current_screen.mood_click('average', comment.text)
                 on_release: root.dismiss()
-            Button:
+            MoodButton:
                 id: good
-                background_normal: ''
-                backgroud_color: (1,1,1,1)             
                 text: 'Užil(a) jsem si ho'
                 on_press: app.root.current_screen.mood_click('good', comment.text)
                 on_release: root.dismiss()
-            Button:
+            MoodButton:
                 id: super
-                background_normal: ''
-                backgroud_color: (1,1,1,1)
                 text: 'Boží!'
                 #on_press: app.root.current_screen.mood_click('super', comment.text)
                 on_release: app.root.current = 'Calendar'

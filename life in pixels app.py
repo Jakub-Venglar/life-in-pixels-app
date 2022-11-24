@@ -194,8 +194,8 @@ class CalendarWindow(Screen):
         """popup = Factory.MoodPopup()
         popup.open()"""
         dateKey = str(date_id)
-        self.date_id = date_id
-        self.my_id = my_id
+        popup.date_id = date_id
+        popup.my_id = my_id
         popup.current_date = format_date(date_id,format='long', locale='cs')
         popup.ids.bad.background_color = badColor
         popup.ids.average.background_color = averageColor
