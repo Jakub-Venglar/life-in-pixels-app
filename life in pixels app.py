@@ -5,6 +5,7 @@ from kivymd.app import MDApp
 from kivymd.uix.widget import MDWidget
 from kivy.factory import Factory #popup
 from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.core.window import Window
 from kivy.utils import platform
 from babel.dates import format_date, format_datetime, format_time
 
@@ -45,6 +46,15 @@ clearColor = (.5,.5,.5,.35)
 
 #define screens
 class CalendarWindow(Screen):
+        # construct labels for cal buttons
+    
+    def __init__(self, **kwargs):
+        super(CalendarWindow, self).__init__(**kwargs)
+        Window.bind(on_resize = self.labelSize)
+
+    def labelSize(self,x,y,z):
+        self.fs = z/30
+    
     def create_user_directory(self):
         if platform == 'android':
             path = os.path.join(settings_path, 'userdata')
@@ -85,7 +95,8 @@ class CalendarWindow(Screen):
     #create calendar view
 
     def make_Cal(self,now=True, year=2020, month=6):
-        
+        print(Window.size)
+        self.fs = Window.size[1]/30
         dateData = self.pass_data()
         c = calendar.Calendar(0)
         calList = [['1-1','1-2','1-3','1-4','1-5','1-6','1-7'],
@@ -98,7 +109,7 @@ class CalendarWindow(Screen):
 
         if now==True:
             currentCal = c.monthdatescalendar(datetime.datetime.now().year, datetime.datetime.now().month)
-            monthLabel = format_date(datetime.datetime.now(),"LLLL y", locale='cs')
+            monthLabel = format_date(datetime.datetime.now(),"LLLL y", locale='cs').capitalize()
             self.monthID = str(datetime.datetime.now().month)
             self.yearID = str(datetime.datetime.now().year)
             self.dateToShow = format_date(datetime.datetime.now(), format='long', locale='cs')
@@ -107,7 +118,7 @@ class CalendarWindow(Screen):
         else:
             currentCal = c.monthdatescalendar(year, month)
             newDate = datetime.date(year, month, 7)
-            monthLabel = format_date(newDate,"LLLL y", locale='cs')
+            monthLabel = format_date(newDate,"LLLL y", locale='cs').capitalize()
             self.monthID = str(month)
             self.yearID = str(year)
             self.dateToShow = format_date(newDate,format='long', locale='cs')
@@ -134,8 +145,8 @@ class CalendarWindow(Screen):
                 
                 # if mood for date already set then render it, otherwise make field clear
 
-                if self.ids[id].date_id in dateData:
-                    self.ids[id].background_color = self.choose_color(dateData[self.ids[id].date_id]['mood'])
+                if str(self.ids[id].date_id) in dateData:
+                    self.ids[id].background_color = self.choose_color(dateData[str(self.ids[id].date_id)]['mood'])
                 else: self.ids[id].background_color = clearColor
 
     # next or previous month after click
@@ -190,51 +201,51 @@ class CalendarWindow(Screen):
     def cal_click(self, date_id, my_id):
         self.manager.transition.direction = 'left'
         self.manager.current = 'DayMood'
-        popup = self.manager.current_screen
+        daySetting = self.manager.current_screen
         """popup = Factory.MoodPopup()
         popup.open()"""
         dateKey = str(date_id)
-        popup.date_id = date_id
-        popup.my_id = my_id
-        popup.current_date = format_date(date_id,format='long', locale='cs')
-        popup.ids.bad.background_color = badColor
-        popup.ids.average.background_color = averageColor
-        popup.ids.good.background_color = goodColor
-        popup.ids.super.background_color = superColor
+        daySetting.date_id = date_id
+        daySetting.my_id = my_id
+        daySetting.current_date = format_date(date_id,format='long', locale='cs')
+        daySetting.ids.bad.background_color = badColor
+        daySetting.ids.average.background_color = averageColor
+        daySetting.ids.good.background_color = goodColor
+        daySetting.ids.super.background_color = superColor
         dateData = self.pass_data()
         dateData[dateKey] = dateData.setdefault(dateKey, {'mood':'average','comment': ''})
-        popup.ids.comment.text = dateData[dateKey]['comment']
+        daySetting.ids.comment.text = dateData[dateKey]['comment']
 
-    
+class DayWindow(Screen):
     #click at pop pop up write values into calendar
 
     def mood_click(self,value, text):
-        dateData = self.pass_data()
+        call = self.manager.get_screen('Calendar')
+        dateData = call.pass_data()
         dateKey = str(self.date_id)
-        self.ids[self.my_id].background_color = self.choose_color(value)
+        call.ids[self.my_id].background_color = call.choose_color(value)
         dateData[dateKey] = dateData.setdefault(dateKey, {'mood':'average','comment':''})
         dateData[dateKey]['mood'] =  value
         dateData[dateKey]['comment'] = text
-        self.save_data(dateData)
-        print(dateData)
+        call.save_data(dateData)
+
     
     def save_text(self, text):
-        dateData = self.pass_data()
+        call = self.manager.get_screen('Calendar')
+        dateData = call.pass_data()
         dateKey = str(self.date_id)
         dateData[dateKey] = dateData.setdefault(dateKey, {'mood':'average','comment':''})
         dateData[dateKey]['comment'] = text
-        self.save_data(dateData)
+        call.save_data(dateData)
 
     def delete_day(self):
-        dateData = self.pass_data()
+        call = self.manager.get_screen('Calendar')
+        dateData = call.pass_data()
         dateKey = str(self.date_id)
         dateData[dateKey] = {'mood':'','comment':''}
-        self.save_data(dateData)
-        self.ids[self.my_id].background_color = self.choose_color('')
-        print(dateData)
-
-class DayWindow(Screen):
-    pass
+        call.save_data(dateData)
+        call.ids[self.my_id].background_color = call.choose_color('')
+        self.ids.comment.text= ''
 
 class WindowManager(ScreenManager):
     pass
