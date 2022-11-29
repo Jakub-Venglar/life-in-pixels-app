@@ -5,8 +5,10 @@ from kivymd.app import MDApp
 from kivymd.uix.widget import MDWidget
 from kivy.factory import Factory #popup
 from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.uix.label import Label
 from kivy.core.window import Window
 from kivy.utils import platform
+from kivy.lang import Builder
 from babel.dates import format_date, format_datetime, format_time
 
 #TODO: learn how to properly comment and add comments and docstrings
@@ -25,6 +27,7 @@ from babel.dates import format_date, format_datetime, format_time
 #TODO: backup possibilities
 # maybe todo: add location on the map, later show pins on the map
 
+#Builder.load_file('lifepixels.kv')
 
 if platform == 'android':
     from android.storage import app_storage_path
@@ -95,7 +98,6 @@ class CalendarWindow(Screen):
     #create calendar view
 
     def make_Cal(self,now=True, year=2020, month=6):
-        print(Window.size)
         self.fs = Window.size[1]/35
         dateData = self.pass_data()
         c = calendar.Calendar(0)
@@ -104,6 +106,7 @@ class CalendarWindow(Screen):
                     ['3-1','3-2','3-3','3-4','3-5','3-6','3-7'],
                     ['4-1','4-2','4-3','4-4','4-5','4-6','4-7'],
                     ['5-1','5-2','5-3','5-4','5-5','5-6','5-7']]
+
 
         #this creates list of date objects for current month at program start or home press
 
@@ -148,8 +151,7 @@ class CalendarWindow(Screen):
                 if str(self.ids[id].date_id) in dateData:
                     self.ids[id].background_color = self.choose_color(dateData[str(self.ids[id].date_id)]['mood'])
                 else: self.ids[id].background_color = clearColor
-
-    # next or previous month after click
+        #self.ids['1-1'].children[0].text = 'sadsa'
 
     def move_month(self,direction):
         if direction == 'forward':
@@ -168,7 +170,6 @@ class CalendarWindow(Screen):
                 month = 12
             else:
                 year = int(self.yearID)
-
         self.make_Cal(now=False, year=year, month=month)
 
     def move_year(self,direction):
