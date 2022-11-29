@@ -53,7 +53,7 @@ class CalendarWindow(Screen):
         Window.bind(on_resize = self.labelSize)
 
     def labelSize(self,x,y,z):
-        self.fs = z/30
+        self.fs = z/35
     
     def create_user_directory(self):
         if platform == 'android':
@@ -96,7 +96,7 @@ class CalendarWindow(Screen):
 
     def make_Cal(self,now=True, year=2020, month=6):
         print(Window.size)
-        self.fs = Window.size[1]/30
+        self.fs = Window.size[1]/35
         dateData = self.pass_data()
         c = calendar.Calendar(0)
         calList = [['1-1','1-2','1-3','1-4','1-5','1-6','1-7'],
