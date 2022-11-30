@@ -35,7 +35,6 @@
     colorset: (12/255,84/255,179/255,.8)
     on_release: 
         app.root.current_screen.cal_click(self.date_id, self.my_id)
-    #pict_source: 'pict/norsko.jpg'
     canvas.before:
         
         #Rectangle:
@@ -152,6 +151,31 @@
                 app.root.transition.direction = 'right' #both is working
                 root.manager.current = 'Calendar' #both is working
 
+<HabitsWindow>:
+    name: 'Habits'
+    canvas.before:
+        Rectangle:
+            size: 3/2*root.height, root.height
+            pos: self.width/2-3/2*root.height/2, self.height/2 - root.height/2
+            source: 'pict/norsko.jpg'
+    bg: (.5,.5,.5,.5)
+    canvas:
+        Color:
+            rgba: self.bg
+        Rectangle:
+            size: self.size
+            pos:self.pos
+    BoxLayout:
+        orientation: 'vertical'
+        Label:
+            id: actQuestion
+            text: 'Tvé aktivity:'
+        Label:
+            id: activities
+            text: ''
+        TextInput:          
+        Button:
+            text: 'Přidat aktivitu'
 
 <CalendarWindow>:
     fs: 20 #size of symbols in calendar, set by bind
@@ -346,3 +370,11 @@
             pos_hint: {'center_x': .5}
             text: 'Vymaž celý kalendář'
             on_press: root.delete_data()
+        Button:
+            id: activities
+            size_hint:  (.9,.1)
+            pos_hint: {'center_x': .5}
+            text: 'Přidat aktivitu'
+            on_press: 
+                root.manager.transition.direction = 'right'
+                root.manager.current = 'Habits'

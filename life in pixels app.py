@@ -1,10 +1,9 @@
 #! python3
 # Life in pixels project
-import calendar, datetime, os, sys, json, time
+import calendar, datetime, os, sys, json
 from kivymd.app import MDApp
 from kivy.clock import Clock
 from kivymd.uix.widget import MDWidget
-from kivy.factory import Factory #popup
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.label import Label
 from kivy.core.window import Window
@@ -271,6 +270,9 @@ class DayWindow(Screen):
         self.ids.comment.text= ''
 
 
+class HabitsWindow(Screen):
+    pass 
+
 class WindowManager(ScreenManager):
     pass
 
@@ -288,6 +290,7 @@ class LifePixels(MDApp):
         sm = ScreenManager()
         sm.add_widget(CalendarWindow(name='Calendar'))
         sm.add_widget(DayWindow(name='DayMood'))
+        sm.add_widget(HabitsWindow(name='Habits'))
         #sm.current = 'Calendar'
         return sm
         '''
