@@ -13,16 +13,12 @@ from kivy.lang import Builder
 from babel.dates import format_date, format_datetime, format_time
 
 #TODO: learn how to properly comment and add comments and docstrings
+#TODO: add habits/activities, render them if accomplished on the main calendar - possibility to track them (show how many or just checkbox if accomplished)
+#TODO: improve pop up - colorize label according to set mood color
 #TODO: ask for name at the begining and personalize saved files (because of possible multiuser in future)
 #TODO: finish tutorials so I have better idea what I am doing :)
-#TODO: make function for coloring calendar and writing labels
-#TODO: circle around today
-#TODO: add 5th mood
-#TODO: improve pop up - colorize label according to set mood color
-#TODO: improve colors and overal layout
 #TODO: add option for set your own colors
 #TODO: choice from default pictures or your own as BG
-#TODO: add habits/activities, render them if accomplished on the main calendar - possibility to track them (show how many or just checkbox if accomplished)
 #TODO: picture of the day
 #TODO: make printable page, with summary of the year/month
 #TODO: sync between computer and mobile app - at PC you can see better bigger picture

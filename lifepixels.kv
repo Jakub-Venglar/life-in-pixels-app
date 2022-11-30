@@ -5,10 +5,9 @@
 
 <MoodButton@Button>:
     background_normal: ''
-    font_size: 15
+    font_size: 20
     halign: 'center'
     valign: 'middle'
-    #size_hint_x: None
     text_size: self.size
 
 <ButtonLabel>
@@ -48,8 +47,8 @@
         Ellipse:
             #angle_start: 20
             #angle_end: 320
-            size: self.width/2, self.width/2 #if self.today == True else (0,0)
-            pos: self.center_x - self.width/4, self.center_y - self.width/4
+            size: self.width/1.5, self.width/1.5 #if self.today == True else (0,0)
+            pos: self.center_x - self.width/3, self.center_y - self.width/3
         Color: 
             rgba: (1,1,1,.8)
         Line:
