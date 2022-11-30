@@ -15,6 +15,7 @@ from babel.dates import format_date, format_datetime, format_time
 #TODO: learn how to properly comment and add comments and docstrings
 #TODO: ask for name at the begining and personalize saved files (because of possible multiuser in future)
 #TODO: finish tutorials so I have better idea what I am doing :)
+#TODO: make function for coloring calendar and writing labels
 #TODO: circle around today
 #TODO: add 5th mood
 #TODO: improve pop up - colorize label according to set mood color
@@ -139,10 +140,9 @@ class CalendarWindow(Screen):
                 self.ids[id].date_id = setDate
                 self.ids[id].clear_widgets()
                 self.ids[id].add_widget(ButtonLabel())
-                self.ids[id].add_widget(ButtonLabel(valign = 'top', halign ='right', label = 'X'))
+                self.ids[id].add_widget(ButtonLabel(valign = 'top', halign ='right'))
                 self.ids[id].add_widget(ButtonLabel(valign = 'bottom', halign ='right'))
                 self.ids[id].add_widget(ButtonLabel(valign = 'bottom'))
-                self.ids[id].children[0].label='F'
 
                 #make current day more visible
 
@@ -154,10 +154,16 @@ class CalendarWindow(Screen):
                     self.ids[id].text = '[b]>' + self.ids[id].text + '<[/b]'
                 
                 # if mood for date already set then render it, otherwise make field clear
+                
+                # make function of this later
 
-                if str(self.ids[id].date_id) in dateData:
+                dateKey = str(self.ids[id].date_id)
+                if dateKey in dateData:
                     self.ids[id].background_color = self.choose_color(dateData[str(self.ids[id].date_id)]['mood'])
+                    if dateData[dateKey]['comment'] != '':
+                        self.ids[id].children[3].label='T'
                 else: self.ids[id].background_color = clearColor
+
 
         #self.ids['1-1'].children[0].text = 'sadsa'
 

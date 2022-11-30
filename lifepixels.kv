@@ -13,29 +13,16 @@
 
 <ButtonLabel>
     markup: True
-    label: 'L'
+    label: ''
     text: '[b]' + self.label + '[/b]'
     font_size: app.root.get_screen('Calendar').fs if app.root else 20
     size_hint_x: None
     size_hint_y: None
     text_size: self.size
-    size: (self.parent.width*.9, self.parent.height*0.95) if self.parent else (60,20)
+    size: (self.parent.width*.9, self.parent.height*0.97) if self.parent else (60,20)
     valign: 'top'
     halign: 'left'
     pos: (self.parent.pos[0]+self.width*0.05, self.parent.pos[1]) if self.parent else (10,10)
-
-<ButtonLabel2>
-    markup: True
-    label: 'X'
-    text: '[b]' + self.label + '[/b]'
-    font_size: app.root.get_screen('Calendar').fs if app.root else 20
-    size: self.texture_size[0]*1.7,self.texture_size[1]*1.1
-    corr: self.parent.width-self.size[0] if self.parent else 10
-    pos: (self.parent.x+self.corr, self.parent.y) if self.parent else (10,10)
-#    right: self.parent.right if self.parent else 10
-#    top: self.parent.top if self.parent else 10
-#    x: self.parent.x if self.parent else 10
-#    top: self.parent.top if self.parent else 10
 
 <CalButton@Button>:
     date_id: None
