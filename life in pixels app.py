@@ -64,7 +64,7 @@ class CalendarWindow(Screen):
 
     def labelSize(self,x,y,z):
         self.fs = z/35
-    
+
     def create_user_directory(self):
         if platform == 'android':
             path = os.path.join(settings_path, 'userdata')
@@ -138,9 +138,10 @@ class CalendarWindow(Screen):
                 self.ids.month_Label.text = str(monthLabel)
                 self.ids[id].date_id = setDate
                 self.ids[id].clear_widgets()
-                self.ids[id].add_widget(ButtonLabel1())
-                self.ids[id].add_widget(ButtonLabel2())
-                
+                self.ids[id].add_widget(ButtonLabel())
+                self.ids[id].add_widget(ButtonLabel(valign = 'top', halign ='right', label = 'X'))
+                self.ids[id].add_widget(ButtonLabel(valign = 'bottom', halign ='right'))
+                self.ids[id].add_widget(ButtonLabel(valign = 'bottom'))
 
                 #make current day more visible
 
@@ -262,13 +263,10 @@ class DayWindow(Screen):
 class WindowManager(ScreenManager):
     pass
 
-class ButtonLabel1(Label):
+class ButtonLabel(Label):
     pass
     #def __init__(self, **kwargs):
     #    super(Explay, self).__init__(**kwargs)
-
-class ButtonLabel2(Label):
-    pass
 
 # run app and construct calendar
 
@@ -279,7 +277,6 @@ class LifePixels(MDApp):
         sm = ScreenManager()
         sm.add_widget(CalendarWindow(name='Calendar'))
         sm.add_widget(DayWindow(name='DayMood'))
-        
         #sm.current = 'Calendar'
         return sm
         '''
@@ -292,7 +289,6 @@ class LifePixels(MDApp):
         #self.root.get_screen('Calendar').create_user_directory()
         self.root.current_screen.create_user_directory()
         self.root.current_screen.make_Cal()
-        #Clock.schedule_once(self.root.current_screen.testprint, 2)
 
 
 
