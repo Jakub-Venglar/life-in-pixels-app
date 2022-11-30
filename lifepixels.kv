@@ -78,14 +78,17 @@
     BoxLayout:
         orientation: 'vertical'
         Label:
+            id: question
+            bg: (1,1,1,.5)
             canvas.before:
                 Color:
-                    rgba: (1,1,1,.5)
+                    rgba: self.bg
                 Rectangle:
                     size: self.size
                     pos:self.pos
-            id: question
-            color: (0,0,0,1)
+            color: (1,1,1,1)
+            #outline_width: 1
+            #outline_colour: (0, 0, 0, 1)
             font_size: 30
             halign: 'center'
             valign: 'middle'

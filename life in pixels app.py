@@ -14,7 +14,6 @@ from babel.dates import format_date, format_datetime, format_time
 
 #TODO: learn how to properly comment and add comments and docstrings
 #TODO: add habits/activities, render them if accomplished on the main calendar - possibility to track them (show how many or just checkbox if accomplished)
-#TODO: improve pop up - colorize label according to set mood color
 #TODO: ask for name at the begining and personalize saved files (because of possible multiuser in future)
 #TODO: finish tutorials so I have better idea what I am doing :)
 #TODO: add option for set your own colors
@@ -222,6 +221,7 @@ class CalendarWindow(Screen):
         self.manager.current = 'DayMood'
         daySetting = self.manager.current_screen
         dateKey = str(date_id)
+        dateData = self.pass_data()
         daySetting.date_id = date_id
         daySetting.my_id = my_id
         daySetting.current_date = format_date(date_id,format='long', locale='cs')
@@ -230,7 +230,8 @@ class CalendarWindow(Screen):
         daySetting.ids.average.background_color = averageColor
         daySetting.ids.good.background_color = goodColor
         daySetting.ids.super.background_color = superColor
-        dateData = self.pass_data()
+        dateData[dateKey] = dateData.setdefault(dateKey, {'mood':'','comment':''})
+        daySetting.ids.question.bg = self.choose_color(dateData[dateKey]['mood'] )
         dateData[dateKey] = dateData.setdefault(dateKey, {'mood':'average','comment': ''})
         daySetting.ids.comment.text = dateData[dateKey]['comment']    
 
