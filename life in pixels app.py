@@ -142,6 +142,7 @@ class CalendarWindow(Screen):
                 self.ids[id].add_widget(ButtonLabel(valign = 'top', halign ='right', label = 'X'))
                 self.ids[id].add_widget(ButtonLabel(valign = 'bottom', halign ='right'))
                 self.ids[id].add_widget(ButtonLabel(valign = 'bottom'))
+                self.ids[id].children[0].label='F'
 
                 #make current day more visible
 
