@@ -166,16 +166,30 @@
             size: self.size
             pos:self.pos
     BoxLayout:
+        padding: [0,20,0,0]
         orientation: 'vertical'
         Label:
             id: actQuestion
+            font_size: 30
+            halign: 'center'
+            valign: 'middle'
+            size_hint_y: .4
+            text_size: self.size
             text: 'Tvé aktivity:'
-        Label:
-            id: activities
-            text: ''
+        GridLayout:
+            cols:2
+            Label:
+                text: 'Aktivita'
+            Label:
+                text: 'Zobrazení v kalendáři'
         TextInput:          
         Button:
             text: 'Přidat aktivitu'
+        Button:
+            text: 'Zavřít'
+            on_press:
+                root.manager.transition.direction = 'right'
+                root.manager.current = 'Calendar'
 
 <CalendarWindow>:
     fs: 20 #size of symbols in calendar, set by bind
@@ -376,5 +390,5 @@
             pos_hint: {'center_x': .5}
             text: 'Přidat aktivitu'
             on_press: 
-                root.manager.transition.direction = 'right'
+                root.manager.transition.direction = 'left'
                 root.manager.current = 'Habits'
