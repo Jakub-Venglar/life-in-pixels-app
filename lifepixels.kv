@@ -28,26 +28,30 @@
     date_id: None
     font_size: 30
     color: (1,1,1,1) 
-    outline_width: 0
+    outline_width: 1
     outline_colour: (0, 0, 0, 1)
     background_normal: ''
     markup:True
     text: ''
+    colorset: (12/255,84/255,179/255,.8)
     on_release: 
         app.root.current_screen.cal_click(self.date_id, self.my_id)
     #pict_source: 'pict/norsko.jpg'
-    canvas:
-        Color: 
-            rgba: (1,1,1,.8)
+    canvas.before:
+        
         #Rectangle:
         #    source: self.pict_source
         #    size: (self.width/2, self.height/2)
         #    pos: self.pos
-        #Ellipse:
+        Color: 
+            rgba: self.colorset
+        Ellipse:
             #angle_start: 20
             #angle_end: 320
-            #size: (self.width/2, self.height/2)
-            #pos: self.pos
+            size: self.width/2, self.width/2 #if self.today == True else (0,0)
+            pos: self.center_x - self.width/4, self.center_y - self.width/4
+        Color: 
+            rgba: (1,1,1,.8)
         Line:
             width: 1
             rectangle: self.x, self.y, self.width, self.height
@@ -96,6 +100,13 @@
             height: root.height/3
         BoxLayout:
             orientation: 'horizontal'
+            MoodButton:
+                id: terrible
+                text: 'Katastrofa'
+                on_press: app.root.current_screen.mood_click('terrible', comment.text)
+                on_release: 
+                    app.root.transition.direction = 'right'
+                    app.root.current = 'Calendar'
             MoodButton:
                 id: bad
                 text: 'Na houby'

@@ -43,11 +43,15 @@ if platform == 'android':
     from android.permissions import request_permissions, Permission
     request_permissions([Permission.WRITE_EXTERNAL_STORAGE, Permission.READ_EXTERNAL_STORAGE])
     
-superColor= (227/255,65/255,25/255,.8)
+superColor= (255/255,232/255,28/255,.8) #(227/255,65/255,25/255,.8)
 goodColor=(43/255,168/255,8/255,.8)
 averageColor=(138/255,153/255,184/255,.8)
-badColor=(56/255,56/255,56/255,.8)
-clearColor = (.5,.5,.5,.35)
+badColor= (117/255,32/255,16/255,.8) #(150/255,39/255,20/255,.8)
+terribleColor=(28/255,49/255,36/255,.8)
+clearColor = (.5,.5,.5,.45)
+
+today = (12/255,84/255,179/255,.8)
+notToday = (12/255,84/255,179/255,0)
 
 calList = [['1-1','1-2','1-3','1-4','1-5','1-6','1-7'],
                     ['2-1','2-2','2-3','2-4','2-5','2-6','2-7'],
@@ -139,33 +143,33 @@ class CalendarWindow(Screen):
                 self.ids.month_Label.text = str(monthLabel)
                 self.ids[id].date_id = setDate
                 self.ids[id].clear_widgets()
+                self.ids[id].colorset = notToday
                 self.ids[id].add_widget(ButtonLabel())
                 self.ids[id].add_widget(ButtonLabel(valign = 'top', halign ='right'))
                 self.ids[id].add_widget(ButtonLabel(valign = 'bottom', halign ='right'))
                 self.ids[id].add_widget(ButtonLabel(valign = 'bottom'))
 
                 #make current day more visible
-
                 if setDate == datetime.datetime.date(datetime.datetime.now()):
-                    #self.ids[id].font_size=50
-                    #self.ids[id].outline_width=1.2
-                    #self.ids[id].color= (.8,.8,.8,1)
-                    #self.ids[id].pict_source= 'pict/norsko.jpg'
-                    self.ids[id].text = '[b]>' + self.ids[id].text + '<[/b]'
+                    self.ids[id].colorset = today
                 
                 # if mood for date already set then render it, otherwise make field clear
                 
-                # make function of this later
-
-                dateKey = str(self.ids[id].date_id)
-                if dateKey in dateData:
-                    self.ids[id].background_color = self.choose_color(dateData[str(self.ids[id].date_id)]['mood'])
-                    if dateData[dateKey]['comment'] != '':
-                        self.ids[id].children[3].label='T'
-                else: self.ids[id].background_color = clearColor
+                self.colorize(id,self.ids[id].date_id)
 
 
         #self.ids['1-1'].children[0].text = 'sadsa'
+    def colorize(self,my_id,date_id):
+        call = self.manager.get_screen('Calendar')
+        dateData = call.pass_data()
+        dateKey = str(date_id)
+        if dateKey in dateData:
+            call.ids[my_id].background_color = call.choose_color(dateData[str(self.ids[my_id].date_id)]['mood'])
+            if dateData[dateKey]['comment'] != '':
+                call.ids[my_id].children[3].label='T'
+            elif dateData[dateKey]['comment'] == '':
+                call.ids[my_id].children[3].label=''
+        else: call.ids[my_id].background_color = clearColor
 
     # next or previous month after click
 
@@ -210,7 +214,9 @@ class CalendarWindow(Screen):
             return averageColor
         if value == 'bad':
             return badColor
-        if value == '':
+        if value == 'terrible':
+            return terribleColor
+        else:
             return clearColor
     
     #click on any date, call popup 
@@ -219,21 +225,18 @@ class CalendarWindow(Screen):
         self.manager.transition.direction = 'left'
         self.manager.current = 'DayMood'
         daySetting = self.manager.current_screen
-        """popup = Factory.MoodPopup()
-        popup.open()"""
         dateKey = str(date_id)
         daySetting.date_id = date_id
         daySetting.my_id = my_id
         daySetting.current_date = format_date(date_id,format='long', locale='cs')
+        daySetting.ids.terrible.background_color = terribleColor
         daySetting.ids.bad.background_color = badColor
         daySetting.ids.average.background_color = averageColor
         daySetting.ids.good.background_color = goodColor
         daySetting.ids.super.background_color = superColor
         dateData = self.pass_data()
         dateData[dateKey] = dateData.setdefault(dateKey, {'mood':'average','comment': ''})
-        daySetting.ids.comment.text = dateData[dateKey]['comment']
-        print(self.ids['1-1'].children[0].parent.pos)
-    
+        daySetting.ids.comment.text = dateData[dateKey]['comment']    
 
 class DayWindow(Screen):
     #click at pop pop up write values into calendar
@@ -242,20 +245,24 @@ class DayWindow(Screen):
         call = self.manager.get_screen('Calendar')
         dateData = call.pass_data()
         dateKey = str(self.date_id)
-        call.ids[self.my_id].background_color = call.choose_color(value)
-        dateData[dateKey] = dateData.setdefault(dateKey, {'mood':'average','comment':''})
+        dateData[dateKey] = dateData.setdefault(dateKey, {'mood':'','comment':''})
         dateData[dateKey]['mood'] =  value
         dateData[dateKey]['comment'] = text
+        #call.ids[self.my_id].background_color = call.choose_color(value)
+        #if dateData[dateKey]['comment'] != '':
+        #    call.ids[self.my_id].children[3].label='T'
         call.save_data(dateData)
+        call.colorize(self.my_id,self.date_id)
 
     
     def save_text(self, text):
         call = self.manager.get_screen('Calendar')
         dateData = call.pass_data()
         dateKey = str(self.date_id)
-        dateData[dateKey] = dateData.setdefault(dateKey, {'mood':'average','comment':''})
+        dateData[dateKey] = dateData.setdefault(dateKey, {'mood':'','comment':''})
         dateData[dateKey]['comment'] = text
         call.save_data(dateData)
+        call.colorize(self.my_id,self.date_id)
 
     def delete_day(self):
         call = self.manager.get_screen('Calendar')
@@ -263,7 +270,7 @@ class DayWindow(Screen):
         dateKey = str(self.date_id)
         dateData[dateKey] = {'mood':'','comment':''}
         call.save_data(dateData)
-        call.ids[self.my_id].background_color = call.choose_color('')
+        call.colorize(self.my_id,self.date_id)
         self.ids.comment.text= ''
 
 
