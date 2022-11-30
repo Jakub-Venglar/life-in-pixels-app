@@ -1,7 +1,8 @@
 # app.sm
 #WindowManager:
- #   CalendarWindow:
-  #  DayWindow:
+#    CalendarWindow:
+#    DayWindow:
+
 <MoodButton@Button>:
     background_normal: ''
     font_size: 15
@@ -9,11 +10,26 @@
     valign: 'middle'
     #size_hint_x: None
     text_size: self.size
-<ButtonLabel@Label>
+
+<ButtonLabel1>
     markup: True
-    label: 'X'
+    label: 'L'
     text: '[b]' + self.label + '[/b]'
+    font_size: app.root.get_screen('Calendar').fs if app.root else 20
     size: self.texture_size[0]*1.7,self.texture_size[1]*1.1
+    pos: (self.parent.x, self.parent.y) if self.parent else (10,10)
+#    right: self.parent.right 
+#    top: self.parent.top
+#    right: self.parent.right 
+#    y: self.parent.y
+<ButtonLabel2>
+    markup: True
+    label: 'L'
+    text: '[b]' + self.label + '[/b]'
+    font_size: app.root.get_screen('Calendar').fs if app.root else 20
+    size: self.texture_size[0]*1.7,self.texture_size[1]*1.1
+    x: self.parent.x if self.parent else 10
+    top: self.parent.top if self.parent else 10
 
 <CalButton@Button>:
     font_size: 30
@@ -122,8 +138,8 @@
         Button:         
             text: 'Zavřít'
             on_release: 
-                app.root.transition.direction = 'right'
-                app.root.current = 'Calendar'
+                app.root.transition.direction = 'right' #both is working
+                root.manager.current = 'Calendar' #both is working
 
 
 <CalendarWindow>:
@@ -210,28 +226,7 @@
                 text: ''
                 size: self.size
                 on_release: 
-                    root.cal_click(self.date_id, self.my_id)
-                ButtonLabel:
-                    id: 1-1BL
-                    font_size: root.fs
-                    size: self.texture_size[0]*1.7,self.texture_size[1]*1.1
-                    pos: self.parent.x, self.parent.y
-                ButtonLabel:
-                    id: 1-1TL
-                    font_size: root.fs
-                    x: self.parent.x 
-                    top: self.parent.top
-                ButtonLabel:
-                    id: 1-1TR
-                    font_size: root.fs
-                    right: self.parent.right 
-                    top: self.parent.top
-                ButtonLabel:
-                    id: 1-1BR
-                    font_size: root.fs
-                    right: self.parent.right 
-                    y: self.parent.y
-                    
+                    root.cal_click(self.date_id, self.my_id)                    
             CalButton:
                 markup:True
                 date_id: None
@@ -239,26 +234,6 @@
                 my_id: '1-2'
                 text: ''
                 on_release: root.cal_click(self.date_id, self.my_id)
-                ButtonLabel:
-                    id: 1-2BL
-                    font_size: root.fs
-                    size: self.texture_size[0]*1.7,self.texture_size[1]*1.1
-                    pos: self.parent.x, self.parent.y
-                ButtonLabel:
-                    id: 1-2TL
-                    font_size: root.fs
-                    x: self.parent.x 
-                    top: self.parent.top
-                ButtonLabel:
-                    id: 1-2TR
-                    font_size: root.fs
-                    right: self.parent.right 
-                    top: self.parent.top
-                ButtonLabel:
-                    id: 1-2BR
-                    font_size: root.fs
-                    right: self.parent.right 
-                    y: self.parent.y
             CalButton:
                 markup:True
                 date_id: None
@@ -266,26 +241,6 @@
                 my_id: '1-3'
                 text: ''
                 on_release: root.cal_click(self.date_id, self.my_id)
-                ButtonLabel:
-                    id: 1-3BL
-                    font_size: root.fs
-                    size: self.texture_size[0]*1.7,self.texture_size[1]*1.1
-                    pos: self.parent.x, self.parent.y
-                ButtonLabel:
-                    id: 1-3TL
-                    font_size: root.fs
-                    x: self.parent.x 
-                    top: self.parent.top
-                ButtonLabel:
-                    id: 1-3TR
-                    font_size: root.fs
-                    right: self.parent.right 
-                    top: self.parent.top
-                ButtonLabel:
-                    id: 1-3BR
-                    font_size: root.fs
-                    right: self.parent.right 
-                    y: self.parent.y
             CalButton:
                 markup:True
                 date_id: None
@@ -293,26 +248,6 @@
                 my_id: '1-4'
                 text: ''
                 on_release: root.cal_click(self.date_id, self.my_id)
-                ButtonLabel:
-                    id: 1-4BL
-                    font_size: root.fs
-                    size: self.texture_size[0]*1.7,self.texture_size[1]*1.1
-                    pos: self.parent.x, self.parent.y
-                ButtonLabel:
-                    id: 1-4TL
-                    font_size: root.fs
-                    x: self.parent.x 
-                    top: self.parent.top
-                ButtonLabel:
-                    id: 1-4TR
-                    font_size: root.fs
-                    right: self.parent.right 
-                    top: self.parent.top
-                ButtonLabel:
-                    id: 1-4BR
-                    font_size: root.fs
-                    right: self.parent.right 
-                    y: self.parent.y
             CalButton:
                 markup:True
                 date_id: None

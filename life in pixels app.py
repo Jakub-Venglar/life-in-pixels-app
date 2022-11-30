@@ -2,6 +2,7 @@
 # Life in pixels project
 import calendar, datetime, os, sys, json, time
 from kivymd.app import MDApp
+from kivy.clock import Clock
 from kivymd.uix.widget import MDWidget
 from kivy.factory import Factory #popup
 from kivy.uix.screenmanager import ScreenManager, Screen
@@ -27,7 +28,7 @@ from babel.dates import format_date, format_datetime, format_time
 #TODO: backup possibilities
 # maybe todo: add location on the map, later show pins on the map
 
-#Builder.load_file('lifepixels.kv')
+
 
 if platform == 'android':
     from android.storage import app_storage_path
@@ -46,6 +47,12 @@ goodColor=(43/255,168/255,8/255,.8)
 averageColor=(138/255,153/255,184/255,.8)
 badColor=(56/255,56/255,56/255,.8)
 clearColor = (.5,.5,.5,.35)
+
+calList = [['1-1','1-2','1-3','1-4','1-5','1-6','1-7'],
+                    ['2-1','2-2','2-3','2-4','2-5','2-6','2-7'],
+                    ['3-1','3-2','3-3','3-4','3-5','3-6','3-7'],
+                    ['4-1','4-2','4-3','4-4','4-5','4-6','4-7'],
+                    ['5-1','5-2','5-3','5-4','5-5','5-6','5-7']]
 
 #define screens
 class CalendarWindow(Screen):
@@ -101,12 +108,6 @@ class CalendarWindow(Screen):
         self.fs = Window.size[1]/35
         dateData = self.pass_data()
         c = calendar.Calendar(0)
-        calList = [['1-1','1-2','1-3','1-4','1-5','1-6','1-7'],
-                    ['2-1','2-2','2-3','2-4','2-5','2-6','2-7'],
-                    ['3-1','3-2','3-3','3-4','3-5','3-6','3-7'],
-                    ['4-1','4-2','4-3','4-4','4-5','4-6','4-7'],
-                    ['5-1','5-2','5-3','5-4','5-5','5-6','5-7']]
-
 
         #this creates list of date objects for current month at program start or home press
 
@@ -136,6 +137,10 @@ class CalendarWindow(Screen):
                 self.ids[id].text = str(setDate.day)
                 self.ids.month_Label.text = str(monthLabel)
                 self.ids[id].date_id = setDate
+                self.ids[id].clear_widgets()
+                self.ids[id].add_widget(ButtonLabel1())
+                self.ids[id].add_widget(ButtonLabel2())
+                
 
                 #make current day more visible
 
@@ -151,7 +156,10 @@ class CalendarWindow(Screen):
                 if str(self.ids[id].date_id) in dateData:
                     self.ids[id].background_color = self.choose_color(dateData[str(self.ids[id].date_id)]['mood'])
                 else: self.ids[id].background_color = clearColor
+
         #self.ids['1-1'].children[0].text = 'sadsa'
+
+    # next or previous month after click
 
     def move_month(self,direction):
         if direction == 'forward':
@@ -216,6 +224,8 @@ class CalendarWindow(Screen):
         dateData = self.pass_data()
         dateData[dateKey] = dateData.setdefault(dateKey, {'mood':'average','comment': ''})
         daySetting.ids.comment.text = dateData[dateKey]['comment']
+        print(self.ids['1-1'].children[0].parent.pos)
+    
 
 class DayWindow(Screen):
     #click at pop pop up write values into calendar
@@ -248,18 +258,28 @@ class DayWindow(Screen):
         call.ids[self.my_id].background_color = call.choose_color('')
         self.ids.comment.text= ''
 
+
 class WindowManager(ScreenManager):
     pass
 
+class ButtonLabel1(Label):
+    pass
+    #def __init__(self, **kwargs):
+    #    super(Explay, self).__init__(**kwargs)
+
+class ButtonLabel2(Label):
+    pass
 
 # run app and construct calendar
 
 class LifePixels(MDApp):
     def build(self):
+        #Builder.load_file('lifepixkv.kv')
         # Create the screen manager
         sm = ScreenManager()
         sm.add_widget(CalendarWindow(name='Calendar'))
         sm.add_widget(DayWindow(name='DayMood'))
+        
         #sm.current = 'Calendar'
         return sm
         '''
@@ -272,6 +292,7 @@ class LifePixels(MDApp):
         #self.root.get_screen('Calendar').create_user_directory()
         self.root.current_screen.create_user_directory()
         self.root.current_screen.make_Cal()
+        #Clock.schedule_once(self.root.current_screen.testprint, 2)
 
 
 
