@@ -64,6 +64,7 @@
             rectangle: self.x, self.y, self.width, self.height
 <MoveButton@Button>:
 
+
 <DayWindow>:
     name: 'DayMood'
     current_date: ''
@@ -73,7 +74,7 @@
         Rectangle:
             size: 3/2*root.height, root.height
             pos: self.width/2-3/2*root.height/2, self.height/2 - root.height/2
-            source: 'pict/norsko.jpg'
+            source: ('pict/' + app.root.get_screen('Settings').bgsource)  if app.root else 'pict/default.jpg'
     BoxLayout:
         orientation: 'vertical'
         Label:
@@ -151,13 +152,38 @@
                 app.root.transition.direction = 'right' #both is working
                 root.manager.current = 'Calendar' #both is working
 
+<SettingsWindow>:
+    name: 'Settings'
+    bgsource: 'default.jpg'
+    BoxLayout:
+        #size_hint: 1,1
+        orientation: 'vertical'
+        Label:
+            text: 'Aktuální obrázek'
+            bg: (.5,.5,.5,.5)
+            canvas.before:
+                Color:
+                    rgba: self.bg
+                Rectangle:
+                    size: self.size
+                    pos:self.pos
+        Image:
+            size: self.texture_size
+            pos: self.pos
+            source: 'pict/' + root.bgsource            
+        Button:
+            text: 'Zavřít'
+            on_press:
+                root.manager.transition.direction = 'right'
+                root.manager.current = 'Calendar'
+
 <HabitsWindow>:
     name: 'Habits'
     canvas.before:
         Rectangle:
             size: 3/2*root.height, root.height
             pos: self.width/2-3/2*root.height/2, self.height/2 - root.height/2
-            source: 'pict/norsko.jpg'
+            source: ('pict/' + app.root.get_screen('Settings').bgsource)  if app.root else 'pict/default.jpg'
     bg: (.5,.5,.5,.5)
     canvas:
         Color:
@@ -173,7 +199,7 @@
             font_size: 30
             halign: 'center'
             valign: 'middle'
-            size_hint_y: .4
+            height: root.height*.2
             text_size: self.size
             text: 'Tvé aktivity:'
         GridLayout:
@@ -203,7 +229,7 @@
         Rectangle:
             size: 3/2*root.height, root.height
             pos: self.width/2-3/2*root.height/2, self.height/2 - root.height/2
-            source: 'pict/norsko.jpg'
+            source: ('pict/' + app.root.get_screen('Settings').bgsource)  if app.root else 'pict/default.jpg'
     BoxLayout:
         size: root.width, root.height
         orientation: 'vertical'
@@ -392,3 +418,11 @@
             on_press: 
                 root.manager.transition.direction = 'left'
                 root.manager.current = 'Habits'
+        Button:
+            id: activities
+            size_hint:  (.9,.1)
+            pos_hint: {'center_x': .5}
+            text: 'Nastavení'
+            on_press: 
+                root.manager.transition.direction = 'left'
+                root.manager.current = 'Settings'

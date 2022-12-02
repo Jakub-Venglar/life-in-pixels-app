@@ -271,6 +271,9 @@ class DayWindow(Screen):
 
 
 class HabitsWindow(Screen):
+    pass
+
+class SettingsWindow(Screen):
     pass 
 
 class WindowManager(ScreenManager):
@@ -291,6 +294,7 @@ class LifePixels(MDApp):
         sm.add_widget(CalendarWindow(name='Calendar'))
         sm.add_widget(DayWindow(name='DayMood'))
         sm.add_widget(HabitsWindow(name='Habits'))
+        sm.add_widget(SettingsWindow(name='Settings'))
         #sm.current = 'Calendar'
         return sm
         '''
