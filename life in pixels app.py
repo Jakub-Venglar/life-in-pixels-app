@@ -2,14 +2,12 @@
 # Life in pixels project
 import calendar, datetime, os, sys, json
 from kivymd.app import MDApp
-from kivy.clock import Clock
-from kivymd.uix.widget import MDWidget
-from kivy.uix.screenmanager import ScreenManager, Screen
+from kivymd.uix.screen import MDScreen
+from kivy.uix.screenmanager import ScreenManager
 from kivy.uix.label import Label
 from kivy.core.window import Window
 from kivy.utils import platform
 from kivy.lang import Builder
-from babel.dates import format_date, format_datetime, format_time
 
 #TODO: learn how to properly comment and add comments and docstrings
 #TODO: add habits/activities, render them if accomplished on the main calendar - possibility to track them (show how many or just checkbox if accomplished)
@@ -24,7 +22,6 @@ from babel.dates import format_date, format_datetime, format_time
 # maybe todo: add location on the map, later show pins on the map
 
 
-
 if platform == 'android':
     from android.storage import app_storage_path
     settings_path = app_storage_path()
@@ -34,6 +31,7 @@ if platform == 'android':
 
     from android.storage import secondary_external_storage_path
     secondary_ext_storage = secondary_external_storage_path()
+
     from android.permissions import request_permissions, Permission
     request_permissions([Permission.WRITE_EXTERNAL_STORAGE, Permission.READ_EXTERNAL_STORAGE])
     
@@ -54,7 +52,7 @@ calList = [['1-1','1-2','1-3','1-4','1-5','1-6','1-7'],
                     ['5-1','5-2','5-3','5-4','5-5','5-6','5-7']]
 
 #define screens
-class CalendarWindow(Screen):
+class CalendarWindow(MDScreen):
         # construct labels for cal buttons
     
     def __init__(self, **kwargs):
@@ -112,19 +110,20 @@ class CalendarWindow(Screen):
 
         if now==True:
             currentCal = c.monthdatescalendar(datetime.datetime.now().year, datetime.datetime.now().month)
-            monthLabel = format_date(datetime.datetime.now(),"LLLL y", locale='cs').capitalize()
+            now = datetime.datetime.now()
+            monthLabel = now.strftime("%B %Y").capitalize()
             self.monthID = str(datetime.datetime.now().month)
             self.yearID = str(datetime.datetime.now().year)
-            self.dateToShow = format_date(datetime.datetime.now(), format='long', locale='cs')
+            #self.dateToShow = datetime.datetime.now().strftime("%B")
 
         #this will create list of date objects for given year and month
         else:
             currentCal = c.monthdatescalendar(year, month)
             newDate = datetime.date(year, month, 7)
-            monthLabel = format_date(newDate,"LLLL y", locale='cs').capitalize()
+            monthLabel = newDate.strftime("%B %Y").capitalize()
             self.monthID = str(month)
             self.yearID = str(year)
-            self.dateToShow = format_date(newDate,format='long', locale='cs')
+            #self.dateToShow = format_date(newDate,format='long', locale='cs')
 
         #iterate through crated calendar and set a day number for every field
         #also sed date id for every field
@@ -223,7 +222,7 @@ class CalendarWindow(Screen):
         dateData = self.pass_data()
         daySetting.date_id = date_id
         daySetting.my_id = my_id
-        daySetting.current_date = format_date(date_id,format='long', locale='cs')
+        daySetting.current_date = date_id.strftime("%B %Y")
         daySetting.ids.terrible.background_color = terribleColor
         daySetting.ids.bad.background_color = badColor
         daySetting.ids.average.background_color = averageColor
@@ -234,7 +233,7 @@ class CalendarWindow(Screen):
         dateData[dateKey] = dateData.setdefault(dateKey, {'mood':'average','comment': ''})
         daySetting.ids.comment.text = dateData[dateKey]['comment']    
 
-class DayWindow(Screen):
+class DayWindow(MDScreen):
     #click at pop pop up write values into calendar
 
     def mood_click(self,value, text):
@@ -270,10 +269,10 @@ class DayWindow(Screen):
         self.ids.comment.text= ''
 
 
-class HabitsWindow(Screen):
+class HabitsWindow(MDScreen):
     pass
 
-class SettingsWindow(Screen):
+class SettingsWindow(MDScreen):
     pass 
 
 class WindowManager(ScreenManager):
@@ -288,14 +287,14 @@ class ButtonLabel(Label):
 
 class LifePixels(MDApp):
     def build(self):
-        #Builder.load_file('lifepixkv.kv')
+        Builder.load_file('lifepixels.kv')
         # Create the screen manager
         sm = ScreenManager()
         sm.add_widget(CalendarWindow(name='Calendar'))
         sm.add_widget(DayWindow(name='DayMood'))
         sm.add_widget(HabitsWindow(name='Habits'))
         sm.add_widget(SettingsWindow(name='Settings'))
-        #sm.current = 'Calendar'
+        sm.current = 'Calendar'
         return sm
         '''
     title = 'Life in pixels'

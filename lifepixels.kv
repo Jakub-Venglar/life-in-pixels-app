@@ -25,7 +25,7 @@
 
 <CalButton@Button>:
     date_id: None
-    font_size: 30
+    font_size: (self.height+self.width)/4
     color: (1,1,1,1) 
     outline_width: 1
     outline_colour: (0, 0, 0, 1)
@@ -34,7 +34,7 @@
     text: ''
     colorset: (12/255,84/255,179/255,.8)
     on_release: 
-        app.root.current_screen.cal_click(self.date_id, self.my_id)
+        app.root.get_screen('Calendar').cal_click(self.date_id, self.my_id)
     canvas.before:
         
         #Rectangle:
@@ -55,7 +55,7 @@
             rectangle: self.x, self.y, self.width, self.height
         
 <DayLabel@Label>:
-    font_size: 30
+    font_size: (self.height+self.width)/4
     canvas.before:
         Color: 
             rgba: (1,1,1,.8)
@@ -155,35 +155,50 @@
 <SettingsWindow>:
     name: 'Settings'
     bgsource: 'default.jpg'
+    bg: (0,0,0,.9)
+    FitImage:
+        size_hint_y: 1
+        source: ('pict/' + app.root.get_screen('Settings').bgsource)  if app.root else 'pict/default.jpg'
+    
     BoxLayout:
         #size_hint: 1,1
         orientation: 'vertical'
         Label:
             text: 'Aktuální obrázek'
-            bg: (.5,.5,.5,.5)
+            font_size: 30
+            size_hint_y: None
+            height: 50
             canvas.before:
                 Color:
-                    rgba: self.bg
+                    rgba: root.bg
                 Rectangle:
                     size: self.size
                     pos:self.pos
         Image:
+            canvas.before:
+                Color:
+                    rgba: root.bg
+                Rectangle:
+                    size: self.size
+                    pos:self.pos
             size: self.texture_size
             pos: self.pos
             source: 'pict/' + root.bgsource            
         Button:
-            text: 'Zavřít'
+            text: 'Vybrat obrázek na pozadí'
+            size_hint_y: .2
+            on_press:
+                root.manager.transition.direction = 'right'
+                root.manager.current = 'Calendar'
+        Button:
+            text: 'Uložit a zavřít'
+            size_hint_y: .2
             on_press:
                 root.manager.transition.direction = 'right'
                 root.manager.current = 'Calendar'
 
 <HabitsWindow>:
     name: 'Habits'
-    canvas.before:
-        Rectangle:
-            size: 3/2*root.height, root.height
-            pos: self.width/2-3/2*root.height/2, self.height/2 - root.height/2
-            source: ('pict/' + app.root.get_screen('Settings').bgsource)  if app.root else 'pict/default.jpg'
     bg: (.5,.5,.5,.5)
     canvas:
         Color:
@@ -191,6 +206,9 @@
         Rectangle:
             size: self.size
             pos:self.pos
+    FitImage:
+        size_hint_y: 1
+        source: ('pict/' + app.root.get_screen('Settings').bgsource)  if app.root else 'pict/default.jpg'
     BoxLayout:
         padding: [0,20,0,0]
         orientation: 'vertical'
@@ -223,13 +241,9 @@
     yearID: ''
     monthID: ''
     dateToShow: ''
-    canvas:
-        #Color: 
-        #    rgba: (1,1,1,1)
-        Rectangle:
-            size: 3/2*root.height, root.height
-            pos: self.width/2-3/2*root.height/2, self.height/2 - root.height/2
-            source: ('pict/' + app.root.get_screen('Settings').bgsource)  if app.root else 'pict/default.jpg'
+    FitImage:
+        size_hint_y: 1
+        source: ('pict/' + app.root.get_screen('Settings').bgsource)  if app.root else 'pict/default.jpg'
     BoxLayout:
         size: root.width, root.height
         orientation: 'vertical'
@@ -252,12 +266,13 @@
             Label:
                 id: month_Label
                 text: ''
+                line_height: .85
                 halign: 'center'
                 valign: 'middle'
                 size_hint_x: None
                 text_size: self.size
                 width: root.width/2
-                font_size: 40
+                font_size: self.height/2.5 + self.width/30
             MoveButton:
                 text:'>'
                 on_press: root.move_month('forward')
