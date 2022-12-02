@@ -1,4 +1,7 @@
 /venv
 *.txt
 .vscode
+*.psd
 calendar example.py
+*kopie*.*
+/userdata
