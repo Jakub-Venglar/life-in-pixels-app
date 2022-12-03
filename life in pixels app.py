@@ -8,6 +8,8 @@ from kivy.uix.label import Label
 from kivy.core.window import Window
 from kivy.utils import platform
 from kivy.lang import Builder
+from kivy.clock import Clock
+from functools import partial
 
 #TODO: learn how to properly comment and add comments and docstrings
 #TODO: add habits/activities, render them if accomplished on the main calendar - possibility to track them (show how many or just checkbox if accomplished)
@@ -79,7 +81,10 @@ class CalendarWindow(MDScreen):
                 os.chdir(path)
             except FileExistsError:
                 os.chdir(path)
-
+    
+    def switch_to_ext_storage(self):
+        pass
+    
 
     def pass_data(self):        
             try:   
@@ -137,10 +142,7 @@ class CalendarWindow(MDScreen):
                 self.ids[id].date_id = setDate
                 self.ids[id].clear_widgets()
                 self.ids[id].colorset = notToday
-                self.ids[id].add_widget(ButtonLabel())
-                self.ids[id].add_widget(ButtonLabel(valign = 'top', halign ='right'))
-                self.ids[id].add_widget(ButtonLabel(valign = 'bottom', halign ='right'))
-                self.ids[id].add_widget(ButtonLabel(valign = 'bottom'))
+                Clock.schedule_once(partial(self.create_labels,id))
 
                 #make current day more visible
                 if setDate == datetime.datetime.date(datetime.datetime.now()):
@@ -148,11 +150,17 @@ class CalendarWindow(MDScreen):
                 
                 # if mood for date already set then render it, otherwise make field clear
                 
-                self.colorize(id,self.ids[id].date_id)
+                Clock.schedule_once(partial(self.colorize,id,self.ids[id].date_id))
+
+    def create_labels(self,id,clocktime):
+        self.ids[id].add_widget(ButtonLabel())
+        self.ids[id].add_widget(ButtonLabel(valign = 'top', halign ='right'))
+        self.ids[id].add_widget(ButtonLabel(valign = 'bottom', halign ='right'))
+        self.ids[id].add_widget(ButtonLabel(valign = 'bottom'))
 
 
         #self.ids['1-1'].children[0].text = 'sadsa'
-    def colorize(self,my_id,date_id):
+    def colorize(self,my_id,date_id,clocktime):
         call = self.manager.get_screen('Calendar')
         dateData = call.pass_data()
         dateKey = str(date_id)
@@ -270,10 +278,34 @@ class DayWindow(MDScreen):
 
 
 class HabitsWindow(MDScreen):
-    pass
+    def load_habit_list(self):
+        try:   
+            with open('habits.json', 'r', encoding='utf-8') as file:
+                return eval(file.read())
+        except FileNotFoundError: 
+            with open('habits.json', 'w', encoding='utf-8') as file:
+                file.write('{}')
+                return eval(file.read())
+
+    def save_habit_list(self,to_save):
+        with open('habits.json', 'w', encoding='utf-8') as file:
+            file.write(to_save)
+            return eval(file.read())
 
 class SettingsWindow(MDScreen):
-    pass 
+    def load_settings(self):
+        try:   
+            with open('settings.json', 'r', encoding='utf-8') as file:
+                return eval(file.read())
+        except FileNotFoundError: 
+            with open('settings.json', 'w', encoding='utf-8') as file:
+                file.write('{}')
+                return eval(file.read())
+
+    def save_settings(self,to_save):
+        with open('settings.json', 'w', encoding='utf-8') as file:
+            file.write(to_save)
+            return eval(file.read())
 
 class WindowManager(ScreenManager):
     pass
