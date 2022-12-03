@@ -1,6 +1,6 @@
 #! python3
 # Life in pixels project
-import calendar, datetime, os, sys, json
+import calendar, datetime, os, sys, json, locale
 from kivymd.app import MDApp
 from kivymd.uix.screen import MDScreen
 from kivy.uix.screenmanager import ScreenManager
@@ -10,14 +10,18 @@ from kivy.utils import platform
 from kivy.lang import Builder
 from kivy.clock import Clock
 from functools import partial
+from sortedcontainers import SortedDict
 
 #TODO: learn how to properly comment and add comments and docstrings
 #TODO: add habits/activities, render them if accomplished on the main calendar - possibility to track them (show how many or just checkbox if accomplished)
 #TODO: ask for name at the begining and personalize saved files (because of possible multiuser in future)
 #TODO: finish tutorials so I have better idea what I am doing :)
+#TODO: use sorted dict, avoid loading everything (one year should be enough) - one file for every year
+#TODO: faster rendering labels
+#TODO: solve how to show habit labels
 #TODO: add option for set your own colors
 #TODO: choice from default pictures or your own as BG
-#TODO: picture of the day
+#TODO: add, picture of the day, copy to dedicated folder and name it, backup
 #TODO: make printable page, with summary of the year/month
 #TODO: sync between computer and mobile app - at PC you can see better bigger picture
 #TODO: backup possibilities
@@ -36,7 +40,12 @@ if platform == 'android':
 
     from android.permissions import request_permissions, Permission
     request_permissions([Permission.WRITE_EXTERNAL_STORAGE, Permission.READ_EXTERNAL_STORAGE])
-    
+
+locale.setlocale(locale.LC_ALL, 'cs_CZ')
+
+test= SortedDict({'uh':'oh','ahoj':'none'})
+print(test)
+
 superColor= (255/255,232/255,28/255,.8) #(227/255,65/255,25/255,.8)
 goodColor=(43/255,168/255,8/255,.8)
 averageColor=(138/255,153/255,184/255,.8)
@@ -56,9 +65,8 @@ calList = [['1-1','1-2','1-3','1-4','1-5','1-6','1-7'],
 #define screens
 class CalendarWindow(MDScreen):
         # construct labels for cal buttons
-    
     def __init__(self, **kwargs):
-        super(CalendarWindow, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         Window.bind(on_resize = self.labelSize)
 
     def labelSize(self,x,y,z):
@@ -119,7 +127,7 @@ class CalendarWindow(MDScreen):
             monthLabel = now.strftime("%B %Y").capitalize()
             self.monthID = str(datetime.datetime.now().month)
             self.yearID = str(datetime.datetime.now().year)
-            #self.dateToShow = datetime.datetime.now().strftime("%B")
+            #self.dateToShow = datetime.datetime.now().("%B")
 
         #this will create list of date objects for given year and month
         else:
@@ -152,7 +160,7 @@ class CalendarWindow(MDScreen):
                 
                 Clock.schedule_once(partial(self.colorize,id,self.ids[id].date_id))
 
-    def create_labels(self,id,clocktime):
+    def create_labels(self,id,clocktime=0):
         self.ids[id].add_widget(ButtonLabel())
         self.ids[id].add_widget(ButtonLabel(valign = 'top', halign ='right'))
         self.ids[id].add_widget(ButtonLabel(valign = 'bottom', halign ='right'))
@@ -160,7 +168,7 @@ class CalendarWindow(MDScreen):
 
 
         #self.ids['1-1'].children[0].text = 'sadsa'
-    def colorize(self,my_id,date_id,clocktime):
+    def colorize(self,my_id,date_id,clocktime=0):
         call = self.manager.get_screen('Calendar')
         dateData = call.pass_data()
         dateKey = str(date_id)
@@ -204,9 +212,26 @@ class CalendarWindow(MDScreen):
     def present_click(self):
         self.make_Cal(now=True)
 
+    def propCZmonth(self,string):
+        monthDict = {'leden': 'ledna',
+        'únor': 'února',
+        'březen': 'března',
+        'duben': 'dubna',
+        'květen':'května',
+        'červen':'června',
+        'červenec':'července',
+        'srpen':'srpna',
+        'září':'září',
+        'říjen':'října',
+        'listopad':'listopadu',
+        'prosinec':'prosince'}
+        for key in monthDict.keys():
+            newString = string.replace(key,monthDict[key])
+        return newString
+
     # make colors
 
-    def choose_color(self, value):
+    def choose_color(cls, value):
         if value == 'super':
             return superColor
         if value == 'good':
@@ -230,7 +255,9 @@ class CalendarWindow(MDScreen):
         dateData = self.pass_data()
         daySetting.date_id = date_id
         daySetting.my_id = my_id
-        daySetting.current_date = date_id.strftime("%B %Y")
+        dayZero = date_id.strftime('%d. ').lstrip('0')
+        daySetting.current_date = date_id.strftime('%A ') + dayZero + date_id.strftime('%B %Y')
+        daySetting.current_date = self.propCZmonth(daySetting.current_date)
         daySetting.ids.terrible.background_color = terribleColor
         daySetting.ids.bad.background_color = badColor
         daySetting.ids.average.background_color = averageColor
@@ -251,9 +278,6 @@ class DayWindow(MDScreen):
         dateData[dateKey] = dateData.setdefault(dateKey, {'mood':'','comment':''})
         dateData[dateKey]['mood'] =  value
         dateData[dateKey]['comment'] = text
-        #call.ids[self.my_id].background_color = call.choose_color(value)
-        #if dateData[dateKey]['comment'] != '':
-        #    call.ids[self.my_id].children[3].label='T'
         call.save_data(dateData)
         call.colorize(self.my_id,self.date_id)
 
