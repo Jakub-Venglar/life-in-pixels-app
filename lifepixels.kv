@@ -249,7 +249,7 @@
         orientation: 'vertical'
         BoxLayout:
             orientation: 'horizontal'
-            size_hint: .9, .2
+            size_hint: 1, .2
             pos_hint: {'center_x': .5}
             canvas.before:
                 Color: 
@@ -272,7 +272,7 @@
                 size_hint_x: None
                 text_size: self.size
                 width: root.width/2
-                font_size: self.height/2.5 + self.width/30
+                font_size: self.height/2.5 + self.width/40
             MoveButton:
                 text:'>'
                 on_press: root.move_month('forward')
@@ -281,7 +281,7 @@
                 on_press: root.move_year('forward')
         BoxLayout:
             orientation: 'horizontal'
-            size_hint: .9, .2
+            size_hint: 1, .2
             pos_hint: {'center_x': .5}
             canvas.before:
                 Color: 
@@ -306,7 +306,7 @@
         GridLayout:
             cols: 7
             rows: 5
-            size_hint: .9, .9
+            size_hint: 1, .9
             pos_hint: {'center_x': .5}
             CalButton:
                 id: 1-1
@@ -415,19 +415,19 @@
                 my_id: '5-7'
         Button:
             id: home
-            size_hint:  (.9,.1)
+            size_hint:  (1,.1)
             pos_hint: {'center_x': .5}
             text: 'Vrať mě do současnosti'
             on_press: root.present_click()
         Button:
             id: delete
-            size_hint:  (.9,.1)
+            size_hint:  (1,.1)
             pos_hint: {'center_x': .5}
             text: 'Vymaž celý kalendář'
             on_press: root.delete_data()
         Button:
             id: activities
-            size_hint:  (.9,.1)
+            size_hint:  (1,.1)
             pos_hint: {'center_x': .5}
             text: 'Přidat aktivitu'
             on_press: 
@@ -435,7 +435,7 @@
                 root.manager.current = 'Habits'
         Button:
             id: activities
-            size_hint:  (.9,.1)
+            size_hint:  (1,.1)
             pos_hint: {'center_x': .5}
             text: 'Nastavení'
             on_press: 
