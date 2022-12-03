@@ -41,10 +41,12 @@ if platform == 'android':
     from android.permissions import request_permissions, Permission
     request_permissions([Permission.WRITE_EXTERNAL_STORAGE, Permission.READ_EXTERNAL_STORAGE])
 
-locale.setlocale(locale.LC_ALL, 'cs_CZ')
+try:
+    locale.setlocale(locale.LC_ALL, 'cs_CZ.utf8')
+except: 
+    pass
 
 test= SortedDict({'uh':'oh','ahoj':'none'})
-print(test)
 
 superColor= (255/255,232/255,28/255,.8) #(227/255,65/255,25/255,.8)
 goodColor=(43/255,168/255,8/255,.8)
