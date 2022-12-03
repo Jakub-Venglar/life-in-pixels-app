@@ -11,6 +11,7 @@ from kivy.lang import Builder
 from kivy.clock import Clock
 from functools import partial
 from sortedcontainers import SortedDict
+from babel.dates import format_date, format_datetime, format_time
 
 #TODO: learn how to properly comment and add comments and docstrings
 #TODO: add habits/activities, render them if accomplished on the main calendar - possibility to track them (show how many or just checkbox if accomplished)
@@ -69,10 +70,10 @@ class CalendarWindow(MDScreen):
         # construct labels for cal buttons
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        Window.bind(on_resize = self.labelSize)
+        #Window.bind(on_resize = self.labelSize)
 
-    def labelSize(self,x,y,z):
-        self.fs = z/35
+    #def labelSize(self,x,y,z):
+        #self.fs = z/35
 
     def create_user_directory(self):
         if platform == 'android':
@@ -117,8 +118,7 @@ class CalendarWindow(MDScreen):
     #create calendar view
 
     def make_Cal(self,now=True, year=2020, month=6):
-        self.fs = Window.size[1]/35
-        dateData = self.pass_data()
+        #self.fs = Window.size[1]/35
         c = calendar.Calendar(0)
 
         #this creates list of date objects for current month at program start or home press
@@ -126,7 +126,7 @@ class CalendarWindow(MDScreen):
         if now==True:
             currentCal = c.monthdatescalendar(datetime.datetime.now().year, datetime.datetime.now().month)
             now = datetime.datetime.now()
-            monthLabel = now.strftime("%B %Y").capitalize()
+            monthLabel = format_date(datetime.datetime.now(),"LLLL y", locale='cs').capitalize() #now.strftime("%B %Y").capitalize()
             self.monthID = str(datetime.datetime.now().month)
             self.yearID = str(datetime.datetime.now().year)
             #self.dateToShow = datetime.datetime.now().("%B")
@@ -135,7 +135,7 @@ class CalendarWindow(MDScreen):
         else:
             currentCal = c.monthdatescalendar(year, month)
             newDate = datetime.date(year, month, 7)
-            monthLabel = newDate.strftime("%B %Y").capitalize()
+            monthLabel = format_date(newDate,"LLLL y", locale='cs').capitalize() #newDate.strftime("%B %Y").capitalize()
             self.monthID = str(month)
             self.yearID = str(year)
             #self.dateToShow = format_date(newDate,format='long', locale='cs')

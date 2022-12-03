@@ -14,7 +14,7 @@
     markup: True
     label: ''
     text: '[b]' + self.label + '[/b]'
-    font_size: app.root.get_screen('Calendar').fs if app.root else 20
+    font_size: self.parent.height*0.3 if self.parent else 20
     size_hint_x: None
     size_hint_y: None
     text_size: self.size
@@ -236,7 +236,6 @@
                 root.manager.current = 'Calendar'
 
 <CalendarWindow>:
-    fs: 20 #size of symbols in calendar, set by bind
     name: 'Calendar'
     yearID: ''
     monthID: ''
