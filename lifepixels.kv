@@ -240,6 +240,8 @@
     yearID: ''
     monthID: ''
     dateToShow: ''
+    currentYear: ''
+    yearData: None
     FitImage:
         size_hint_y: 1
         source: ('pict/' + app.root.get_screen('Settings').bgsource)  if app.root else 'pict/default.jpg'
@@ -420,10 +422,11 @@
             on_press: root.present_click()
         Button:
             id: delete
+            date_id: 
             size_hint:  (1,.1)
             pos_hint: {'center_x': .5}
             text: 'Vymaž celý kalendář'
-            on_press: root.delete_data()
+            on_press: root.delete_data(self.date_id)
         Button:
             id: activities
             size_hint:  (1,.1)

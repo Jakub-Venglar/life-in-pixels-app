@@ -11,7 +11,7 @@ from kivy.lang import Builder
 from kivy.clock import Clock
 from functools import partial
 from sortedcontainers import SortedDict
-from babel.dates import format_date, format_datetime, format_time
+from babel.dates import format_date
 
 #TODO: learn how to properly comment and add comments and docstrings
 #TODO: add habits/activities, render them if accomplished on the main calendar - possibility to track them (show how many or just checkbox if accomplished)
@@ -42,12 +42,9 @@ if platform == 'android':
     from android.permissions import request_permissions, Permission
     request_permissions([Permission.WRITE_EXTERNAL_STORAGE, Permission.READ_EXTERNAL_STORAGE])
 
-try:
-    locale.setlocale(locale.LC_ALL, 'cs_CZ.utf8')
-except: 
-    pass
-
 test= SortedDict({'uh':'oh','ahoj':'none'})
+
+emptyDayData = {'mood':'','comment':''}
 
 superColor= (255/255,232/255,28/255,.8) #(227/255,65/255,25/255,.8)
 goodColor=(43/255,168/255,8/255,.8)
@@ -55,6 +52,8 @@ averageColor=(138/255,153/255,184/255,.8)
 badColor= (117/255,32/255,16/255,.8) #(150/255,39/255,20/255,.8)
 terribleColor=(28/255,49/255,36/255,.8)
 clearColor = (.5,.5,.5,.45)
+
+yearData = {}
 
 today = (12/255,84/255,179/255,.8)
 notToday = (12/255,84/255,179/255,0)
@@ -64,16 +63,21 @@ calList = [['1-1','1-2','1-3','1-4','1-5','1-6','1-7'],
                     ['3-1','3-2','3-3','3-4','3-5','3-6','3-7'],
                     ['4-1','4-2','4-3','4-4','4-5','4-6','4-7'],
                     ['5-1','5-2','5-3','5-4','5-5','5-6','5-7']]
+class YearObject():
+    def __init__(self, year, data):
+        self.year = year
+        self.data = data
+
 
 #define screens
 class CalendarWindow(MDScreen):
         # construct labels for cal buttons
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        #Window.bind(on_resize = self.labelSize)
+        Window.bind(on_resize = self.labelSize)
 
-    #def labelSize(self,x,y,z):
-        #self.fs = z/35
+    def labelSize(self,x,y,z):
+        self.fs = z/35
 
     def create_user_directory(self):
         if platform == 'android':
@@ -97,28 +101,37 @@ class CalendarWindow(MDScreen):
         pass
     
 
-    def pass_data(self):        
+    def pass_data(self,date_id):
+        year = str(date_id)[:4]
+        if year == self.currentYear:
+            pass
+        else:
+            self.currentYear = year
             try:   
-                with open('caldata.json', 'r', encoding='utf-8') as file:
-                    return eval(file.read())
+                with open(f'caldata-{year}.json', 'r', encoding='utf-8') as file:
+                    yearData =  eval(file.read())
             except FileNotFoundError: 
-                with open('caldata.json', 'w', encoding='utf-8') as file:
+                with open(f'caldata-{year}.json', 'w', encoding='utf-8') as file:
                     file.write('{}')
-                    return {}
+                    yearData =  eval(file.read())
+            self.yearData = yearData
+        return self.yearData
 
-    def save_data(self, newData):
-        with open('caldata.json', 'w', encoding='utf-8') as file:
+    def save_data(self, newData, date_id):
+        year = str(date_id)[:4]
+        with open(f'caldata-{year}.json', 'w', encoding='utf-8') as file:
             json.dump(newData, file, indent = 4)
     
-    def delete_data(self):
-        with open('caldata.json', 'w', encoding='utf-8') as file:
+    def delete_data(self,date_id):
+        year = str(date_id)[:4]
+        with open(f'caldata-{year}.json', 'w', encoding='utf-8') as file:
             file.write('{}')
         self.make_Cal()
 
     #create calendar view
 
     def make_Cal(self,now=True, year=2020, month=6):
-        #self.fs = Window.size[1]/35
+        self.fs = Window.size[1]/35
         c = calendar.Calendar(0)
 
         #this creates list of date objects for current month at program start or home press
@@ -126,7 +139,7 @@ class CalendarWindow(MDScreen):
         if now==True:
             currentCal = c.monthdatescalendar(datetime.datetime.now().year, datetime.datetime.now().month)
             now = datetime.datetime.now()
-            monthLabel = format_date(datetime.datetime.now(),"LLLL y", locale='cs').capitalize() #now.strftime("%B %Y").capitalize()
+            monthLabel = format_date(datetime.datetime.now(),"LLLL y", locale='cs_CZ').capitalize() #now.strftime("%B %Y").capitalize()
             self.monthID = str(datetime.datetime.now().month)
             self.yearID = str(datetime.datetime.now().year)
             #self.dateToShow = datetime.datetime.now().("%B")
@@ -135,7 +148,7 @@ class CalendarWindow(MDScreen):
         else:
             currentCal = c.monthdatescalendar(year, month)
             newDate = datetime.date(year, month, 7)
-            monthLabel = format_date(newDate,"LLLL y", locale='cs').capitalize() #newDate.strftime("%B %Y").capitalize()
+            monthLabel = newDate.strftime("%B %Y").capitalize()
             self.monthID = str(month)
             self.yearID = str(year)
             #self.dateToShow = format_date(newDate,format='long', locale='cs')
@@ -161,6 +174,7 @@ class CalendarWindow(MDScreen):
                 # if mood for date already set then render it, otherwise make field clear
                 
                 Clock.schedule_once(partial(self.colorize,id,self.ids[id].date_id))
+        self.ids['delete'].date_id = self.ids['3-3'].date_id #set id for delet whole calendar
 
     def create_labels(self,id,clocktime=0):
         self.ids[id].add_widget(ButtonLabel())
@@ -172,7 +186,7 @@ class CalendarWindow(MDScreen):
         #self.ids['1-1'].children[0].text = 'sadsa'
     def colorize(self,my_id,date_id,clocktime=0):
         call = self.manager.get_screen('Calendar')
-        dateData = call.pass_data()
+        dateData = call.pass_data(date_id)
         dateKey = str(date_id)
         if dateKey in dateData:
             call.ids[my_id].background_color = call.choose_color(dateData[str(self.ids[my_id].date_id)]['mood'])
@@ -214,19 +228,21 @@ class CalendarWindow(MDScreen):
     def present_click(self):
         self.make_Cal(now=True)
 
-    def propCZmonth(self,string):
-        monthDict = {'leden': 'ledna',
-        'únor': 'února',
-        'březen': 'března',
-        'duben': 'dubna',
-        'květen':'května',
-        'červen':'června',
-        'červenec':'července',
-        'srpen':'srpna',
-        'září':'září',
-        'říjen':'října',
-        'listopad':'listopadu',
-        'prosinec':'prosince'}
+    def propCZdate(self,string):
+        monthDict = {'January': 'ledna',
+        'February': 'února',
+        'March': 'března',
+        'April': 'dubna',
+        'May':'května',
+        'June':'června',
+        'July':'července',
+        'August':'srpna',
+        'September':'září',
+        'October':'října',
+        'November':'listopadu',
+        'December':'prosince',
+        }
+        newString = string
         for key in monthDict.keys():
             newString = string.replace(key,monthDict[key])
         return newString
@@ -254,20 +270,19 @@ class CalendarWindow(MDScreen):
         self.manager.current = 'DayMood'
         daySetting = self.manager.current_screen
         dateKey = str(date_id)
-        dateData = self.pass_data()
+        dateData = self.pass_data(date_id)
         daySetting.date_id = date_id
         daySetting.my_id = my_id
         dayZero = date_id.strftime('%d. ').lstrip('0')
         daySetting.current_date = date_id.strftime('%A ') + dayZero + date_id.strftime('%B %Y')
-        daySetting.current_date = self.propCZmonth(daySetting.current_date)
+        daySetting.current_date = self.propCZdate(daySetting.current_date)
         daySetting.ids.terrible.background_color = terribleColor
         daySetting.ids.bad.background_color = badColor
         daySetting.ids.average.background_color = averageColor
         daySetting.ids.good.background_color = goodColor
         daySetting.ids.super.background_color = superColor
-        dateData[dateKey] = dateData.setdefault(dateKey, {'mood':'','comment':''})
+        dateData[dateKey] = dateData.setdefault(dateKey, emptyDayData)
         daySetting.ids.question.bg = self.choose_color(dateData[dateKey]['mood'] )
-        dateData[dateKey] = dateData.setdefault(dateKey, {'mood':'average','comment': ''})
         daySetting.ids.comment.text = dateData[dateKey]['comment']    
 
 class DayWindow(MDScreen):
@@ -275,30 +290,30 @@ class DayWindow(MDScreen):
 
     def mood_click(self,value, text):
         call = self.manager.get_screen('Calendar')
-        dateData = call.pass_data()
+        dateData = call.pass_data(self.date_id)
         dateKey = str(self.date_id)
-        dateData[dateKey] = dateData.setdefault(dateKey, {'mood':'','comment':''})
+        dateData[dateKey] = dateData.setdefault(dateKey, emptyDayData)
         dateData[dateKey]['mood'] =  value
         dateData[dateKey]['comment'] = text
-        call.save_data(dateData)
+        call.save_data(dateData,self.date_id)
         call.colorize(self.my_id,self.date_id)
 
     
     def save_text(self, text):
         call = self.manager.get_screen('Calendar')
-        dateData = call.pass_data()
+        dateData = call.pass_data(self.date_id)
         dateKey = str(self.date_id)
-        dateData[dateKey] = dateData.setdefault(dateKey, {'mood':'','comment':''})
+        dateData[dateKey] = dateData.setdefault(dateKey, emptyDayData)
         dateData[dateKey]['comment'] = text
-        call.save_data(dateData)
+        call.save_data(dateData,self.date_id)
         call.colorize(self.my_id,self.date_id)
 
     def delete_day(self):
         call = self.manager.get_screen('Calendar')
-        dateData = call.pass_data()
+        dateData = call.pass_data(self.date_id)
         dateKey = str(self.date_id)
-        dateData[dateKey] = {'mood':'','comment':''}
-        call.save_data(dateData)
+        dateData[dateKey] = emptyDayData
+        call.save_data(dateData,self.date_id)
         call.colorize(self.my_id,self.date_id)
         self.ids.comment.text= ''
 
