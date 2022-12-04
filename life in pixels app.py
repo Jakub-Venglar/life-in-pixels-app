@@ -53,8 +53,6 @@ badColor= (117/255,32/255,16/255,.8) #(150/255,39/255,20/255,.8)
 terribleColor=(28/255,49/255,36/255,.8)
 clearColor = (.5,.5,.5,.45)
 
-yearData = {}
-
 today = (12/255,84/255,179/255,.8)
 notToday = (12/255,84/255,179/255,0)
 
@@ -113,14 +111,17 @@ class CalendarWindow(MDScreen):
             except FileNotFoundError: 
                 with open(f'caldata-{year}.json', 'w', encoding='utf-8') as file:
                     file.write('{}')
-                    yearData =  eval(file.read())
+                    yearData =  {}
             self.yearData = yearData
+            thisYear = YearObject(year,yearData)
+            print(thisYear)
         return self.yearData
 
     def save_data(self, newData, date_id):
         year = str(date_id)[:4]
         with open(f'caldata-{year}.json', 'w', encoding='utf-8') as file:
             json.dump(newData, file, indent = 4)
+        print(this)
     
     def delete_data(self,date_id):
         year = str(date_id)[:4]
