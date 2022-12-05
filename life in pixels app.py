@@ -101,9 +101,7 @@ class CalendarWindow(MDScreen):
 
     def pass_data(self,date_id):
         year = str(date_id)[:4]
-        if year == self.currentYear:
-            pass
-        else:
+        if year != self.currentYear:
             self.currentYear = year
             try:   
                 with open(f'caldata-{year}.json', 'r', encoding='utf-8') as file:
@@ -113,15 +111,13 @@ class CalendarWindow(MDScreen):
                     file.write('{}')
                     yearData =  {}
             self.yearData = yearData
-            thisYear = YearObject(year,yearData)
-            print(thisYear)
+            #thisYear = YearObject(year,yearData)
         return self.yearData
 
     def save_data(self, newData, date_id):
         year = str(date_id)[:4]
         with open(f'caldata-{year}.json', 'w', encoding='utf-8') as file:
             json.dump(newData, file, indent = 4)
-        print(this)
     
     def delete_data(self,date_id):
         year = str(date_id)[:4]
@@ -276,13 +272,13 @@ class CalendarWindow(MDScreen):
         daySetting.my_id = my_id
         dayZero = date_id.strftime('%d. ').lstrip('0')
         daySetting.current_date = date_id.strftime('%A ') + dayZero + date_id.strftime('%B %Y')
-        daySetting.current_date = self.propCZdate(daySetting.current_date)
+        #daySetting.current_date = self.propCZdate(daySetting.current_date)
         daySetting.ids.terrible.background_color = terribleColor
         daySetting.ids.bad.background_color = badColor
         daySetting.ids.average.background_color = averageColor
         daySetting.ids.good.background_color = goodColor
         daySetting.ids.super.background_color = superColor
-        dateData[dateKey] = dateData.setdefault(dateKey, emptyDayData)
+        dateData[dateKey] = dateData.setdefault(dateKey, emptyDayData.copy())
         daySetting.ids.question.bg = self.choose_color(dateData[dateKey]['mood'] )
         daySetting.ids.comment.text = dateData[dateKey]['comment']    
 
@@ -293,7 +289,7 @@ class DayWindow(MDScreen):
         call = self.manager.get_screen('Calendar')
         dateData = call.pass_data(self.date_id)
         dateKey = str(self.date_id)
-        dateData[dateKey] = dateData.setdefault(dateKey, emptyDayData)
+        dateData[dateKey] = dateData.setdefault(dateKey, emptyDayData.copy())
         dateData[dateKey]['mood'] =  value
         dateData[dateKey]['comment'] = text
         call.save_data(dateData,self.date_id)
@@ -304,7 +300,7 @@ class DayWindow(MDScreen):
         call = self.manager.get_screen('Calendar')
         dateData = call.pass_data(self.date_id)
         dateKey = str(self.date_id)
-        dateData[dateKey] = dateData.setdefault(dateKey, emptyDayData)
+        dateData[dateKey] = dateData.setdefault(dateKey, emptyDayData.copy())
         dateData[dateKey]['comment'] = text
         call.save_data(dateData,self.date_id)
         call.colorize(self.my_id,self.date_id)
@@ -313,7 +309,7 @@ class DayWindow(MDScreen):
         call = self.manager.get_screen('Calendar')
         dateData = call.pass_data(self.date_id)
         dateKey = str(self.date_id)
-        dateData[dateKey] = emptyDayData
+        dateData[dateKey] = emptyDayData.copy()
         call.save_data(dateData,self.date_id)
         call.colorize(self.my_id,self.date_id)
         self.ids.comment.text= ''
