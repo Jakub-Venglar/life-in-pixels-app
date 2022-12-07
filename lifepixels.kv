@@ -43,7 +43,7 @@
 <CalButton@Button>:
     date_id: None
     font_size: (self.height+self.width)/4
-    testobr: None
+    testobr: 'dsfsdfs'
     color: (1,1,1,1) 
     outline_width: 1
     outline_colour: (0, 0, 0, 1)
@@ -73,7 +73,8 @@
             rectangle: self.x, self.y, self.width, self.height
     canvas.after:
         Rectangle:
-            source: 'pict/default.jpg' 
+            #source: 'pict/default.jpg' 
+            texture: self.texture
             pos: self.pos
             size: self.width/3,self.height/3
         Rectangle:
