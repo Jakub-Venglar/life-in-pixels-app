@@ -145,7 +145,7 @@ class CalendarWindow(MDScreen):
         else:
             currentCal = c.monthdatescalendar(year, month)
             newDate = datetime.date(year, month, 7)
-            monthLabel = newDate.strftime("%B %Y").capitalize()
+            monthLabel = format_date(newDate,"LLLL y", locale='cs_CZ').capitalize()
             self.monthID = str(month)
             self.yearID = str(year)
             #self.dateToShow = format_date(newDate,format='long', locale='cs')
@@ -174,10 +174,11 @@ class CalendarWindow(MDScreen):
         self.ids['delete'].date_id = self.ids['3-3'].date_id #set id for delet whole calendar
 
     def create_labels(self,id,clocktime=0):
-        self.ids[id].add_widget(ButtonLabel())
-        self.ids[id].add_widget(ButtonLabel(valign = 'top', halign ='right'))
-        self.ids[id].add_widget(ButtonLabel(valign = 'bottom', halign ='right'))
-        self.ids[id].add_widget(ButtonLabel(valign = 'bottom'))
+        pass
+        #self.ids[id].add_widget(ButtonLabel())
+        #self.ids[id].add_widget(ButtonLabel(valign = 'top', halign ='right'))
+        #self.ids[id].add_widget(ButtonLabel(valign = 'bottom', halign ='right'))
+        #self.ids[id].add_widget(ButtonLabel(valign = 'bottom'))
 
 
         #self.ids['1-1'].children[0].text = 'sadsa'
@@ -187,10 +188,10 @@ class CalendarWindow(MDScreen):
         dateKey = str(date_id)
         if dateKey in dateData:
             call.ids[my_id].background_color = call.choose_color(dateData[str(self.ids[my_id].date_id)]['mood'])
-            if dateData[dateKey]['comment'] != '':
-                call.ids[my_id].children[3].label='T'
-            elif dateData[dateKey]['comment'] == '':
-                call.ids[my_id].children[3].label=''
+            #if dateData[dateKey]['comment'] != '':
+            #    call.ids[my_id].children[0].children[3].label='T'
+            #elif dateData[dateKey]['comment'] == '':
+            #    call.ids[my_id].children[0].children[3].label=''
         else: call.ids[my_id].background_color = clearColor
 
     # next or previous month after click
@@ -225,25 +226,6 @@ class CalendarWindow(MDScreen):
     def present_click(self):
         self.make_Cal(now=True)
 
-    def propCZdate(self,string):
-        monthDict = {'January': 'ledna',
-        'February': 'února',
-        'March': 'března',
-        'April': 'dubna',
-        'May':'května',
-        'June':'června',
-        'July':'července',
-        'August':'srpna',
-        'September':'září',
-        'October':'října',
-        'November':'listopadu',
-        'December':'prosince',
-        }
-        newString = string
-        for key in monthDict.keys():
-            newString = string.replace(key,monthDict[key])
-        return newString
-
     # make colors
 
     def choose_color(cls, value):
@@ -272,7 +254,6 @@ class CalendarWindow(MDScreen):
         daySetting.my_id = my_id
         dayZero = date_id.strftime('%d. ').lstrip('0')
         daySetting.current_date = date_id.strftime('%A ') + dayZero + date_id.strftime('%B %Y')
-        #daySetting.current_date = self.propCZdate(daySetting.current_date)
         daySetting.ids.terrible.background_color = terribleColor
         daySetting.ids.bad.background_color = badColor
         daySetting.ids.average.background_color = averageColor
