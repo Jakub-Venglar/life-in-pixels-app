@@ -174,8 +174,8 @@ class CalendarWindow(MDScreen):
         self.ids['delete'].date_id = self.ids['3-3'].date_id #set id for delet whole calendar
 
     def create_labels(self,id,clocktime=0):
-        pass
         #self.ids[id].add_widget(ButtonLabel())
+        print(self.ids[id].children)
         #self.ids[id].add_widget(ButtonLabel(valign = 'top', halign ='right'))
         #self.ids[id].add_widget(ButtonLabel(valign = 'bottom', halign ='right'))
         #self.ids[id].add_widget(ButtonLabel(valign = 'bottom'))

@@ -16,12 +16,12 @@
     label: ''
     text_color: (1,1,1,1)
     text: '[b]' + self.label + '[/b]'
-    font_size: self.parent.parent.height*0.25 if self.parent.parent else 20
+    font_size: self.parent.height*0.25 if self.parent else 20
     size_hint_x: None
     size_hint_y: None
     text_size: self.size
-    size: (root.parent.parent.width*.9, root.parent.parent.height*0.97) if root.parent.parent else (60,20)
-    pos: (root.parent.parent.pos[0]+root.parent.width*0.05, root.parent.parent.pos[1]) if root.parent.parent else (10,10)
+    size: (root.parent.width*.9, root.parent.height*0.97) if root.parent else (60,20)
+    pos: (root.parent.pos[0]+root.width*0.05, root.parent.pos[1]) if root.parent else (10,10)
 
 <ButtonLabel>:
     ButLabelChild:
@@ -43,6 +43,7 @@
 <CalButton@Button>:
     date_id: None
     font_size: (self.height+self.width)/4
+    testobr: None
     color: (1,1,1,1) 
     outline_width: 1
     outline_colour: (0, 0, 0, 1)
@@ -70,6 +71,17 @@
         Line:
             width: 1
             rectangle: self.x, self.y, self.width, self.height
+    canvas.after:
+        Rectangle:
+            source: 'pict/default.jpg' 
+            pos: self.pos
+            size: self.width/3,self.height/3
+        Rectangle:
+            source: self.testobr
+            pos: self.right-self.width/3, self.top-self.height/3
+            size: (self.width/3,self.height/3) if self.testobr else (0,0)
+    #    Color: 
+    #        rgba: (53/255,85/255,166/255,.65)
         
 <DayLabel@Label>:
     font_size: (self.height+self.width)/4
@@ -328,7 +340,7 @@
             pos_hint: {'center_x': .5}
             CalButton:
                 id: 1-1
-                my_id: '1-2'             
+                my_id: '1-2'
             CalButton:
                 id: 1-2
                 my_id: '1-2'
