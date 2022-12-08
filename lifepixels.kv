@@ -74,7 +74,7 @@
     canvas.after:
         Rectangle:
             #source: 'pict/default.jpg' 
-            texture: self.texture
+            texture: app.root.get_screen('CalLabels').ids['calLabel1'].texture if app.root else self.texture
             pos: self.pos
             size: self.width/3,self.height/3
         Rectangle:
@@ -83,6 +83,15 @@
             size: (self.width/3,self.height/3) if self.testobr else (0,0)
     #    Color: 
     #        rgba: (53/255,85/255,166/255,.65)
+
+<CalendarLabels>:
+    name: 'CalLabels'
+    BoxLayout:
+        Label:
+            id: calLabel1
+            text: 'aaa'
+            size: self.texture_size
+            font_size: 20
         
 <DayLabel@Label>:
     font_size: (self.height+self.width)/4
