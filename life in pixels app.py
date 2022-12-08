@@ -1,6 +1,6 @@
 #! python3
 # Life in pixels project
-import calendar, datetime, os, sys, json, locale
+import calendar, datetime, os, sys, json, locale, random
 from kivymd.app import MDApp
 from kivymd.uix.screen import MDScreen
 from kivy.uix.screenmanager import ScreenManager
@@ -74,8 +74,9 @@ class CalendarWindow(MDScreen):
         super().__init__(**kwargs)
         Window.bind(on_resize = self.labelSize)
 
+
     def labelSize(self,x,y,z):
-        self.fs = z/35
+        self.manager.get_screen('CalLabels').fs = z/35
 
     def create_user_directory(self):
         if platform == 'android':
@@ -128,7 +129,7 @@ class CalendarWindow(MDScreen):
     #create calendar view
 
     def make_Cal(self,now=True, year=2020, month=6):
-        self.fs = Window.size[1]/35
+        self.manager.get_screen('CalLabels').fs = Window.size[1]/35
         c = calendar.Calendar(0)
 
         #this creates list of date objects for current month at program start or home press
@@ -193,7 +194,15 @@ class CalendarWindow(MDScreen):
             #elif dateData[dateKey]['comment'] == '':
             #    call.ids[my_id].children[0].children[3].label=''
         else: call.ids[my_id].background_color = clearColor
-
+        call.ids[my_id].cl = random.choice(['CL1','CL2'])
+        text = random.choice(['aaa','bb'])
+        self.manager.get_screen('CalLabels').ids[call.ids[my_id].cl].text= text
+        Clock.schedule_once(partial(self.tiskni,call.ids[my_id].cl, call),0)
+        #chzb9 update texture size / nejaky bind? nebo to nastavit na clock
+        #nebo az v clocku vzkreslit rectangly na canvas.after a pred tim nezapomenout na clear
+    
+    def tiskni(self, cl, call, time):
+        print(self.manager.get_screen('CalLabels').ids[cl].texture_size)
     # next or previous month after click
 
     def move_month(self,direction):

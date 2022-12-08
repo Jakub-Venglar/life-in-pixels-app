@@ -16,12 +16,12 @@
     label: ''
     text_color: (1,1,1,1)
     text: '[b]' + self.label + '[/b]'
-    font_size: self.parent.height*0.25 if self.parent else 20
+    font_size:  self.parent.height*0.25 if self.parent else 20
     size_hint_x: None
     size_hint_y: None
     text_size: self.size
-    size: (root.parent.width*.9, root.parent.height*0.97) if root.parent else (60,20)
-    pos: (root.parent.pos[0]+root.width*0.05, root.parent.pos[1]) if root.parent else (10,10)
+    #size: (root.parent.width*.9, root.parent.height*0.97) if root.parent else (60,20)
+    #pos: (root.parent.pos[0]+root.width*0.05, root.parent.pos[1]) if root.parent else (10,10)
 
 <ButtonLabel>:
     ButLabelChild:
@@ -50,6 +50,7 @@
     background_normal: ''
     markup:True
     text: ''
+    cl: ''
     colorset: (12/255,84/255,179/255,.8)
     on_release: 
         app.root.get_screen('Calendar').cal_click(self.date_id, self.my_id)
@@ -74,9 +75,9 @@
     canvas.after:
         Rectangle:
             #source: 'pict/default.jpg' 
-            texture: app.root.get_screen('CalLabels').ids['calLabel1'].texture if app.root else self.texture
-            pos: self.pos
-            size: self.width/3,self.height/3
+            texture: app.root.get_screen('CalLabels').ids[self.cl].texture if app.root else self.texture
+            pos: self.x,self.top-app.root.get_screen('CalLabels').ids['CL1'].texture_size[1] if app.root else self.top
+            size: app.root.get_screen('CalLabels').ids['CL1'].texture_size if app.root else self.size
         Rectangle:
             source: self.testobr
             pos: self.right-self.width/3, self.top-self.height/3
@@ -86,12 +87,18 @@
 
 <CalendarLabels>:
     name: 'CalLabels'
+    fs: 20
     BoxLayout:
         Label:
-            id: calLabel1
-            text: 'aaa'
+            id: CL1
+            text: ''
             size: self.texture_size
-            font_size: 20
+            font_size: root.fs
+        Label:
+            id: CL2
+            text: ''
+            size: self.texture_size
+            font_size: root.fs
         
 <DayLabel@Label>:
     font_size: (self.height+self.width)/4
