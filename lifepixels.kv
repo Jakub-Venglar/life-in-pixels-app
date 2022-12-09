@@ -50,7 +50,7 @@
     background_normal: ''
     markup:True
     text: ''
-    cl: ''
+    cl: 'CL1'
     colorset: (12/255,84/255,179/255,.8)
     on_release: 
         app.root.get_screen('Calendar').cal_click(self.date_id, self.my_id)
@@ -76,8 +76,8 @@
         Rectangle:
             #source: 'pict/default.jpg' 
             texture: app.root.get_screen('CalLabels').ids[self.cl].texture if app.root else self.texture
-            pos: self.x,self.top-app.root.get_screen('CalLabels').ids['CL1'].texture_size[1] if app.root else self.top
-            size: app.root.get_screen('CalLabels').ids['CL1'].texture_size if app.root else self.size
+            pos: self.x,self.top-app.root.get_screen('CalLabels').ids[self.cl].texture_size[1] if app.root else self.top
+            size: app.root.get_screen('CalLabels').ids[self.cl].texture_size if app.root else self.size
         Rectangle:
             source: self.testobr
             pos: self.right-self.width/3, self.top-self.height/3
@@ -357,7 +357,7 @@
             pos_hint: {'center_x': .5}
             CalButton:
                 id: 1-1
-                my_id: '1-2'
+                my_id: '1-1'
             CalButton:
                 id: 1-2
                 my_id: '1-2'

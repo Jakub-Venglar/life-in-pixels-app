@@ -45,6 +45,7 @@ if platform == 'android':
 test= SortedDict({'uh':'oh','ahoj':'none'})
 
 emptyDayData = {'mood':'','comment':''}
+fsDivider = 35
 
 superColor= (255/255,232/255,28/255,.8) #(227/255,65/255,25/255,.8)
 goodColor=(43/255,168/255,8/255,.8)
@@ -75,8 +76,8 @@ class CalendarWindow(MDScreen):
         Window.bind(on_resize = self.labelSize)
 
 
-    def labelSize(self,x,y,z):
-        self.manager.get_screen('CalLabels').fs = z/35
+    def labelSize(self,x=1,y=1,z=1,clocktime=0):
+        self.manager.get_screen('CalLabels').fs = z/fsDivider
 
     def create_user_directory(self):
         if platform == 'android':
@@ -129,7 +130,7 @@ class CalendarWindow(MDScreen):
     #create calendar view
 
     def make_Cal(self,now=True, year=2020, month=6):
-        self.manager.get_screen('CalLabels').fs = Window.size[1]/35
+        self.manager.get_screen('CalLabels').fs = Window.size[1]/fsDivider
         c = calendar.Calendar(0)
 
         #this creates list of date objects for current month at program start or home press
@@ -172,7 +173,7 @@ class CalendarWindow(MDScreen):
                 # if mood for date already set then render it, otherwise make field clear
                 
                 Clock.schedule_once(partial(self.colorize,id,self.ids[id].date_id))
-        self.ids['delete'].date_id = self.ids['3-3'].date_id #set id for delet whole calendar
+        self.ids['delete'].date_id = self.ids['3-3'].date_id #set id for deleting whole calendar
 
     def create_labels(self,id,clocktime=0):
         pass
@@ -198,11 +199,11 @@ class CalendarWindow(MDScreen):
         text = random.choice(['aaa','bb'])
         self.manager.get_screen('CalLabels').ids[call.ids[my_id].cl].text= text
         Clock.schedule_once(partial(self.tiskni,call.ids[my_id].cl, call),0)
-        #chzb9 update texture size / nejaky bind? nebo to nastavit na clock
         #nebo az v clocku vzkreslit rectangly na canvas.after a pred tim nezapomenout na clear
     
     def tiskni(self, cl, call, time):
-        print(self.manager.get_screen('CalLabels').ids[cl].texture_size)
+        pass
+        #print(self.manager.get_screen('CalLabels').ids[cl].texture_size)
     # next or previous month after click
 
     def move_month(self,direction):
