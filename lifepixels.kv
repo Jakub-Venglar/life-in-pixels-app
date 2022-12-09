@@ -73,15 +73,15 @@
             width: 1
             rectangle: self.x, self.y, self.width, self.height
     canvas.after:
-        Rectangle:
-            #source: 'pict/default.jpg' 
-            texture: app.root.get_screen('CalLabels').ids[self.cl].texture if app.root else self.texture
-            pos: self.x,self.top-app.root.get_screen('CalLabels').ids[self.cl].texture_size[1] if app.root else self.top
-            size: app.root.get_screen('CalLabels').ids[self.cl].texture_size if app.root else self.size
-        Rectangle:
-            source: self.testobr
-            pos: self.right-self.width/3, self.top-self.height/3
-            size: (self.width/3,self.height/3) if self.testobr else (0,0)
+        #Rectangle:
+        #    #source: 'pict/default.jpg' 
+        #    texture: app.root.get_screen('CalLabels').ids[self.cl].texture if app.root else self.texture
+        #    pos: self.x,self.top-app.root.get_screen('CalLabels').ids[self.cl].texture_size[1] if app.root else self.top
+        #    size: app.root.get_screen('CalLabels').ids[self.cl].texture_size if app.root else self.size
+        #Rectangle:
+        #    source: self.testobr
+        #    pos: self.right-self.width/3, self.top-self.height/3
+        #    size: (self.width/3,self.height/3) if self.testobr else (0,0)
     #    Color: 
     #        rgba: (53/255,85/255,166/255,.65)
 
@@ -96,6 +96,16 @@
             font_size: root.fs
         Label:
             id: CL2
+            text: ''
+            size: self.texture_size
+            font_size: root.fs
+        Label:
+            id: CL3
+            text: ''
+            size: self.texture_size
+            font_size: root.fs
+        Label:
+            id: CL4
             text: ''
             size: self.texture_size
             font_size: root.fs
@@ -144,6 +154,7 @@
         TextInput:
             id: comment
             text: ''
+            input_type: 'text'
             size_hint: (1, None)
             height: root.height/3
         BoxLayout:

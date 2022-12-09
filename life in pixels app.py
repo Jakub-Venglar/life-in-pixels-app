@@ -11,6 +11,7 @@ from kivy.lang import Builder
 from kivy.clock import Clock
 from functools import partial
 from sortedcontainers import SortedDict
+from kivy.graphics import Rectangle
 from babel.dates import format_date
 
 #TODO: learn how to properly comment and add comments and docstrings
@@ -198,7 +199,11 @@ class CalendarWindow(MDScreen):
         call.ids[my_id].cl = random.choice(['CL1','CL2'])
         text = random.choice(['aaa','bb'])
         self.manager.get_screen('CalLabels').ids[call.ids[my_id].cl].text= text
-        Clock.schedule_once(partial(self.tiskni,call.ids[my_id].cl, call),0)
+
+        with call.ids[my_id].canvas.after:
+            Rectangle(pos=call.ids[my_id].pos, source='pict/default.jpg', size=(call.ids[my_id].width/3,call.ids[my_id].height/3) )
+
+        #Clock.schedule_once(partial(self.tiskni,call.ids[my_id].cl, call),0)
         #nebo az v clocku vzkreslit rectangly na canvas.after a pred tim nezapomenout na clear
     
     def tiskni(self, cl, call, time):
