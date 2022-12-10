@@ -169,7 +169,6 @@ class CalendarWindow(MDScreen):
                 self.ids[id].date_id = setDate
                 self.ids[id].clear_widgets()
                 self.ids[id].colorset = notToday
-                Clock.schedule_once(partial(self.create_labels,id))
 
                 #make current day more visible
                 if setDate == datetime.datetime.date(datetime.datetime.now()):
@@ -182,14 +181,24 @@ class CalendarWindow(MDScreen):
 
     def colorize(self,my_id,date_id,clocktime=0):
         call = self.manager.get_screen('Calendar')
+        calLabels = self.manager.get_screen('CalLabels')
         dateData = call.pass_data(date_id)
         dateKey = str(date_id)
+        calLabels.ids[my_id+'a'].text= ''
+        calLabels.ids[my_id+'b'].text= ''
+        calLabels.ids[my_id+'c'].text= ''
+        calLabels.ids[my_id+'d'].text= ''
+        try:
+            if dateData[dateKey]['comment'] != '':
+                calLabels.ids[my_id+'a'].text= 'T'
+        except KeyError:
+            pass
         if dateKey in dateData:
             call.ids[my_id].background_color = call.choose_color(dateData[str(self.ids[my_id].date_id)]['mood'])
         else: call.ids[my_id].background_color = clearColor
-        Clock.schedule_once(partial(self.create_labels,my_id,date_id))
+        Clock.schedule_once(partial(self.create_labels,my_id,dateData,dateKey))
         
-    def create_labels(self,my_id,date_id,clocktime=0):
+    def create_labels(self,my_id,dateData, dateKey, clocktime=0):
         '''creates labels on canvas of calendar buttons with defined symbols'''
         call = self.manager.get_screen('Calendar')
         calLabels = self.manager.get_screen('CalLabels')
@@ -198,7 +207,11 @@ class CalendarWindow(MDScreen):
         labelIDc = calLabels.ids[my_id+'c']
         labelIDd = calLabels.ids[my_id+'d']
         calButtonID = call.ids[my_id]
-        calLabels.ids[my_id+'a'].text= ''          
+        if dateKey in dateData:
+            if dateData[dateKey]['comment'] != '':
+                calLabels.ids[my_id+'a'].text= 'T'
+            else: 
+                calLabels.ids[my_id+'a'].text= ''
         calLabels.ids[my_id+'b'].text= ''
         calLabels.ids[my_id+'c'].text= ''
         calLabels.ids[my_id+'d'].text= ''
