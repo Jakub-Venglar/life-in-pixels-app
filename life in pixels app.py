@@ -1,6 +1,6 @@
 #! python3
 # Life in pixels project
-import calendar, datetime, os, sys, json, locale, random
+import calendar, datetime, os, sys, json, random
 from kivymd.app import MDApp
 from kivymd.uix.screen import MDScreen
 from kivy.uix.screenmanager import ScreenManager
@@ -42,6 +42,9 @@ if platform == 'android':
 
     from android.permissions import request_permissions, Permission
     request_permissions([Permission.WRITE_EXTERNAL_STORAGE, Permission.READ_EXTERNAL_STORAGE])
+
+if platform == 'win':
+    Window.size = (400*1.5, 712*1.5)
 
 test= SortedDict({'uh':'oh','ahoj':'none'})
 
@@ -176,13 +179,6 @@ class CalendarWindow(MDScreen):
                 Clock.schedule_once(partial(self.colorize,id,self.ids[id].date_id))
         self.ids['delete'].date_id = self.ids['3-3'].date_id #set id for deleting whole calendar
 
-    def create_labels(self,id,clocktime=0):
-        pass
-        #self.ids[id].add_widget(ButtonLabel())
-        #self.ids[id].add_widget(ButtonLabel(valign = 'top', halign ='right'))
-        #self.ids[id].add_widget(ButtonLabel(valign = 'bottom', halign ='right'))
-        #self.ids[id].add_widget(ButtonLabel(valign = 'bottom'))
-
 
         #self.ids['1-1'].children[0].text = 'sadsa'
     def colorize(self,my_id,date_id,clocktime=0):
@@ -191,25 +187,18 @@ class CalendarWindow(MDScreen):
         dateKey = str(date_id)
         if dateKey in dateData:
             call.ids[my_id].background_color = call.choose_color(dateData[str(self.ids[my_id].date_id)]['mood'])
-            #if dateData[dateKey]['comment'] != '':
-            #    call.ids[my_id].children[0].children[3].label='T'
-            #elif dateData[dateKey]['comment'] == '':
-            #    call.ids[my_id].children[0].children[3].label=''
         else: call.ids[my_id].background_color = clearColor
-        call.ids[my_id].cl = random.choice(['CL1','CL2'])
-        text = random.choice(['aaa','bb'])
-        self.manager.get_screen('CalLabels').ids[call.ids[my_id].cl].text= text
+        Clock.schedule_once(partial(self.create_labels,my_id,date_id))
+        
 
+    def create_labels(self,my_id,date_id,clocktime=0):
+        call = self.manager.get_screen('Calendar')
+        calLabels = self.manager.get_screen('CalLabels')
+        calLabels.ids['CL1'].text= random.choice(['T','R','F'])
+        call.ids[my_id].canvas.after.clear()
         with call.ids[my_id].canvas.after:
-            Rectangle(pos=call.ids[my_id].pos, source='pict/default.jpg', size=(call.ids[my_id].width/3,call.ids[my_id].height/3) )
+            Rectangle(pos=call.ids[my_id].pos, texture=calLabels.ids['CL1'].texture, size=calLabels.ids['CL1'].texture_size)
 
-        #Clock.schedule_once(partial(self.tiskni,call.ids[my_id].cl, call),0)
-        #nebo az v clocku vzkreslit rectangly na canvas.after a pred tim nezapomenout na clear
-    
-    def tiskni(self, cl, call, time):
-        pass
-        #print(self.manager.get_screen('CalLabels').ids[cl].texture_size)
-    # next or previous month after click
 
     def move_month(self,direction):
         if direction == 'forward':

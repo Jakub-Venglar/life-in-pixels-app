@@ -55,11 +55,6 @@
     on_release: 
         app.root.get_screen('Calendar').cal_click(self.date_id, self.my_id)
     canvas.before:
-        
-        #Rectangle:
-        #    source: self.pict_source
-        #    size: (self.width/2, self.height/2)
-        #    pos: self.pos
         Color: 
             rgba: self.colorset
         Ellipse:
@@ -72,18 +67,6 @@
         Line:
             width: 1
             rectangle: self.x, self.y, self.width, self.height
-    canvas.after:
-        #Rectangle:
-        #    #source: 'pict/default.jpg' 
-        #    texture: app.root.get_screen('CalLabels').ids[self.cl].texture if app.root else self.texture
-        #    pos: self.x,self.top-app.root.get_screen('CalLabels').ids[self.cl].texture_size[1] if app.root else self.top
-        #    size: app.root.get_screen('CalLabels').ids[self.cl].texture_size if app.root else self.size
-        #Rectangle:
-        #    source: self.testobr
-        #    pos: self.right-self.width/3, self.top-self.height/3
-        #    size: (self.width/3,self.height/3) if self.testobr else (0,0)
-    #    Color: 
-    #        rgba: (53/255,85/255,166/255,.65)
 
 <CalendarLabels>:
     name: 'CalLabels'
