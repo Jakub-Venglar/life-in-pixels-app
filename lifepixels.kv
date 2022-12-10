@@ -67,31 +67,6 @@
         Line:
             width: 1
             rectangle: self.x, self.y, self.width, self.height
-
-<CalendarLabels>:
-    name: 'CalLabels'
-    fs: 20
-    BoxLayout:
-        Label:
-            id: CL1
-            text: ''
-            size: self.texture_size
-            font_size: root.fs
-        Label:
-            id: CL2
-            text: ''
-            size: self.texture_size
-            font_size: root.fs
-        Label:
-            id: CL3
-            text: ''
-            size: self.texture_size
-            font_size: root.fs
-        Label:
-            id: CL4
-            text: ''
-            size: self.texture_size
-            font_size: root.fs
         
 <DayLabel@Label>:
     font_size: (self.height+self.width)/4
@@ -483,3 +458,293 @@
             on_press: 
                 root.manager.transition.direction = 'left'
                 root.manager.current = 'Settings'
+
+<TextureLabel@Label>
+    text: ''
+    size: self.texture_size
+    font_size: root.parent.parent.fs
+
+<CalendarLabels>:
+    name: 'CalLabels'
+    fs: 20
+    BoxLayout:
+        TextureLabel:
+            id: 1-1a
+        TextureLabel:
+            id: 1-1b
+        TextureLabel:
+            id: 1-1c
+        TextureLabel:
+            id: 1-1d
+        TextureLabel:
+            id: 1-2a
+        TextureLabel:
+            id: 1-2b
+        TextureLabel:
+            id: 1-2c
+        TextureLabel:
+            id: 1-2d
+        TextureLabel:
+            id: 1-3a
+        TextureLabel:
+            id: 1-3b
+        TextureLabel:
+            id: 1-3c
+        TextureLabel:
+            id: 1-3d
+        TextureLabel:
+            id: 1-4a
+        TextureLabel:
+            id: 1-4b
+        TextureLabel:
+            id: 1-4c
+        TextureLabel:
+            id: 1-4d
+        TextureLabel:
+            id: 1-5a
+        TextureLabel:
+            id: 1-5b
+        TextureLabel:
+            id: 1-5c
+        TextureLabel:
+            id: 1-5d
+        TextureLabel:
+            id: 1-6a
+        TextureLabel:
+            id: 1-6b
+        TextureLabel:
+            id: 1-6c
+        TextureLabel:
+            id: 1-6d
+        TextureLabel:
+            id: 1-7a
+        TextureLabel:
+            id: 1-7b
+        TextureLabel:
+            id: 1-7c
+        TextureLabel:
+            id: 1-7d
+        TextureLabel:
+            id: 2-1a
+        TextureLabel:
+            id: 2-1b
+        TextureLabel:
+            id: 2-1c
+        TextureLabel:
+            id: 2-1d
+        TextureLabel:
+            id: 2-2a
+        TextureLabel:
+            id: 2-2b
+        TextureLabel:
+            id: 2-2c
+        TextureLabel:
+            id: 2-2d
+        TextureLabel:
+            id: 2-3a
+        TextureLabel:
+            id: 2-3b
+        TextureLabel:
+            id: 2-3c
+        TextureLabel:
+            id: 2-3d
+        TextureLabel:
+            id: 2-4a
+        TextureLabel:
+            id: 2-4b
+        TextureLabel:
+            id: 2-4c
+        TextureLabel:
+            id: 2-4d
+        TextureLabel:
+            id: 2-5a
+        TextureLabel:
+            id: 2-5b
+        TextureLabel:
+            id: 2-5c
+        TextureLabel:
+            id: 2-5d
+        TextureLabel:
+            id: 2-6a
+        TextureLabel:
+            id: 2-6b
+        TextureLabel:
+            id: 2-6c
+        TextureLabel:
+            id: 2-6d
+        TextureLabel:
+            id: 2-7a
+        TextureLabel:
+            id: 2-7b
+        TextureLabel:
+            id: 2-7c
+        TextureLabel:
+            id: 2-7d
+        TextureLabel:
+            id: 3-1a
+        TextureLabel:
+            id: 3-1b
+        TextureLabel:
+            id: 3-1c
+        TextureLabel:
+            id: 3-1d
+        TextureLabel:
+            id: 3-2a
+        TextureLabel:
+            id: 3-2b
+        TextureLabel:
+            id: 3-2c
+        TextureLabel:
+            id: 3-2d
+        TextureLabel:
+            id: 3-3a
+        TextureLabel:
+            id: 3-3b
+        TextureLabel:
+            id: 3-3c
+        TextureLabel:
+            id: 3-3d
+        TextureLabel:
+            id: 3-4a
+        TextureLabel:
+            id: 3-4b
+        TextureLabel:
+            id: 3-4c
+        TextureLabel:
+            id: 3-4d
+        TextureLabel:
+            id: 3-5a
+        TextureLabel:
+            id: 3-5b
+        TextureLabel:
+            id: 3-5c
+        TextureLabel:
+            id: 3-5d
+        TextureLabel:
+            id: 3-6a
+        TextureLabel:
+            id: 3-6b
+        TextureLabel:
+            id: 3-6c
+        TextureLabel:
+            id: 3-6d
+        TextureLabel:
+            id: 3-7a
+        TextureLabel:
+            id: 3-7b
+        TextureLabel:
+            id: 3-7c
+        TextureLabel:
+            id: 3-7d
+        TextureLabel:
+            id: 4-1a
+        TextureLabel:
+            id: 4-1b
+        TextureLabel:
+            id: 4-1c
+        TextureLabel:
+            id: 4-1d
+        TextureLabel:
+            id: 4-2a
+        TextureLabel:
+            id: 4-2b
+        TextureLabel:
+            id: 4-2c
+        TextureLabel:
+            id: 4-2d
+        TextureLabel:
+            id: 4-3a
+        TextureLabel:
+            id: 4-3b
+        TextureLabel:
+            id: 4-3c
+        TextureLabel:
+            id: 4-3d
+        TextureLabel:
+            id: 4-4a
+        TextureLabel:
+            id: 4-4b
+        TextureLabel:
+            id: 4-4c
+        TextureLabel:
+            id: 4-4d
+        TextureLabel:
+            id: 4-5a
+        TextureLabel:
+            id: 4-5b
+        TextureLabel:
+            id: 4-5c
+        TextureLabel:
+            id: 4-5d
+        TextureLabel:
+            id: 4-6a
+        TextureLabel:
+            id: 4-6b
+        TextureLabel:
+            id: 4-6c
+        TextureLabel:
+            id: 4-6d
+        TextureLabel:
+            id: 4-7a
+        TextureLabel:
+            id: 4-7b
+        TextureLabel:
+            id: 4-7c
+        TextureLabel:
+            id: 4-7d
+        TextureLabel:
+            id: 5-1a
+        TextureLabel:
+            id: 5-1b
+        TextureLabel:
+            id: 5-1c
+        TextureLabel:
+            id: 5-1d
+        TextureLabel:
+            id: 5-2a
+        TextureLabel:
+            id: 5-2b
+        TextureLabel:
+            id: 5-2c
+        TextureLabel:
+            id: 5-2d
+        TextureLabel:
+            id: 5-3a
+        TextureLabel:
+            id: 5-3b
+        TextureLabel:
+            id: 5-3c
+        TextureLabel:
+            id: 5-3d
+        TextureLabel:
+            id: 5-4a
+        TextureLabel:
+            id: 5-4b
+        TextureLabel:
+            id: 5-4c
+        TextureLabel:
+            id: 5-4d
+        TextureLabel:
+            id: 5-5a
+        TextureLabel:
+            id: 5-5b
+        TextureLabel:
+            id: 5-5c
+        TextureLabel:
+            id: 5-5d
+        TextureLabel:
+            id: 5-6a
+        TextureLabel:
+            id: 5-6b
+        TextureLabel:
+            id: 5-6c
+        TextureLabel:
+            id: 5-6d
+        TextureLabel:
+            id: 5-7a
+        TextureLabel:
+            id: 5-7b
+        TextureLabel:
+            id: 5-7c
+        TextureLabel:
+            id: 5-7d

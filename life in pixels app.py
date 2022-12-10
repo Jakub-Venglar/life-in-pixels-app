@@ -45,6 +45,8 @@ if platform == 'android':
 
 if platform == 'win':
     Window.size = (400*1.5, 712*1.5)
+    Window.top = 50
+    Window.left = 50
 
 test= SortedDict({'uh':'oh','ahoj':'none'})
 
@@ -104,7 +106,6 @@ class CalendarWindow(MDScreen):
     def switch_to_ext_storage(self):
         pass
     
-
     def pass_data(self,date_id):
         year = str(date_id)[:4]
         if year != self.currentYear:
@@ -175,12 +176,10 @@ class CalendarWindow(MDScreen):
                     self.ids[id].colorset = today
                 
                 # if mood for date already set then render it, otherwise make field clear
-                
                 Clock.schedule_once(partial(self.colorize,id,self.ids[id].date_id))
+        
         self.ids['delete'].date_id = self.ids['3-3'].date_id #set id for deleting whole calendar
 
-
-        #self.ids['1-1'].children[0].text = 'sadsa'
     def colorize(self,my_id,date_id,clocktime=0):
         call = self.manager.get_screen('Calendar')
         dateData = call.pass_data(date_id)
@@ -190,15 +189,25 @@ class CalendarWindow(MDScreen):
         else: call.ids[my_id].background_color = clearColor
         Clock.schedule_once(partial(self.create_labels,my_id,date_id))
         
-
     def create_labels(self,my_id,date_id,clocktime=0):
+        '''creates labels on canvas of calendar buttons with defined symbols'''
         call = self.manager.get_screen('Calendar')
         calLabels = self.manager.get_screen('CalLabels')
-        calLabels.ids['CL1'].text= random.choice(['T','R','F'])
+        labelIDa = calLabels.ids[my_id+'a']
+        labelIDb = calLabels.ids[my_id+'b']
+        labelIDc = calLabels.ids[my_id+'c']
+        labelIDd = calLabels.ids[my_id+'d']
+        calButtonID = call.ids[my_id]
+        calLabels.ids[my_id+'a'].text= ''          
+        calLabels.ids[my_id+'b'].text= ''
+        calLabels.ids[my_id+'c'].text= ''
+        calLabels.ids[my_id+'d'].text= ''
         call.ids[my_id].canvas.after.clear()
         with call.ids[my_id].canvas.after:
-            Rectangle(pos=call.ids[my_id].pos, texture=calLabels.ids['CL1'].texture, size=calLabels.ids['CL1'].texture_size)
-
+            Rectangle(size=labelIDa.texture_size, pos=(calButtonID.x, calButtonID.top-labelIDa.texture_size[1]), texture=labelIDa.texture)
+            Rectangle(size=labelIDb.texture_size, pos=(calButtonID.right-labelIDb.texture_size[0], calButtonID.top-labelIDb.texture_size[1]), texture=labelIDb.texture)
+            Rectangle(size=labelIDc.texture_size, pos=(calButtonID.right-labelIDc.texture_size[0], calButtonID.y), texture=labelIDc.texture)
+            Rectangle(size=labelIDd.texture_size, pos=calButtonID.pos, texture=labelIDd.texture)
 
     def move_month(self,direction):
         if direction == 'forward':
