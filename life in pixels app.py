@@ -130,7 +130,8 @@ class CalendarWindow(MDScreen):
         year = str(date_id)[:4]
         with open(f'caldata-{year}.json', 'w', encoding='utf-8') as file:
             file.write('{}')
-        self.make_Cal()
+        self.make_Cal(now=True)
+        self.make_Cal(now=True) # clock is not working but this yes....
 
     #create calendar view
 
@@ -249,7 +250,7 @@ class CalendarWindow(MDScreen):
             year= int(self.yearID) - 1
         self.make_Cal(now=False, year=year, month=month)
     
-    def present_click(self):
+    def present_click(self, clocktime=0):
         self.make_Cal(now=True)
 
     # make colors
@@ -278,8 +279,7 @@ class CalendarWindow(MDScreen):
         dateData = self.pass_data(date_id)
         daySetting.date_id = date_id
         daySetting.my_id = my_id
-        dayZero = date_id.strftime('%d. ').lstrip('0')
-        daySetting.current_date = date_id.strftime('%A ') + dayZero + date_id.strftime('%B %Y')
+        daySetting.current_date = format_date(date_id,"long", locale='cs_CZ')
         daySetting.ids.terrible.background_color = terribleColor
         daySetting.ids.bad.background_color = badColor
         daySetting.ids.average.background_color = averageColor
