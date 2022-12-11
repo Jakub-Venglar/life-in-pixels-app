@@ -50,7 +50,7 @@ if platform == 'win':
 
 test= SortedDict({'uh':'oh','ahoj':'none'})
 
-emptyDayData = {'mood':'','comment':''}
+emptyDayData = {'mood':'','mood2':'','doubleMood': False, 'comment':''}
 fsDivider = 35
 
 superColor= (255/255,232/255,28/255,.8) #(227/255,65/255,25/255,.8)
@@ -59,6 +59,7 @@ averageColor=(138/255,153/255,184/255,.8)
 badColor= (117/255,32/255,16/255,.8) #(150/255,39/255,20/255,.8)
 terribleColor=(28/255,49/255,36/255,.8)
 clearColor = (.5,.5,.5,.45)
+noColor = (0,0,0,0)
 
 today = (12/255,84/255,179/255,.8)
 notToday = (12/255,84/255,179/255,0)
@@ -112,7 +113,7 @@ class CalendarWindow(MDScreen):
             self.currentYear = year
             try:   
                 with open(f'caldata-{year}.json', 'r', encoding='utf-8') as file:
-                    yearData =  eval(file.read())
+                    yearData =  json.loads(file.read())
             except FileNotFoundError: 
                 with open(f'caldata-{year}.json', 'w', encoding='utf-8') as file:
                     file.write('{}')
@@ -195,8 +196,16 @@ class CalendarWindow(MDScreen):
         except KeyError:
             pass
         if dateKey in dateData:
-            call.ids[my_id].background_color = call.choose_color(dateData[str(self.ids[my_id].date_id)]['mood'])
-        else: call.ids[my_id].background_color = clearColor
+            #check for double mood - if yes, set it and clear background
+            if dateData[dateKey]['doubleMood'] == True:
+                call.ids[my_id].background_color = clearColor
+                call.ids[my_id].doublemood = True
+                call.ids[my_id].colorset = call.choose_color(dateData[str(self.ids[my_id].date_id)]['mood'])
+            else:
+                call.ids[my_id].colorset = noColor
+                call.ids[my_id].background_color = call.choose_color(dateData[str(self.ids[my_id].date_id)]['mood'])
+        else: 
+            call.ids[my_id].background_color = clearColor
         Clock.schedule_once(partial(self.create_labels,my_id,dateData,dateKey))
         
     def create_labels(self,my_id,dateData, dateKey, clocktime=0):
@@ -254,7 +263,7 @@ class CalendarWindow(MDScreen):
         self.make_Cal(now=True)
 
     # make colors
-    
+
     def choose_color(cls, value):
         if value == 'super':
             return superColor
@@ -286,8 +295,9 @@ class CalendarWindow(MDScreen):
         daySetting.ids.good.background_color = goodColor
         daySetting.ids.super.background_color = superColor
         dateData[dateKey] = dateData.setdefault(dateKey, emptyDayData.copy())
+        daySetting.ids.doubleMoodCheck.active = dateData[dateKey]['doubleMood']
         daySetting.ids.question.bg = self.choose_color(dateData[dateKey]['mood'] )
-        daySetting.ids.comment.text = dateData[dateKey]['comment']    
+        daySetting.ids.comment.text = dateData[dateKey]['comment']
 
 class DayWindow(MDScreen):
     #click at pop pop up write values into calendar
@@ -302,7 +312,17 @@ class DayWindow(MDScreen):
         call.save_data(dateData,self.date_id)
         call.colorize(self.my_id,self.date_id)
 
-    
+    def double_mood (self, value):
+        call = self.manager.get_screen('Calendar')
+        dateData = call.pass_data(self.date_id)
+        dateKey = str(self.date_id)
+        dateData[dateKey] = dateData.setdefault(dateKey, emptyDayData.copy())
+        if self.ids.doubleMoodCheck.active == True:
+            dateData[dateKey]['doubleMood'] = True
+        else:
+            dateData[dateKey]['doubleMood'] = False
+        call.save_data(dateData,self.date_id)
+
     def save_text(self, text):
         call = self.manager.get_screen('Calendar')
         dateData = call.pass_data(self.date_id)

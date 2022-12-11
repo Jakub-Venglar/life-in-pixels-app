@@ -52,8 +52,8 @@
     text: ''
     doublemood: False
     today: None
-    colorset: (12/255,84/255,179/255,.8)
-    colorset2: (138/255,153/255,184/255,.8)
+    colorset: None
+    colorset2: (0,0,0,0)
     on_release: 
         app.root.get_screen('Calendar').cal_click(self.date_id, self.my_id)
     canvas.before:
@@ -65,22 +65,21 @@
             rgba: self.colorset2 if self.doublemood == True else (0,0,0,0)
         Triangle:
             points: self.x, self.y, self.right, self.y, self.right, self.top
-        #Ellipse:
-        #    #angle_start: 20
-        #    #angle_end: 320
-        #    size: self.width/1.5, self.width/1.5 #if self.today == True else (0,0)
-        #    pos: self.center_x - self.width/3, self.center_y - self.width/3
-    canvas:
         Color: 
             rgba: (1,1,1,.8)
         Line:
             width: 1
-            rectangle: self.x, self.y, self.width, self.height
+            rectangle: self.x, self.y, self.width, self.height 
         Color: 
             rgba: self.today if self.today else (0,0,0,0)
         Line:
             width: 2
             circle: (self.center_x, self.center_y,self.width/2.5)
+        #Ellipse:
+        #    #angle_start: 20
+        #    #angle_end: 320
+        #    size: self.width/1.5, self.width/1.5 #if self.today == True else (0,0)
+        #    pos: self.center_x - self.width/3, self.center_y - self.width/3
         
 
 <DayLabel@Label>:
@@ -97,13 +96,9 @@
 <DayWindow>:
     name: 'DayMood'
     current_date: ''
-    canvas.before:
-    #Color: 
-    #    rgba: (1,1,1,1)
-        Rectangle:
-            size: 3/2*root.height, root.height
-            pos: self.width/2-3/2*root.height/2, self.height/2 - root.height/2
-            source: ('pict/' + app.root.get_screen('Settings').bgsource)  if app.root else 'pict/default.jpg'
+    FitImage:
+        size_hint_y: 1
+        source: ('pict/' + app.root.get_screen('Settings').bgsource)  if app.root else 'pict/default.jpg'
     BoxLayout:
         orientation: 'vertical'
         Label:
@@ -132,6 +127,14 @@
             height: root.height/3
         BoxLayout:
             orientation: 'horizontal'
+            MDCheckbox:
+                id: doubleMoodCheck
+                size_hint: None, None
+                size: "48dp", "48dp"
+                pos_hint: {'center_x': .5, 'center_y': .5}
+                on_active:
+                    app.root.current_screen.double_mood(self.active)
+
             MoodButton:
                 id: terrible
                 text: 'Katastrofa'
