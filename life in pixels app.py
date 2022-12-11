@@ -19,7 +19,6 @@ from babel.dates import format_date
 #TODO: ask for name at the begining and personalize saved files (because of possible multiuser in future)
 #TODO: finish tutorials so I have better idea what I am doing :)
 #TODO: use sorted dict, avoid loading everything (one year should be enough) - one file for every year
-#TODO: faster rendering labels
 #TODO: solve how to show habit labels
 #TODO: add option for set your own colors
 #TODO: choice from default pictures or your own as BG

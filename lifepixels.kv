@@ -55,19 +55,22 @@
     on_release: 
         app.root.get_screen('Calendar').cal_click(self.date_id, self.my_id)
     canvas.before:
-        Color: 
-            rgba: self.colorset
-        Ellipse:
-            #angle_start: 20
-            #angle_end: 320
-            size: self.width/1.5, self.width/1.5 #if self.today == True else (0,0)
-            pos: self.center_x - self.width/3, self.center_y - self.width/3
+        #Ellipse:
+        #    #angle_start: 20
+        #    #angle_end: 320
+        #    size: self.width/1.5, self.width/1.5 #if self.today == True else (0,0)
+        #    pos: self.center_x - self.width/3, self.center_y - self.width/3
         Color: 
             rgba: (1,1,1,.8)
         Line:
             width: 1
             rectangle: self.x, self.y, self.width, self.height
-        
+    canvas:
+        Color: 
+            rgba: self.colorset
+        Line:
+            width: 2
+            circle: (self.center_x, self.center_y,self.width/2.5)
 <DayLabel@Label>:
     font_size: (self.height+self.width)/4
     canvas.before:
