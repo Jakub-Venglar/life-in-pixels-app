@@ -15,6 +15,7 @@ from kivy.graphics import Rectangle
 from babel.dates import format_date
 
 #TODO: learn how to properly comment and add comments and docstrings
+#TODO: add loading screen and wait until calendar and widow are constructed
 #TODO: add habits/activities, render them if accomplished on the main calendar - possibility to track them (show how many or just checkbox if accomplished)
 #TODO: ask for name at the begining and personalize saved files (because of possible multiuser in future)
 #TODO: finish tutorials so I have better idea what I am doing :)
@@ -168,11 +169,11 @@ class CalendarWindow(MDScreen):
                 self.ids.month_Label.text = str(monthLabel)
                 self.ids[id].date_id = setDate
                 self.ids[id].clear_widgets()
-                self.ids[id].colorset = notToday
+                self.ids[id].today = notToday
 
                 #make current day more visible
                 if setDate == datetime.datetime.date(datetime.datetime.now()):
-                    self.ids[id].colorset = today
+                    self.ids[id].today = today
                 
                 # if mood for date already set then render it, otherwise make field clear
                 Clock.schedule_once(partial(self.colorize,id,self.ids[id].date_id))
@@ -253,7 +254,7 @@ class CalendarWindow(MDScreen):
         self.make_Cal(now=True)
 
     # make colors
-
+    
     def choose_color(cls, value):
         if value == 'super':
             return superColor
