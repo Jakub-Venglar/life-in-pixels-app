@@ -11,7 +11,7 @@ from kivy.lang import Builder
 from kivy.clock import Clock
 from functools import partial
 from sortedcontainers import SortedDict
-from kivy.graphics import Rectangle
+from kivy.graphics import Rectangle, Color, Line
 from babel.dates import format_date
 
 #TODO: learn how to properly comment and add comments and docstrings
@@ -53,10 +53,10 @@ test= SortedDict({'uh':'oh','ahoj':'none'})
 emptyDayData = {'mood':'','mood2':'','doubleMood': False, 'comment':''}
 fsDivider = 35
 
-superColor= (255/255,232/255,28/255,.8) #(227/255,65/255,25/255,.8)
+superColor= (242/255,85/255,12/255,.8)#(227/255,65/255,25/255,.8) #(255/255,232/255,28/255,.8)
 goodColor=(43/255,168/255,8/255,.8)
 averageColor=(138/255,153/255,184/255,.8)
-badColor= (117/255,32/255,16/255,.8) #(150/255,39/255,20/255,.8)
+badColor= (28/255,49/255,36/255,.8) #(117/255,32/255,16/255,.8) #(150/255,39/255,20/255,.8)
 terribleColor=(28/255,49/255,36/255,.8)
 clearColor = (.5,.5,.5,.45)
 noColor = (0,0,0,0)
@@ -171,15 +171,23 @@ class CalendarWindow(MDScreen):
                 self.ids[id].date_id = setDate
                 self.ids[id].clear_widgets()
                 self.ids[id].today = notToday
+                self.ids[id].colorset = noColor
+                self.ids[id].colorset2 = noColor
+                self.ids[id].canvas.after.clear()
 
                 #make current day more visible
                 if setDate == datetime.datetime.date(datetime.datetime.now()):
-                    self.ids[id].today = today
-                
+                    self.ids[id].isToday = True
+                else:
+                    self.ids[id].isToday = False
+
                 # if mood for date already set then render it, otherwise make field clear
                 Clock.schedule_once(partial(self.colorize,id,self.ids[id].date_id))
         
         self.ids['delete'].date_id = self.ids['3-3'].date_id #set id for deleting whole calendar
+
+    def circle_today(self,id,clocktime=0):
+        pass
 
     def colorize(self,my_id,date_id,clocktime=0):
         call = self.manager.get_screen('Calendar')
@@ -198,11 +206,11 @@ class CalendarWindow(MDScreen):
         if dateKey in dateData:
             #check for double mood - if yes, set it and clear background
             if dateData[dateKey]['doubleMood'] == True:
-                call.ids[my_id].background_color = clearColor
+                call.ids[my_id].background_color = noColor
                 call.ids[my_id].doublemood = True
                 call.ids[my_id].colorset = call.choose_color(dateData[str(self.ids[my_id].date_id)]['mood'])
+                call.ids[my_id].colorset2 = (43/255,168/255,8/255,.6) #call.choose_color(dateData[str(self.ids[my_id].date_id)]['mood'])
             else:
-                call.ids[my_id].colorset = noColor
                 call.ids[my_id].background_color = call.choose_color(dateData[str(self.ids[my_id].date_id)]['mood'])
         else: 
             call.ids[my_id].background_color = clearColor
@@ -225,8 +233,12 @@ class CalendarWindow(MDScreen):
         calLabels.ids[my_id+'b'].text= ''
         calLabels.ids[my_id+'c'].text= ''
         calLabels.ids[my_id+'d'].text= ''
-        call.ids[my_id].canvas.after.clear()
+
         with call.ids[my_id].canvas.after:
+            if call.ids[my_id].isToday == True:
+                Color(rgba = today)
+                Line(width = 2, circle= (call.ids[my_id].center_x, call.ids[my_id].center_y,call.ids[my_id].width/2.5))
+            Color(rgba = (1,1,1,1))
             Rectangle(size=labelIDa.texture_size, pos=(calButtonID.x, calButtonID.top-labelIDa.texture_size[1]), texture=labelIDa.texture)
             Rectangle(size=labelIDb.texture_size, pos=(calButtonID.right-labelIDb.texture_size[0], calButtonID.top-labelIDb.texture_size[1]), texture=labelIDb.texture)
             Rectangle(size=labelIDc.texture_size, pos=(calButtonID.right-labelIDc.texture_size[0], calButtonID.y), texture=labelIDc.texture)
@@ -289,7 +301,7 @@ class CalendarWindow(MDScreen):
         daySetting.date_id = date_id
         daySetting.my_id = my_id
         daySetting.current_date = format_date(date_id,"long", locale='cs_CZ')
-        daySetting.ids.terrible.background_color = terribleColor
+        #daySetting.ids.terrible.background_color = terribleColor
         daySetting.ids.bad.background_color = badColor
         daySetting.ids.average.background_color = averageColor
         daySetting.ids.good.background_color = goodColor
@@ -322,6 +334,9 @@ class DayWindow(MDScreen):
         else:
             dateData[dateKey]['doubleMood'] = False
         call.save_data(dateData,self.date_id)
+        call.ids[self.my_id].colorset = noColor
+        call.ids[self.my_id].colorset2 = noColor
+        call.colorize(self.my_id,self.date_id)
 
     def save_text(self, text):
         call = self.manager.get_screen('Calendar')

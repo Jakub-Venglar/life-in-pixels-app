@@ -52,17 +52,17 @@
     text: ''
     doublemood: False
     today: None
-    colorset: None
+    colorset: (0,0,0,0)
     colorset2: (0,0,0,0)
     on_release: 
         app.root.get_screen('Calendar').cal_click(self.date_id, self.my_id)
     canvas.before:
         Color: 
-            rgba: self.colorset if self.doublemood == True else (0,0,0,0)
+            rgba: self.colorset
         Triangle:
             points: self.x, self.y, self.x, self.top, self.right, self.top
         Color: 
-            rgba: self.colorset2 if self.doublemood == True else (0,0,0,0)
+            rgba: self.colorset2
         Triangle:
             points: self.x, self.y, self.right, self.y, self.right, self.top
         Color: 
@@ -70,11 +70,11 @@
         Line:
             width: 1
             rectangle: self.x, self.y, self.width, self.height 
-        Color: 
-            rgba: self.today if self.today else (0,0,0,0)
-        Line:
-            width: 2
-            circle: (self.center_x, self.center_y,self.width/2.5)
+        #Color: 
+        #    rgba: self.today if self.today else (0,0,0,0)
+        #Line:
+        #    width: 2
+        #    circle: (self.center_x, self.center_y,self.width/2.5)
         #Ellipse:
         #    #angle_start: 20
         #    #angle_end: 320
@@ -135,13 +135,13 @@
                 on_active:
                     app.root.current_screen.double_mood(self.active)
 
-            MoodButton:
-                id: terrible
-                text: 'Katastrofa'
-                on_press: app.root.current_screen.mood_click('terrible', comment.text)
-                on_release: 
-                    app.root.transition.direction = 'right'
-                    app.root.current = 'Calendar'
+           #MoodButton:
+           #    id: terrible
+           #    text: 'Katastrofa'
+           #    on_press: app.root.current_screen.mood_click('terrible', comment.text)
+           #    on_release: 
+           #        app.root.transition.direction = 'right'
+           #        app.root.current = 'Calendar'
             MoodButton:
                 id: bad
                 text: 'Na houby'
