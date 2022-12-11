@@ -51,7 +51,6 @@
     markup:True
     text: ''
     doublemood: False
-    today: None
     colorset: (0,0,0,0)
     colorset2: (0,0,0,0)
     on_release: 
@@ -69,18 +68,7 @@
             rgba: (1,1,1,.8)
         Line:
             width: 1
-            rectangle: self.x, self.y, self.width, self.height 
-        #Color: 
-        #    rgba: self.today if self.today else (0,0,0,0)
-        #Line:
-        #    width: 2
-        #    circle: (self.center_x, self.center_y,self.width/2.5)
-        #Ellipse:
-        #    #angle_start: 20
-        #    #angle_end: 320
-        #    size: self.width/1.5, self.width/1.5 #if self.today == True else (0,0)
-        #    pos: self.center_x - self.width/3, self.center_y - self.width/3
-        
+            rectangle: self.x, self.y, self.width, self.height         
 
 <DayLabel@Label>:
     font_size: (self.height+self.width)/4
@@ -96,6 +84,7 @@
 <DayWindow>:
     name: 'DayMood'
     current_date: ''
+    setMoodNum: 1
     FitImage:
         size_hint_y: 1
         source: ('pict/' + app.root.get_screen('Settings').bgsource)  if app.root else 'pict/default.jpg'
@@ -146,30 +135,20 @@
                 id: bad
                 text: 'Na houby'
                 on_press: app.root.current_screen.mood_click('bad', comment.text)
-                on_release: 
-                    app.root.transition.direction = 'right'
-                    app.root.current = 'Calendar'
             MoodButton:
                 id: average  
                 text: 'Šedivý průměr'
                 on_press: app.root.current_screen.mood_click('average', comment.text)
-                on_release: 
-                    app.root.transition.direction = 'right'
-                    app.root.current = 'Calendar'
             MoodButton:
                 id: good
                 text: 'Užil(a) jsem si ho'
                 on_press: app.root.current_screen.mood_click('good', comment.text)
-                on_release: 
-                    app.root.transition.direction = 'right'
-                    app.root.current = 'Calendar'
+
             MoodButton:
                 id: super
                 text: 'Boží!'
                 on_press: app.root.current_screen.mood_click('super', comment.text)
-                on_release: 
-                    app.root.transition.direction = 'right'
-                    app.root.current = 'Calendar'
+
         Button:         
             text: 'Uložit jen text a zavřít'
             on_release: 

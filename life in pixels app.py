@@ -1,6 +1,6 @@
 #! python3
 # Life in pixels project
-import calendar, datetime, os, sys, json, random
+import calendar, datetime, os, sys, json
 from kivymd.app import MDApp
 from kivymd.uix.screen import MDScreen
 from kivy.uix.screenmanager import ScreenManager
@@ -20,13 +20,18 @@ from babel.dates import format_date
 #TODO: ask for name at the begining and personalize saved files (because of possible multiuser in future)
 #TODO: finish tutorials so I have better idea what I am doing :)
 #TODO: use sorted dict, avoid loading everything (one year should be enough) - one file for every year
-#TODO: solve how to show habit labels
+#TODO: @solve how to show habit labels
+
+#TODO: @set better gui for double mood, set instructions for mood one and two
+#TODO: @set better gui for day setting (close, save)
+#TODO: set that after click if not double mood save and close
+
 #TODO: add option for set your own colors
 #TODO: choice from default pictures or your own as BG
 #TODO: add, picture of the day, copy to dedicated folder and name it, backup
 #TODO: make printable page, with summary of the year/month
-#TODO: sync between computer and mobile app - at PC you can see better bigger picture
-#TODO: backup possibilities
+#TODO: @sync between computer and mobile app - at PC you can see better bigger picture
+#TODO: @backup possibilities
 # maybe todo: add location on the map, later show pins on the map
 
 
@@ -170,10 +175,9 @@ class CalendarWindow(MDScreen):
                 self.ids.month_Label.text = str(monthLabel)
                 self.ids[id].date_id = setDate
                 self.ids[id].clear_widgets()
-                self.ids[id].today = notToday
                 self.ids[id].colorset = noColor
                 self.ids[id].colorset2 = noColor
-                self.ids[id].canvas.after.clear()
+                
 
                 #make current day more visible
                 if setDate == datetime.datetime.date(datetime.datetime.now()):
@@ -186,12 +190,10 @@ class CalendarWindow(MDScreen):
         
         self.ids['delete'].date_id = self.ids['3-3'].date_id #set id for deleting whole calendar
 
-    def circle_today(self,id,clocktime=0):
-        pass
-
     def colorize(self,my_id,date_id,clocktime=0):
         call = self.manager.get_screen('Calendar')
         calLabels = self.manager.get_screen('CalLabels')
+        call.ids[my_id].canvas.after.clear()
         dateData = call.pass_data(date_id)
         dateKey = str(date_id)
         calLabels.ids[my_id+'a'].text= ''
@@ -206,10 +208,12 @@ class CalendarWindow(MDScreen):
         if dateKey in dateData:
             #check for double mood - if yes, set it and clear background
             if dateData[dateKey]['doubleMood'] == True:
+                mood1 = call.choose_color(dateData[str(self.ids[my_id].date_id)]['mood'])
+                mood2 = call.choose_color(dateData[str(self.ids[my_id].date_id)]['mood2'])
                 call.ids[my_id].background_color = noColor
                 call.ids[my_id].doublemood = True
-                call.ids[my_id].colorset = call.choose_color(dateData[str(self.ids[my_id].date_id)]['mood'])
-                call.ids[my_id].colorset2 = (43/255,168/255,8/255,.6) #call.choose_color(dateData[str(self.ids[my_id].date_id)]['mood'])
+                call.ids[my_id].colorset = (mood1[0],mood1[1],mood1[2],mood1[3]-.2)
+                call.ids[my_id].colorset2 = (mood2[0],mood2[1],mood2[2],mood1[3]-.2) #call.choose_color(dateData[str(self.ids[my_id].date_id)]['mood'])
             else:
                 call.ids[my_id].background_color = call.choose_color(dateData[str(self.ids[my_id].date_id)]['mood'])
         else: 
@@ -233,7 +237,6 @@ class CalendarWindow(MDScreen):
         calLabels.ids[my_id+'b'].text= ''
         calLabels.ids[my_id+'c'].text= ''
         calLabels.ids[my_id+'d'].text= ''
-
         with call.ids[my_id].canvas.after:
             if call.ids[my_id].isToday == True:
                 Color(rgba = today)
@@ -319,7 +322,15 @@ class DayWindow(MDScreen):
         dateData = call.pass_data(self.date_id)
         dateKey = str(self.date_id)
         dateData[dateKey] = dateData.setdefault(dateKey, emptyDayData.copy())
-        dateData[dateKey]['mood'] =  value
+        if self.ids.doubleMoodCheck.active == True:
+            if self.setMoodNum == 1:
+                dateData[dateKey]['mood'] =  value
+                self.setMoodNum = 2
+            elif  self.setMoodNum == 2:
+                dateData[dateKey]['mood2'] = value
+                self.setMoodNum = 1
+        else:
+            dateData[dateKey]['mood'] =  value
         dateData[dateKey]['comment'] = text
         call.save_data(dateData,self.date_id)
         call.colorize(self.my_id,self.date_id)
@@ -352,10 +363,14 @@ class DayWindow(MDScreen):
         dateData = call.pass_data(self.date_id)
         dateKey = str(self.date_id)
         dateData[dateKey] = emptyDayData.copy()
+        self.ids.comment.text= ''
+        self.ids.doubleMoodCheck.active = False
         call.save_data(dateData,self.date_id)
         call.colorize(self.my_id,self.date_id)
-        self.ids.comment.text= ''
-
+    
+    def close(self):
+        pass
+        
 
 class HabitsWindow(MDScreen):
     def load_habit_list(self):
