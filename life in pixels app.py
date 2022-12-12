@@ -21,6 +21,7 @@ from babel.dates import format_date
 #TODO: finish tutorials so I have better idea what I am doing :)
 #TODO: use sorted dict, avoid loading everything (one year should be enough) - one file for every year
 #TODO: @solve how to show habit labels
+#TODO: switch color of month label and sedivy prumer (nicer genersted color wiev)
 
 #TODO: @set better gui for double mood, set instructions for mood one and two
 #TODO: @set better gui for day setting (close, save)
