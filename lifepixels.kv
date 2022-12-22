@@ -93,10 +93,11 @@
             #size_hint_x: None
             text_size: self.size
             text: f'Jaký byl tvůj den? {root.current_date}'
-        TextInput:
+        MDTextFieldRect:
             id: comment
             text: ''
             input_type: 'text'
+            keyboard_suggestions: True
             size_hint: (1, None)
             height: root.height/3
         BoxLayout:
