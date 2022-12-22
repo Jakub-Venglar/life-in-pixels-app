@@ -14,6 +14,9 @@ from sortedcontainers import SortedDict
 from kivy.graphics import Rectangle, Color, Line
 from babel.dates import format_date
 
+#TODO:
+#TODO:
+#TODO: add phyzical health status
 #TODO: learn how to properly comment and add comments and docstrings
 #TODO: add loading screen and wait until calendar and widow are constructed
 #TODO: add habits/activities, render them if accomplished on the main calendar - possibility to track them (show how many or just checkbox if accomplished)
@@ -56,12 +59,12 @@ if platform == 'win':
 
 test= SortedDict({'uh':'oh','ahoj':'none'})
 
-emptyDayData = {'mood':'','mood2':'','doubleMood': False, 'comment':''}
+emptyDayData = {'mood':'','mood2':'','doubleMood': False, 'comment':'','health': None}
 fsDivider = 35
 
 superColor= (242/255,85/255,12/255,.8)#(227/255,65/255,25/255,.8) #(255/255,232/255,28/255,.8)
 goodColor=(43/255,168/255,8/255,.8)
-averageColor=(138/255,153/255,184/255,.8)
+averageColor= (68/255,121/255,207/255,.8) #(138/255,153/255,184/255,.8)
 badColor= (28/255,49/255,36/255,.8) #(117/255,32/255,16/255,.8) #(150/255,39/255,20/255,.8)
 terribleColor=(28/255,49/255,36/255,.8)
 clearColor = (.5,.5,.5,.45)
@@ -304,15 +307,26 @@ class CalendarWindow(MDScreen):
         dateData = self.pass_data(date_id)
         daySetting.date_id = date_id
         daySetting.my_id = my_id
-        daySetting.current_date = format_date(date_id,"long", locale='cs_CZ')
+        daySetting.current_date = format_date(date_id,"full", locale='cs_CZ').capitalize()
         #daySetting.ids.terrible.background_color = terribleColor
         daySetting.ids.bad.background_color = badColor
         daySetting.ids.average.background_color = averageColor
         daySetting.ids.good.background_color = goodColor
         daySetting.ids.super.background_color = superColor
         dateData[dateKey] = dateData.setdefault(dateKey, emptyDayData.copy())
+        try: 
+            if dateData[dateKey]['health']:
+                daySetting.ids.health.value = dateData[dateKey]['health']
+            else:
+                daySetting.ids.health.value = 10
+        except KeyError:
+            daySetting.ids.health.value = 10
         daySetting.ids.doubleMoodCheck.active = dateData[dateKey]['doubleMood']
-        daySetting.ids.question.bg = self.choose_color(dateData[dateKey]['mood'] )
+        daySetting.ids.question.bg1 = self.choose_color(dateData[dateKey]['mood'] )
+        if daySetting.ids.doubleMoodCheck.active == True:
+            daySetting.ids.question.bg2 = self.choose_color(dateData[dateKey]['mood2'] )
+        else:
+            daySetting.ids.question.bg2 = self.choose_color(dateData[dateKey]['mood'] )
         daySetting.ids.comment.text = dateData[dateKey]['comment']
 
 class DayWindow(MDScreen):
@@ -335,6 +349,11 @@ class DayWindow(MDScreen):
         dateData[dateKey]['comment'] = text
         call.save_data(dateData,self.date_id)
         call.colorize(self.my_id,self.date_id)
+        self.ids.question.bg1 = call.choose_color(dateData[dateKey]['mood'] )
+        if self.ids.doubleMoodCheck.active == True:
+            self.ids.question.bg2 = call.choose_color(dateData[dateKey]['mood2'] )
+        else:
+            self.ids.question.bg2 = call.choose_color(dateData[dateKey]['mood'] )
 
     def double_mood (self, value):
         call = self.manager.get_screen('Calendar')
@@ -348,6 +367,11 @@ class DayWindow(MDScreen):
         call.save_data(dateData,self.date_id)
         call.ids[self.my_id].colorset = noColor
         call.ids[self.my_id].colorset2 = noColor
+        self.ids.question.bg1 = call.choose_color(dateData[dateKey]['mood'] )
+        if self.ids.doubleMoodCheck.active == True:
+            self.ids.question.bg2 = call.choose_color(dateData[dateKey]['mood2'] )
+        else:
+            self.ids.question.bg2 = call.choose_color(dateData[dateKey]['mood'] )
         call.colorize(self.my_id,self.date_id)
 
     def save_text(self, text):
@@ -358,6 +382,16 @@ class DayWindow(MDScreen):
         dateData[dateKey]['comment'] = text
         call.save_data(dateData,self.date_id)
         call.colorize(self.my_id,self.date_id)
+    
+    def save_health(self, value):
+        call = self.manager.get_screen('Calendar')
+        dateData = call.pass_data(self.date_id)
+        dateKey = str(self.date_id)
+        dateData[dateKey] = dateData.setdefault(dateKey, emptyDayData.copy())
+        dateData[dateKey]['health'] = value
+        call.save_data(dateData,self.date_id)
+        call.colorize(self.my_id,self.date_id)
+
 
     def delete_day(self):
         call = self.manager.get_screen('Calendar')

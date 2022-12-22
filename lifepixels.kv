@@ -10,36 +10,6 @@
     valign: 'middle'
     text_size: self.size
 
-<ButLabelChild@MDLabel>:
-    theme_text_color: 'Custom'
-    markup: True
-    label: ''
-    text_color: (1,1,1,1)
-    text: '[b]' + self.label + '[/b]'
-    font_size:  self.parent.height*0.25 if self.parent else 20
-    size_hint_x: None
-    size_hint_y: None
-    text_size: self.size
-    #size: (root.parent.width*.9, root.parent.height*0.97) if root.parent else (60,20)
-    #pos: (root.parent.pos[0]+root.width*0.05, root.parent.pos[1]) if root.parent else (10,10)
-
-<ButtonLabel>:
-    ButLabelChild:
-        valign: 'top'
-        halign: 'left'
-
-    ButLabelChild: 
-        valign: 'top'
-        halign: 'right'
-
-    ButLabelChild: 
-        valign: 'bottom'
-        halign: 'right'
-    
-    ButLabelChild: 
-        valign: 'bottom'
-        halign: 'left'
-
 <CalButton@Button>:
     date_id: None
     font_size: (self.height+self.width)/4
@@ -72,6 +42,8 @@
 
 <DayLabel@Label>:
     font_size: (self.height+self.width)/4
+    outline_width: 1
+    outline_colour: (0, 0, 0, 1)
     canvas.before:
         Color: 
             rgba: (1,1,1,.8)
@@ -92,13 +64,26 @@
         orientation: 'vertical'
         Label:
             id: question
-            bg: (1,1,1,.5)
+            size_hint_y: .8
+            bg1: (1,1,1,0)
+            bg2: (1,1,1,0)
             canvas.before:
                 Color:
-                    rgba: self.bg
+                    rgba: 97/255,105/255,140/255,.55
                 Rectangle:
                     size: self.size
                     pos:self.pos
+            canvas:
+                Color:
+                    rgba: self.bg1
+                Rectangle:
+                    size: self.size[0]/2,self.size[1]/8
+                    pos:self.pos
+                Color:
+                    rgba: self.bg2
+                Rectangle:
+                    size: self.size[0]/2,self.size[1]/8
+                    pos:self.pos[0]+self.size[0]/2,self.pos[1]
             color: (1,1,1,1)
             #outline_width: 1
             #outline_colour: (0, 0, 0, 1)
@@ -107,7 +92,7 @@
             valign: 'middle'
             #size_hint_x: None
             text_size: self.size
-            text: f'Jaký byl tvůj den {root.current_date} ?'
+            text: f'Jaký byl tvůj den? {root.current_date}'
         TextInput:
             id: comment
             text: ''
@@ -116,6 +101,12 @@
             height: root.height/3
         BoxLayout:
             orientation: 'horizontal'
+            canvas.before:
+                Color:
+                    rgba: 97/255,105/255,140/255,.55
+                Rectangle:
+                    size: self.size
+                    pos:self.pos
             MDCheckbox:
                 id: doubleMoodCheck
                 size_hint: None, None
@@ -148,18 +139,76 @@
                 id: super
                 text: 'Boží!'
                 on_press: app.root.current_screen.mood_click('super', comment.text)
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint: 1,.4
+            canvas.after:
+                Color: 
+                    rgba: (1,1,1,.8)
+                Line:
+                    width: 2
+                    rectangle: self.x, self.y, self.width, self.height 
+            Label:
+                id:healthLabel
+                #outline_width: 1
+                #outline_colour: (0, 0, 0, 1)
+                size_hint: .8,1
+                font_size: 20
+                text_size: self.size
+                halign: 'left'
+                valign: 'middle'
+                padding_x: 10
+                text: 'Jak ses tento den cítil fyzicky?'
+                canvas.before:
+                    Color:
+                        rgba: 97/255,105/255,140/255,.55
+                    Rectangle:
+                        size: self.size
+                        pos:self.pos
+            Label:
+                id:healthLabel
+                size_hint: .2,1
+                font_size: 30
+                markup: True
+                healthvalue: str(int(root.ids.health.value))
+                text: f'[b]{self.healthvalue}[/b]' 
+                canvas.before:
+                    Color:
+                        rgba: 97/255,105/255,140/255,.55
+                    Rectangle:
+                        size: self.size
+                        pos:self.pos
+        MDSlider:
+            id: health
+            size_hint: 1,.4
+            hint: False
+            font_size: 25
+            value: 10
+            min: 0
+            max: 10
+            step: 1
+            on_active: app.root.current_screen.save_health(self.value)
+            canvas.before:
+                Color:
+                    rgba: 97/255,105/255,140/255,.55
+                Rectangle:
+                    size: self.size
+                    pos:self.pos
 
         Button:         
-            text: 'Uložit jen text a zavřít'
+            text: 'Uložit a zavřít'
+            size_hint: 1,.5
             on_release: 
                 app.root.current_screen.save_text(comment.text)
                 app.root.transition.direction = 'right'
                 app.root.current = 'Calendar'
         Button:         
             text: 'Vymazat vše o tomto dni'
+            size_hint: 1,.5
             on_press: app.root.current_screen.delete_day(), #app.root.cal_click(app.root.date_id, app.root.my_id)
         Button:         
             text: 'Zavřít'
+            size_hint: 1,.5
             on_release: 
                 app.root.transition.direction = 'right' #both is working
                 root.manager.current = 'Calendar' #both is working
@@ -266,7 +315,7 @@
             pos_hint: {'center_x': .5}
             canvas.before:
                 Color: 
-                    rgba: (53/255,85/255,166/255,.65)
+                    rgba: 97/255,105/255,140/255,.55 #(53/255,85/255,166/255,.65)
                 Rectangle:
                     size: self.size
                     pos:self.pos
@@ -279,6 +328,8 @@
             Label:
                 id: month_Label
                 text: ''
+                outline_width: 1
+                outline_colour: (0, 0, 0, 1)
                 line_height: .85
                 halign: 'center'
                 valign: 'middle'
@@ -298,10 +349,16 @@
             pos_hint: {'center_x': .5}
             canvas.before:
                 Color: 
-                    rgba: (53/255,85/255,166/255,.65)
+                    rgba: 97/255,105/255,140/255,.55
                 Rectangle:
                     size: self.size
                     pos:self.pos
+            canvas.after:
+                Color: 
+                    rgba: (1,1,1,.9)
+                Line:
+                    width: 4
+                    points: self.x, self.y+2, self.width, self.y+2 
             DayLabel:
                 text: 'Po'
             DayLabel:
