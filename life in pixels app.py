@@ -9,6 +9,7 @@ from kivy.core.window import Window
 from kivy.utils import platform
 from kivy.lang import Builder
 from kivy.clock import Clock
+from kivy.config import Config
 from functools import partial
 from sortedcontainers import SortedDict
 from kivy.graphics import Rectangle, Color, Line
@@ -209,6 +210,11 @@ class CalendarWindow(MDScreen):
                 calLabels.ids[my_id+'a'].text= 'T'
         except KeyError:
             pass
+        try:
+            if dateData[dateKey]['health']:
+                calLabels.ids[my_id+'d'].text = str(int(dateData[dateKey]['health']))+'/10'
+        except KeyError:
+            pass
         if dateKey in dateData:
             #check for double mood - if yes, set it and clear background
             if dateData[dateKey]['doubleMood'] == True:
@@ -233,23 +239,23 @@ class CalendarWindow(MDScreen):
         labelIDc = calLabels.ids[my_id+'c']
         labelIDd = calLabels.ids[my_id+'d']
         calButtonID = call.ids[my_id]
-        if dateKey in dateData:
+        '''if dateKey in dateData:
             if dateData[dateKey]['comment'] != '':
                 calLabels.ids[my_id+'a'].text= 'T'
             else: 
                 calLabels.ids[my_id+'a'].text= ''
         calLabels.ids[my_id+'b'].text= ''
         calLabels.ids[my_id+'c'].text= ''
-        calLabels.ids[my_id+'d'].text= ''
+        calLabels.ids[my_id+'d'].text= '''''
         with call.ids[my_id].canvas.after:
             if call.ids[my_id].isToday == True:
                 Color(rgba = today)
                 Line(width = 2, circle= (call.ids[my_id].center_x, call.ids[my_id].center_y,call.ids[my_id].width/2.5))
             Color(rgba = (1,1,1,1))
-            Rectangle(size=labelIDa.texture_size, pos=(calButtonID.x, calButtonID.top-labelIDa.texture_size[1]), texture=labelIDa.texture)
+            Rectangle(size=labelIDa.texture_size, pos=(calButtonID.x+calButtonID.width/20, calButtonID.top-labelIDa.texture_size[1]), texture=labelIDa.texture)
             Rectangle(size=labelIDb.texture_size, pos=(calButtonID.right-labelIDb.texture_size[0], calButtonID.top-labelIDb.texture_size[1]), texture=labelIDb.texture)
             Rectangle(size=labelIDc.texture_size, pos=(calButtonID.right-labelIDc.texture_size[0], calButtonID.y), texture=labelIDc.texture)
-            Rectangle(size=labelIDd.texture_size, pos=calButtonID.pos, texture=labelIDd.texture)
+            Rectangle(size=labelIDd.texture_size, pos=(calButtonID.x+calButtonID.width/20,calButtonID.y), texture=labelIDd.texture)
 
     def move_month(self,direction):
         if direction == 'forward':
