@@ -16,8 +16,8 @@ from kivy.graphics import Rectangle, Color, Line
 from babel.dates import format_date
 
 #TODO:
-#TODO:
-#TODO: add phyzical health status
+#TODO: solve keybpard suggestions
+#TODO: show physical health status as bar
 #TODO: learn how to properly comment and add comments and docstrings
 #TODO: add loading screen and wait until calendar and widow are constructed
 #TODO: add habits/activities, render them if accomplished on the main calendar - possibility to track them (show how many or just checkbox if accomplished)
