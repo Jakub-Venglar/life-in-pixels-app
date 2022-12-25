@@ -80,7 +80,7 @@ terribleColor=(28/255,49/255,36/255,.8)
 clearColor = (.5,.5,.5,.45)
 noColor = (0,0,0,0)
 
-today = (12/255,84/255,179/255,.8)
+today = (252/255,207/255,3/255,.9) #(12/255,84/255,179/255,.8)
 notToday = (12/255,84/255,179/255,0)
 
 calList = [['1-1','1-2','1-3','1-4','1-5','1-6','1-7'],
@@ -161,26 +161,19 @@ class CalendarWindow(MDScreen):
         for file in drive_file_list:
             drive_file_IDs[file['title']] = file['id']
         try:
-            if drive_file_list != []:
-                for filename in local_file_list:
-                    if filename in drive_file_IDs:
-                        new_file = drive.CreateFile({'parents': [{'id': '1QRcc1s1xZQz5fWlMjut8chLO8hsTit8Y'}],'title': filename, 'id': drive_file_IDs[filename]})
-                        new_file.SetContentFile(filename)
-                        new_file.Upload()
-                        print('nalezeno' + filename)
-                    else:
-                        new_file = drive.CreateFile({'parents': [{'id': '1QRcc1s1xZQz5fWlMjut8chLO8hsTit8Y'}],'title':filename, 'mimeType':'application/json'})
-                        # Read file and set it as a content of this instance.
-                        new_file.SetContentFile(filename)
-                        new_file.Upload() # Upload the file.
-                        print('nove nahrano' + filename)
-
-            else:
-                for filename in local_file_list:
+            for filename in local_file_list:
+                if filename in drive_file_IDs:
+                    new_file = drive.CreateFile({'parents': [{'id': '1QRcc1s1xZQz5fWlMjut8chLO8hsTit8Y'}],'title': filename, 'id': drive_file_IDs[filename]})
+                    new_file.SetContentFile(filename)
+                    new_file.Upload()
+                    print('nalezeno' + filename)
+                else:
                     new_file = drive.CreateFile({'parents': [{'id': '1QRcc1s1xZQz5fWlMjut8chLO8hsTit8Y'}],'title':filename, 'mimeType':'application/json'})
                     # Read file and set it as a content of this instance.
                     new_file.SetContentFile(filename)
                     new_file.Upload() # Upload the file.
+                    print('nove nahrano' + filename)
+
         except Exception as e: print(e)
 
     #create calendar view
@@ -251,7 +244,7 @@ class CalendarWindow(MDScreen):
             pass
         try:
             if dateData[dateKey]['health']:
-                calLabels.ids[my_id+'d'].text = str(int(dateData[dateKey]['health']))+'/10'
+                calLabels.ids[my_id+'d'].text = str(int(dateData[dateKey]['health']))
         except KeyError:
             pass
         if dateKey in dateData:
@@ -278,23 +271,17 @@ class CalendarWindow(MDScreen):
         labelIDc = calLabels.ids[my_id+'c']
         labelIDd = calLabels.ids[my_id+'d']
         calButtonID = call.ids[my_id]
-        '''if dateKey in dateData:
-            if dateData[dateKey]['comment'] != '':
-                calLabels.ids[my_id+'a'].text= 'T'
-            else: 
-                calLabels.ids[my_id+'a'].text= ''
-        calLabels.ids[my_id+'b'].text= ''
-        calLabels.ids[my_id+'c'].text= ''
-        calLabels.ids[my_id+'d'].text= '''''
         with call.ids[my_id].canvas.after:
             if call.ids[my_id].isToday == True:
                 Color(rgba = today)
-                Line(width = 2, circle= (call.ids[my_id].center_x, call.ids[my_id].center_y,call.ids[my_id].width/2.5))
+                Line(width = 3, circle= (call.ids[my_id].center_x, call.ids[my_id].center_y,call.ids[my_id].width/2.5))
             Color(rgba = (1,1,1,1))
             Rectangle(size=labelIDa.texture_size, pos=(calButtonID.x+calButtonID.width/20, calButtonID.top-labelIDa.texture_size[1]), texture=labelIDa.texture)
             Rectangle(size=labelIDb.texture_size, pos=(calButtonID.right-labelIDb.texture_size[0], calButtonID.top-labelIDb.texture_size[1]), texture=labelIDb.texture)
             Rectangle(size=labelIDc.texture_size, pos=(calButtonID.right-labelIDc.texture_size[0], calButtonID.y), texture=labelIDc.texture)
-            Rectangle(size=labelIDd.texture_size, pos=(calButtonID.x+calButtonID.width/20,calButtonID.y), texture=labelIDd.texture)
+            Rectangle(size=labelIDd.texture_size, pos=(calButtonID.x+calButtonID.width/3.1,calButtonID.y), texture=labelIDd.texture)
+            if labelIDd.texture_size[0] > 0:
+                Rectangle(source = 'pict/heart.png', size=(calButtonID.width/4,calButtonID.width/4), pos=(calButtonID.x+calButtonID.width/20,calButtonID.y+calButtonID.height/15))
 
     def move_month(self,direction):
         if direction == 'forward':
