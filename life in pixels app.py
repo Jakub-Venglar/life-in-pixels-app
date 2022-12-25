@@ -14,9 +14,12 @@ from functools import partial
 from sortedcontainers import SortedDict
 from kivy.graphics import Rectangle, Color, Line
 from babel.dates import format_date
+from pydrive2.auth import GoogleAuth
+from pydrive2.drive import GoogleDrive
 
-#TODO:
-#TODO: solve keybpard suggestions
+
+# google auth settings.yaml is set
+
 #TODO: show physical health status as bar
 #TODO: learn how to properly comment and add comments and docstrings
 #TODO: add loading screen and wait until calendar and widow are constructed
@@ -51,12 +54,18 @@ if platform == 'android':
     secondary_ext_storage = secondary_external_storage_path()
 
     from android.permissions import request_permissions, Permission
-    request_permissions([Permission.WRITE_EXTERNAL_STORAGE, Permission.READ_EXTERNAL_STORAGE])
+    request_permissions([Permission.WRITE_EXTERNAL_STORAGE, Permission.READ_EXTERNAL_STORAGE,Permission.INTERNET])
 
 if platform == 'win':
     Window.size = (400*1.5, 712*1.5)
     Window.top = 50
     Window.left = 50
+
+# authenticate
+gauth = GoogleAuth()
+# Create local webserver and auto handles authentication.
+gauth.LocalWebserverAuth()
+drive = GoogleDrive(gauth)
 
 test= SortedDict({'uh':'oh','ahoj':'none'})
 
@@ -134,7 +143,8 @@ class CalendarWindow(MDScreen):
 
     def save_data(self, newData, date_id):
         year = str(date_id)[:4]
-        with open(f'caldata-{year}.json', 'w', encoding='utf-8') as file:
+        filename = f'caldata-{year}.json'
+        with open(filename, 'w', encoding='utf-8') as file:
             json.dump(newData, file, indent = 4)
     
     def delete_data(self,date_id):
@@ -143,6 +153,35 @@ class CalendarWindow(MDScreen):
             file.write('{}')
         self.make_Cal(now=True)
         self.make_Cal(now=True) # clock is not working but this yes....
+
+    def backup_data(self):
+        local_file_list = os.listdir()
+        drive_file_list = drive.ListFile({'q': "'1QRcc1s1xZQz5fWlMjut8chLO8hsTit8Y' in parents and (trashed=false)"}).GetList()
+        drive_file_IDs = {}
+        for file in drive_file_list:
+            drive_file_IDs[file['title']] = file['id']
+        try:
+            if drive_file_list != []:
+                for filename in local_file_list:
+                    if filename in drive_file_IDs:
+                        new_file = drive.CreateFile({'parents': [{'id': '1QRcc1s1xZQz5fWlMjut8chLO8hsTit8Y'}],'title': filename, 'id': drive_file_IDs[filename]})
+                        new_file.SetContentFile(filename)
+                        new_file.Upload()
+                        print('nalezeno' + filename)
+                    else:
+                        new_file = drive.CreateFile({'parents': [{'id': '1QRcc1s1xZQz5fWlMjut8chLO8hsTit8Y'}],'title':filename, 'mimeType':'application/json'})
+                        # Read file and set it as a content of this instance.
+                        new_file.SetContentFile(filename)
+                        new_file.Upload() # Upload the file.
+                        print('nove nahrano' + filename)
+
+            else:
+                for filename in local_file_list:
+                    new_file = drive.CreateFile({'parents': [{'id': '1QRcc1s1xZQz5fWlMjut8chLO8hsTit8Y'}],'title':filename, 'mimeType':'application/json'})
+                    # Read file and set it as a content of this instance.
+                    new_file.SetContentFile(filename)
+                    new_file.Upload() # Upload the file.
+        except Exception as e: print(e)
 
     #create calendar view
 
