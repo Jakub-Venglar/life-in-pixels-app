@@ -171,26 +171,44 @@ class CalendarWindow(MDScreen):
                 drive_file_meta[file['title']] = {'id': file['id'],'checksum': file['md5Checksum'], 'modifiedDate': datetime.datetime.timestamp(parser.parse(file['modifiedDate'])), 'dtobject': parser.parse(file['modifiedDate'])}
 
             try:
+                self.syncMessage = ''
                 for filename in local_file_list:
                     if filename in drive_file_meta:
-                        print('nalezeno na drive: ' + filename)
+                        #self.syncMessage = self.syncMessage + '\n' + filename + ' nalezeno na drive' + '\n'
                         if local_file_meta[filename]['modifiedDate'] > drive_file_meta[filename]['modifiedDate'] and local_file_meta[filename]['checksum'] != drive_file_meta[filename]['checksum']:
                             new_file = drive.CreateFile({'parents': [{'id': '1QRcc1s1xZQz5fWlMjut8chLO8hsTit8Y'}],'title': filename, 'id': drive_file_meta[filename]['id']})
                             new_file.SetContentFile(filename)
                             new_file.Upload()
-                            print(filename + ' lokalni novejsi - nahrano na disk')
+                            self.syncMessage = self.syncMessage + '\n' + filename + ' - lokální soubor je novější - nahráno na drive' + '\n'
                         elif local_file_meta[filename]['modifiedDate'] < drive_file_meta[filename]['modifiedDate'] and local_file_meta[filename]['checksum'] != drive_file_meta[filename]['checksum']:
                             new_file = drive.CreateFile({'parents': [{'id': '1QRcc1s1xZQz5fWlMjut8chLO8hsTit8Y'}],'title':filename, 'id': drive_file_meta[filename]['id']})
                             new_file.GetContentFile(filename)
-                            print(filename + ' drive novejsi - stazeno')
+                            self.syncMessage = self.syncMessage + '\n' + filename + ' - soubor na drive je novější - staženo' + '\n'
                         else:
-                            print(filename + ' ma stejne datum nebo checsksum, nic se nedeje')
+                            pass
+                            #self.syncMessage = self.syncMessage + '\n' + filename + ' má stejné datum nebo checsksum, nic se neděje' + '\n'
                     else:
                         new_file = drive.CreateFile({'parents': [{'id': '1QRcc1s1xZQz5fWlMjut8chLO8hsTit8Y'}],'title':filename, 'mimeType':'application/json'})
                         # Read file and set it as a content of this instance.
                         new_file.SetContentFile(filename)
                         new_file.Upload() # Upload the file.
-                        print(filename +' nove nahrano')
+                        self.syncMessage = self.syncMessage + '\n' + filename +' - nově nahráno' + '\n'
+                
+                if self.syncMessage == '':
+                    popupMessage = 'Nic nebylo potřeba synchronizovat'
+                else:
+                    popupMessage = self.syncMessage
+
+                popup = Popup(title='Výsledek synchronizace', content = 
+                    Label(text=popupMessage, 
+                    font_size= 15,
+                    halign= 'center',
+                    valign= 'middle',
+                    size=(Window.size[0]*0.6,Window.size[1]*0.7),
+                    text_size=(Window.size[0]*0.5,Window.size[1]*0.7)), 
+                    size_hint=(.6, .7))
+                popup.bind(on_touch_down=popup.dismiss)
+                popup.open()
 
             except Exception as e: print(e)
         except httplib2.error.ServerNotFoundError:
