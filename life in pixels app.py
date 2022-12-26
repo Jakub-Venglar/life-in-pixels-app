@@ -17,9 +17,6 @@ from babel.dates import format_date
 from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
 
-
-# google auth settings.yaml is set
-
 #TODO: show physical health status as bar
 #TODO: learn how to properly comment and add comments and docstrings
 #TODO: add loading screen and wait until calendar and widow are constructed
@@ -60,7 +57,8 @@ if platform == 'win':
     Window.top = 50
     Window.left = 50
 
-# authenticate
+# authenticate to google drive (needs my client secrets)
+# google auth settings.yaml is set
 gauth = GoogleAuth()
 # Create local webserver and auto handles authentication.
 gauth.LocalWebserverAuth()
@@ -95,14 +93,15 @@ class YearObject():
 
 #define screens
 class CalendarWindow(MDScreen):
-        # construct labels for cal buttons
+        # construct label sizes for cal buttons
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         Window.bind(on_resize = self.labelSize)
 
-
     def labelSize(self,x=1,y=1,z=1,clocktime=0):
         self.manager.get_screen('CalLabels').fs = z/fsDivider
+
+#create directory if not existing for both platfoms and change working directory to it
 
     def create_user_directory(self):
         if platform == 'android':
@@ -115,7 +114,6 @@ class CalendarWindow(MDScreen):
 
         else:
             path = os.path.join(os.path.dirname(sys.argv[0]), 'userdata')
-            #create directory if not existing
             try:
                 os.mkdir(path)
                 os.chdir(path)
@@ -144,7 +142,7 @@ class CalendarWindow(MDScreen):
         year = str(date_id)[:4]
         filename = f'caldata-{year}.json'
         with open(filename, 'w', encoding='utf-8') as file:
-            json.dump(newData, file, indent = 4)
+            json.dump(SortedDict(newData), file, indent = 4)
     
     def delete_data(self,date_id):
         year = str(date_id)[:4]
@@ -229,7 +227,6 @@ class CalendarWindow(MDScreen):
                 self.ids[id].colorset = noColor
                 self.ids[id].colorset2 = noColor
                 
-
                 #make current day more visible
                 if setDate == datetime.datetime.date(datetime.datetime.now()):
                     self.ids[id].isToday = True
@@ -290,9 +287,11 @@ class CalendarWindow(MDScreen):
                 Color(rgba = today)
                 Line(width = 3, circle= (call.ids[my_id].center_x, call.ids[my_id].center_y,call.ids[my_id].width/2.5))
             Color(rgba = (1,1,1,1))
+            # comment label
             Rectangle(size=labelIDa.texture_size, pos=(calButtonID.x+calButtonID.width/20, calButtonID.top-labelIDa.texture_size[1]), texture=labelIDa.texture)
             Rectangle(size=labelIDb.texture_size, pos=(calButtonID.right-labelIDb.texture_size[0], calButtonID.top-labelIDb.texture_size[1]), texture=labelIDb.texture)
             Rectangle(size=labelIDc.texture_size, pos=(calButtonID.right-labelIDc.texture_size[0], calButtonID.y), texture=labelIDc.texture)
+            # health label with heart icon
             Rectangle(size=labelIDd.texture_size, pos=(calButtonID.x+calButtonID.width/3.4,calButtonID.y), texture=labelIDd.texture)
             if labelIDd.texture_size[0] > 0:
                 Rectangle(source = 'pict/heart.png', size=(calButtonID.width/4.5,calButtonID.width/4.5), pos=(calButtonID.x+calButtonID.width/20,calButtonID.y+calButtonID.height/15))
