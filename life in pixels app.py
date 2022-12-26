@@ -1,10 +1,11 @@
 #! python3
 # Life in pixels project
-import calendar, datetime, os, sys, json, hashlib
+import calendar, datetime, os, sys, json, hashlib, httplib2, time
 from dateutil import parser
 from kivymd.app import MDApp
 from kivymd.uix.screen import MDScreen
 from kivy.uix.screenmanager import ScreenManager
+from kivy.uix.popup import Popup
 from kivy.uix.label import Label
 from kivy.core.window import Window
 from kivy.config import Config
@@ -155,41 +156,54 @@ class CalendarWindow(MDScreen):
         self.make_Cal(now=True) # clock is not working but this yes....
 
     def sync_data(self):
-        local_file_list = os.listdir()
-        local_file_meta = {}
-        drive_file_list = drive.ListFile({'q': "('1QRcc1s1xZQz5fWlMjut8chLO8hsTit8Y' in parents) and (trashed=false) and (mimeType != 'application/vnd.google-apps.folder')"}).GetList()
-        drive_file_meta = {}
-        for file in local_file_list:
-            with open(file,'rb') as f:
-                data = f.read()
-                md5checksum = hashlib.md5(data).hexdigest()
-            local_file_meta[file] = {'checksum': md5checksum, 'modifiedDate': os.path.getmtime(file),'dtobject': datetime.datetime.fromtimestamp(os.path.getmtime(file))} #datetime.datetime.fromtimestamp
-        for file in drive_file_list:
-            drive_file_meta[file['title']] = {'id': file['id'],'checksum': file['md5Checksum'], 'modifiedDate': datetime.datetime.timestamp(parser.parse(file['modifiedDate'])), 'dtobject': parser.parse(file['modifiedDate'])}
-
+    
         try:
-            for filename in local_file_list:
-                if filename in drive_file_meta:
-                    print('nalezeno na drive: ' + filename)
-                    if local_file_meta[filename]['modifiedDate'] > drive_file_meta[filename]['modifiedDate'] and local_file_meta[filename]['checksum'] != drive_file_meta[filename]['checksum']:
-                        new_file = drive.CreateFile({'parents': [{'id': '1QRcc1s1xZQz5fWlMjut8chLO8hsTit8Y'}],'title': filename, 'id': drive_file_meta[filename]['id']})
-                        new_file.SetContentFile(filename)
-                        new_file.Upload()
-                        print(filename + ' lokalni novejsi - nahrano na disk')
-                    elif local_file_meta[filename]['modifiedDate'] < drive_file_meta[filename]['modifiedDate'] and local_file_meta[filename]['checksum'] != drive_file_meta[filename]['checksum']:
-                        new_file = drive.CreateFile({'parents': [{'id': '1QRcc1s1xZQz5fWlMjut8chLO8hsTit8Y'}],'title':filename, 'id': drive_file_meta[filename]['id']})
-                        new_file.GetContentFile(filename)
-                        print(filename + ' drive novejsi - stazeno')
-                    else:
-                        print(filename + ' ma stejne datum nebo checsksum, nic se nedeje')
-                else:
-                    new_file = drive.CreateFile({'parents': [{'id': '1QRcc1s1xZQz5fWlMjut8chLO8hsTit8Y'}],'title':filename, 'mimeType':'application/json'})
-                    # Read file and set it as a content of this instance.
-                    new_file.SetContentFile(filename)
-                    new_file.Upload() # Upload the file.
-                    print(filename +' nove nahrano')
+            local_file_list = os.listdir()
+            local_file_meta = {}
+            drive_file_list = drive.ListFile({'q': "('1QRcc1s1xZQz5fWlMjut8chLO8hsTit8Y' in parents) and (trashed=false) and (mimeType != 'application/vnd.google-apps.folder')"}).GetList()
+            drive_file_meta = {}
+            for file in local_file_list:
+                with open(file,'rb') as f:
+                    data = f.read()
+                    md5checksum = hashlib.md5(data).hexdigest()
+                local_file_meta[file] = {'checksum': md5checksum, 'modifiedDate': os.path.getmtime(file),'dtobject': datetime.datetime.fromtimestamp(os.path.getmtime(file))} #datetime.datetime.fromtimestamp
+            for file in drive_file_list:
+                drive_file_meta[file['title']] = {'id': file['id'],'checksum': file['md5Checksum'], 'modifiedDate': datetime.datetime.timestamp(parser.parse(file['modifiedDate'])), 'dtobject': parser.parse(file['modifiedDate'])}
 
-        except Exception as e: print(e)
+            try:
+                for filename in local_file_list:
+                    if filename in drive_file_meta:
+                        print('nalezeno na drive: ' + filename)
+                        if local_file_meta[filename]['modifiedDate'] > drive_file_meta[filename]['modifiedDate'] and local_file_meta[filename]['checksum'] != drive_file_meta[filename]['checksum']:
+                            new_file = drive.CreateFile({'parents': [{'id': '1QRcc1s1xZQz5fWlMjut8chLO8hsTit8Y'}],'title': filename, 'id': drive_file_meta[filename]['id']})
+                            new_file.SetContentFile(filename)
+                            new_file.Upload()
+                            print(filename + ' lokalni novejsi - nahrano na disk')
+                        elif local_file_meta[filename]['modifiedDate'] < drive_file_meta[filename]['modifiedDate'] and local_file_meta[filename]['checksum'] != drive_file_meta[filename]['checksum']:
+                            new_file = drive.CreateFile({'parents': [{'id': '1QRcc1s1xZQz5fWlMjut8chLO8hsTit8Y'}],'title':filename, 'id': drive_file_meta[filename]['id']})
+                            new_file.GetContentFile(filename)
+                            print(filename + ' drive novejsi - stazeno')
+                        else:
+                            print(filename + ' ma stejne datum nebo checsksum, nic se nedeje')
+                    else:
+                        new_file = drive.CreateFile({'parents': [{'id': '1QRcc1s1xZQz5fWlMjut8chLO8hsTit8Y'}],'title':filename, 'mimeType':'application/json'})
+                        # Read file and set it as a content of this instance.
+                        new_file.SetContentFile(filename)
+                        new_file.Upload() # Upload the file.
+                        print(filename +' nove nahrano')
+
+            except Exception as e: print(e)
+        except httplib2.error.ServerNotFoundError:
+            popup = Popup(title='Není připojení k internetu', content = 
+            Label(text='Nemůžu se připojit k internetu. \n Zapni wifi nebo data. \n Klikni kamkoliv pro zavření tohoto okna.', 
+            font_size= 20,
+            halign= 'center',
+            valign= 'middle',
+            size=(Window.size[0]*0.6,Window.size[1]*0.7),
+            text_size=(Window.size[0]*0.5,Window.size[1]*0.7)), 
+            size_hint=(.6, .7))
+            popup.bind(on_touch_down=popup.dismiss)
+            popup.open()
 
     #create calendar view
 
