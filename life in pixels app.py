@@ -17,7 +17,8 @@ from babel.dates import format_date
 from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
 
-#TODO: show physical health status as bar
+#TODO: show physical health status as bar??
+#TODO: create and show hint for physical health status
 #TODO: learn how to properly comment and add comments and docstrings
 #TODO: add loading screen and wait until calendar and widow are constructed
 #TODO: add habits/activities, render them if accomplished on the main calendar - possibility to track them (show how many or just checkbox if accomplished)
