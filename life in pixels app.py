@@ -388,8 +388,11 @@ class DayWindow(MDScreen):
         Window.unbind(on_keyboard=self.back_click)
 
     def back_click(self,window, key, keycode, *largs):
+        #print('key ' + str(key) + '----' + 'keycode ' + str(keycode))
         if key == 27:
+            self.manager.transition.direction = 'right'
             self.manager.current = 'Calendar'
+        #if key == 13: do stuff for enter
 
     def mood_click(self,value, text):
         call = self.manager.get_screen('Calendar')
@@ -459,6 +462,8 @@ class DayWindow(MDScreen):
         dateKey = str(self.date_id)
         dateData[dateKey] = emptyDayData.copy()
         self.ids.comment.text= ''
+        self.ids.health.value = 10
+        self.ids.healthLabel.questionMark = True
         self.ids.doubleMoodCheck.active = False
         call.save_data(dateData,self.date_id)
         call.colorize(self.my_id,self.date_id)
@@ -468,6 +473,18 @@ class DayWindow(MDScreen):
         
 
 class HabitsWindow(MDScreen):
+
+    def on_enter(self):
+        Window.bind(on_keyboard=self.back_click)
+
+    def on_pre_leave(self):
+        Window.unbind(on_keyboard=self.back_click)
+
+    def back_click(self,window, key, keycode, *largs):
+        if key == 27:
+            self.manager.transition.direction = 'right'
+            self.manager.current = 'Calendar'
+
     def load_habit_list(self):
         try:   
             with open('habits.json', 'r', encoding='utf-8') as file:
@@ -483,6 +500,18 @@ class HabitsWindow(MDScreen):
             return eval(file.read())
 
 class SettingsWindow(MDScreen):
+
+    def on_enter(self):
+        Window.bind(on_keyboard=self.back_click)
+
+    def on_pre_leave(self):
+        Window.unbind(on_keyboard=self.back_click)
+
+    def back_click(self,window, key, keycode, *largs):
+        if key == 27:
+            self.manager.transition.direction = 'right'
+            self.manager.current = 'Calendar'
+
     def load_settings(self):
         try:   
             with open('settings.json', 'r', encoding='utf-8') as file:
@@ -502,11 +531,6 @@ class WindowManager(ScreenManager):
 
 class CalendarLabels(MDScreen):
     pass
-
-class ButtonLabel(Label):
-    pass
-    #def __init__(self, **kwargs):
-    #    super(Explay, self).__init__(**kwargs)
 
 # run app and construct calendar
 
