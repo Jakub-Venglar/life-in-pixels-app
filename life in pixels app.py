@@ -7,6 +7,7 @@ from kivymd.uix.screen import MDScreen
 from kivy.uix.screenmanager import ScreenManager
 from kivy.uix.label import Label
 from kivy.core.window import Window
+from kivy.config import Config
 from kivy.utils import platform
 from kivy.lang import Builder
 from kivy.clock import Clock
@@ -56,6 +57,8 @@ if platform == 'win':
     Window.size = (400*1.5, 712*1.5)
     Window.top = 50
     Window.left = 50
+
+Config.set('kivy', 'exit_on_escape', '0')
 
 # authenticate to google drive (needs my client secrets)
 # google auth settings.yaml is set
@@ -377,7 +380,16 @@ class CalendarWindow(MDScreen):
         daySetting.ids.comment.text = dateData[dateKey]['comment']
 
 class DayWindow(MDScreen):
-    #click at pop pop up write values into calendar
+
+    def on_enter(self):
+        Window.bind(on_keyboard=self.back_click)
+
+    def on_pre_leave(self):
+        Window.unbind(on_keyboard=self.back_click)
+
+    def back_click(self,window, key, keycode, *largs):
+        if key == 27:
+            self.manager.current = 'Calendar'
 
     def mood_click(self,value, text):
         call = self.manager.get_screen('Calendar')
@@ -499,6 +511,7 @@ class ButtonLabel(Label):
 # run app and construct calendar
 
 class LifePixels(MDApp):
+    title = 'Life in Pixels'
     def build(self):
         Builder.load_file('lifepixels.kv')
         # Create the screen manager
@@ -508,21 +521,10 @@ class LifePixels(MDApp):
         sm.add_widget(HabitsWindow(name='Habits'))
         sm.add_widget(SettingsWindow(name='Settings'))
         sm.add_widget(CalendarLabels(name='CalLabels'))
-        Window.bind(on_keyboard=self.button_press)
         sm.current = 'Calendar'
         return sm
-    
-    def button_press(self, window, key, scancode, codepoint, modifier):
-        if key == 27:
-            self.root.current = 'Calendar'
 
-        '''
-    title = 'Life in pixels'
-    def build(self):
-        return CalendarWindow()'''
     def on_start(self):
-        #self.root.create_user_directory()
-        #self.root.make_Cal()
         #self.root.get_screen('Calendar').create_user_directory()
         self.root.current_screen.create_user_directory()
         self.root.current_screen.make_Cal()
