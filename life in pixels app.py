@@ -361,8 +361,10 @@ class CalendarWindow(MDScreen):
         try: 
             if dateData[dateKey]['health']:
                 daySetting.ids.health.value = dateData[dateKey]['health']
+                daySetting.ids.healthLabel.questionMark = False
             else:
                 daySetting.ids.health.value = 10
+                daySetting.ids.healthLabel.questionMark = True
         except KeyError:
             daySetting.ids.health.value = 10
         daySetting.ids.doubleMoodCheck.active = dateData[dateKey]['doubleMood']
@@ -433,6 +435,7 @@ class DayWindow(MDScreen):
         dateKey = str(self.date_id)
         dateData[dateKey] = dateData.setdefault(dateKey, emptyDayData.copy())
         dateData[dateKey]['health'] = value
+        self.ids.healthLabel.questionMark = False
         call.save_data(dateData,self.date_id)
         call.colorize(self.my_id,self.date_id)
 

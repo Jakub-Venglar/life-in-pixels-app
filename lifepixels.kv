@@ -181,13 +181,14 @@
                         pos:self.pos
             Label:
                 id:healthLabel
+                questionMark: True
                 size_hint: .2,1
                 font_size: 30
                 halign: 'center'
                 valign: 'middle'
                 markup: True
                 healthvalue: str(int(root.ids.health.value))
-                text: f'[b]{self.healthvalue}[/b]' 
+                text: f'[b]{self.healthvalue}?[/b]' if self.questionMark == True else f'[b]{self.healthvalue}[/b]'
                 canvas.before:
                     Color:
                         rgba: 97/255,105/255,140/255,.55
