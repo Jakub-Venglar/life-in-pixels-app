@@ -1,6 +1,7 @@
 #! python3
 # Life in pixels project
-import calendar, datetime, os, sys, json
+import calendar, datetime, os, sys, json, hashlib
+from dateutil import parser
 from kivymd.app import MDApp
 from kivymd.uix.screen import MDScreen
 from kivy.uix.screenmanager import ScreenManager
@@ -9,7 +10,6 @@ from kivy.core.window import Window
 from kivy.utils import platform
 from kivy.lang import Builder
 from kivy.clock import Clock
-from kivy.config import Config
 from functools import partial
 from sortedcontainers import SortedDict
 from kivy.graphics import Rectangle, Color, Line
@@ -26,11 +26,10 @@ from pydrive2.drive import GoogleDrive
 #TODO: add habits/activities, render them if accomplished on the main calendar - possibility to track them (show how many or just checkbox if accomplished)
 #TODO: ask for name at the begining and personalize saved files (because of possible multiuser in future)
 #TODO: finish tutorials so I have better idea what I am doing :)
-#TODO: use sorted dict, avoid loading everything (one year should be enough) - one file for every year
+#TODO: use sorted dict
 #TODO: @solve how to show habit labels
 #TODO: switch color of month label and sedivy prumer (nicer genersted color wiev)
 
-#TODO: @set better gui for double mood, set instructions for mood one and two
 #TODO: @set better gui for day setting (close, save)
 #TODO: set that after click if not double mood save and close
 
@@ -80,7 +79,7 @@ terribleColor=(28/255,49/255,36/255,.8)
 clearColor = (.5,.5,.5,.45)
 noColor = (0,0,0,0)
 
-today = (252/255,207/255,3/255,.9) #(12/255,84/255,179/255,.8)
+today = (48/255,60/255,133/255,.9) #(12/255,84/255,179/255,.8)
 notToday = (12/255,84/255,179/255,0)
 
 calList = [['1-1','1-2','1-3','1-4','1-5','1-6','1-7'],
@@ -154,25 +153,40 @@ class CalendarWindow(MDScreen):
         self.make_Cal(now=True)
         self.make_Cal(now=True) # clock is not working but this yes....
 
-    def backup_data(self):
+    def sync_data(self):
         local_file_list = os.listdir()
-        drive_file_list = drive.ListFile({'q': "'1QRcc1s1xZQz5fWlMjut8chLO8hsTit8Y' in parents and (trashed=false)"}).GetList()
-        drive_file_IDs = {}
+        local_file_meta = {}
+        drive_file_list = drive.ListFile({'q': "('1QRcc1s1xZQz5fWlMjut8chLO8hsTit8Y' in parents) and (trashed=false) and (mimeType != 'application/vnd.google-apps.folder')"}).GetList()
+        drive_file_meta = {}
+        for file in local_file_list:
+            with open(file,'rb') as f:
+                data = f.read()
+                md5checksum = hashlib.md5(data).hexdigest()
+            local_file_meta[file] = {'checksum': md5checksum, 'modifiedDate': os.path.getmtime(file),'dtobject': datetime.datetime.fromtimestamp(os.path.getmtime(file))} #datetime.datetime.fromtimestamp
         for file in drive_file_list:
-            drive_file_IDs[file['title']] = file['id']
+            drive_file_meta[file['title']] = {'id': file['id'],'checksum': file['md5Checksum'], 'modifiedDate': datetime.datetime.timestamp(parser.parse(file['modifiedDate'])), 'dtobject': parser.parse(file['modifiedDate'])}
+
         try:
             for filename in local_file_list:
-                if filename in drive_file_IDs:
-                    new_file = drive.CreateFile({'parents': [{'id': '1QRcc1s1xZQz5fWlMjut8chLO8hsTit8Y'}],'title': filename, 'id': drive_file_IDs[filename]})
-                    new_file.SetContentFile(filename)
-                    new_file.Upload()
-                    print('nalezeno' + filename)
+                if filename in drive_file_meta:
+                    print('nalezeno na drive: ' + filename)
+                    if local_file_meta[filename]['modifiedDate'] > drive_file_meta[filename]['modifiedDate'] and local_file_meta[filename]['checksum'] != drive_file_meta[filename]['checksum']:
+                        new_file = drive.CreateFile({'parents': [{'id': '1QRcc1s1xZQz5fWlMjut8chLO8hsTit8Y'}],'title': filename, 'id': drive_file_meta[filename]['id']})
+                        new_file.SetContentFile(filename)
+                        new_file.Upload()
+                        print(filename + ' lokalni novejsi - nahrano na disk')
+                    elif local_file_meta[filename]['modifiedDate'] < drive_file_meta[filename]['modifiedDate'] and local_file_meta[filename]['checksum'] != drive_file_meta[filename]['checksum']:
+                        new_file = drive.CreateFile({'parents': [{'id': '1QRcc1s1xZQz5fWlMjut8chLO8hsTit8Y'}],'title':filename, 'id': drive_file_meta[filename]['id']})
+                        new_file.GetContentFile(filename)
+                        print(filename + ' drive novejsi - stazeno')
+                    else:
+                        print(filename + ' ma stejne datum nebo checsksum, nic se nedeje')
                 else:
                     new_file = drive.CreateFile({'parents': [{'id': '1QRcc1s1xZQz5fWlMjut8chLO8hsTit8Y'}],'title':filename, 'mimeType':'application/json'})
                     # Read file and set it as a content of this instance.
                     new_file.SetContentFile(filename)
                     new_file.Upload() # Upload the file.
-                    print('nove nahrano' + filename)
+                    print(filename +' nove nahrano')
 
         except Exception as e: print(e)
 
@@ -279,9 +293,9 @@ class CalendarWindow(MDScreen):
             Rectangle(size=labelIDa.texture_size, pos=(calButtonID.x+calButtonID.width/20, calButtonID.top-labelIDa.texture_size[1]), texture=labelIDa.texture)
             Rectangle(size=labelIDb.texture_size, pos=(calButtonID.right-labelIDb.texture_size[0], calButtonID.top-labelIDb.texture_size[1]), texture=labelIDb.texture)
             Rectangle(size=labelIDc.texture_size, pos=(calButtonID.right-labelIDc.texture_size[0], calButtonID.y), texture=labelIDc.texture)
-            Rectangle(size=labelIDd.texture_size, pos=(calButtonID.x+calButtonID.width/3.1,calButtonID.y), texture=labelIDd.texture)
+            Rectangle(size=labelIDd.texture_size, pos=(calButtonID.x+calButtonID.width/3.4,calButtonID.y), texture=labelIDd.texture)
             if labelIDd.texture_size[0] > 0:
-                Rectangle(source = 'pict/heart.png', size=(calButtonID.width/4,calButtonID.width/4), pos=(calButtonID.x+calButtonID.width/20,calButtonID.y+calButtonID.height/15))
+                Rectangle(source = 'pict/heart.png', size=(calButtonID.width/4.5,calButtonID.width/4.5), pos=(calButtonID.x+calButtonID.width/20,calButtonID.y+calButtonID.height/15))
 
     def move_month(self,direction):
         if direction == 'forward':
