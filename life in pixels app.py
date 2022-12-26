@@ -23,7 +23,6 @@ from pydrive2.drive import GoogleDrive
 #TODO: add habits/activities, render them if accomplished on the main calendar - possibility to track them (show how many or just checkbox if accomplished)
 #TODO: ask for name at the begining and personalize saved files (because of possible multiuser in future)
 #TODO: finish tutorials so I have better idea what I am doing :)
-#TODO: use sorted dict
 #TODO: @solve how to show habit labels
 #TODO: switch color of month label and sedivy prumer (nicer genersted color wiev)
 
@@ -505,8 +504,14 @@ class LifePixels(MDApp):
         sm.add_widget(HabitsWindow(name='Habits'))
         sm.add_widget(SettingsWindow(name='Settings'))
         sm.add_widget(CalendarLabels(name='CalLabels'))
+        Window.bind(on_keyboard=self.button_press)
         sm.current = 'Calendar'
         return sm
+    
+    def button_press(self, window, key, scancode, codepoint, modifier):
+        if key == 27:
+            self.root.current = 'Calendar'
+
         '''
     title = 'Life in pixels'
     def build(self):
