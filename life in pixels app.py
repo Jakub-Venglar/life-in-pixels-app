@@ -9,7 +9,7 @@ from kivy.uix.popup import Popup
 from kivy.uix.label import Label
 from kivy.core.window import Window
 from kivy.config import Config
-from kivy.utils import platform
+from kivy import platform
 from kivy.lang import Builder
 from kivy.clock import Clock
 from functools import partial
@@ -19,29 +19,30 @@ from babel.dates import format_date
 from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
 
-#TODO: show physical health status as bar??
+
+#TODO: make menu screen
+#TODO: create graph view for healt
+#TODO: create year stats for mood and health - make it separate screen
 #TODO: create and show hint for physical health status
+
+#TODO: show physical health status as bar??
+
+#TODO: @solve how to show habit labels
+
 #TODO: learn how to properly comment and add comments and docstrings
 #TODO: add loading screen and wait until calendar and widow are constructed
 #TODO: add habits/activities, render them if accomplished on the main calendar - possibility to track them (show how many or just checkbox if accomplished)
-#TODO: ask for name at the begining and personalize saved files (because of possible multiuser in future)
 #TODO: finish tutorials so I have better idea what I am doing :)
-#TODO: @solve how to show habit labels
-#TODO: switch color of month label and sedivy prumer (nicer genersted color wiev)
-
-#TODO: @set better gui for day setting (close, save)
-#TODO: set that after click if not double mood save and close
 
 #TODO: add option for set your own colors
 #TODO: choice from default pictures or your own as BG
 #TODO: add, picture of the day, copy to dedicated folder and name it, backup
 #TODO: make printable page, with summary of the year/month
-#TODO: @sync between computer and mobile app - at PC you can see better bigger picture
-#TODO: @backup possibilities
 # maybe todo: add location on the map, later show pins on the map
 
 
 if platform == 'android':
+    
     from android.storage import app_storage_path
     settings_path = app_storage_path()
 
@@ -51,8 +52,7 @@ if platform == 'android':
     from android.storage import secondary_external_storage_path
     secondary_ext_storage = secondary_external_storage_path()
 
-    from android.permissions import request_permissions, Permission
-    request_permissions([Permission.WRITE_EXTERNAL_STORAGE, Permission.READ_EXTERNAL_STORAGE,Permission.INTERNET])
+    print(os.getcwd)
 
 if platform == 'win':
     Window.size = (400*1.5, 712*1.5)
@@ -60,15 +60,6 @@ if platform == 'win':
     Window.left = 50
 
 Config.set('kivy', 'exit_on_escape', '0')
-
-# authenticate to google drive (needs my client secrets)
-# google auth settings.yaml is set
-gauth = GoogleAuth()
-# Create local webserver and auto handles authentication.
-gauth.LocalWebserverAuth()
-drive = GoogleDrive(gauth)
-
-test= SortedDict({'uh':'oh','ahoj':'none'})
 
 emptyDayData = {'mood':'','mood2':'','doubleMood': False, 'comment':'','health': None}
 fsDivider = 35
@@ -89,6 +80,9 @@ calList = [['1-1','1-2','1-3','1-4','1-5','1-6','1-7'],
                     ['3-1','3-2','3-3','3-4','3-5','3-6','3-7'],
                     ['4-1','4-2','4-3','4-4','4-5','4-6','4-7'],
                     ['5-1','5-2','5-3','5-4','5-5','5-6','5-7']]
+
+#experimental class / probably no need for using it
+
 class YearObject():
     def __init__(self, year, data):
         self.year = year
@@ -112,17 +106,14 @@ class CalendarWindow(MDScreen):
             path = os.path.join(settings_path, 'userdata')
             try:
                 os.mkdir(path)
-                os.chdir(path)
             except FileExistsError:
-                os.chdir(path)
-
+                pass
         else:
             path = os.path.join(os.path.dirname(sys.argv[0]), 'userdata')
             try:
                 os.mkdir(path)
-                os.chdir(path)
             except FileExistsError:
-                os.chdir(path)
+                pass
     
     def switch_to_ext_storage(self):
         pass
@@ -132,10 +123,10 @@ class CalendarWindow(MDScreen):
         if year != self.currentYear:
             self.currentYear = year
             try:   
-                with open(f'caldata-{year}.json', 'r', encoding='utf-8') as file:
+                with open(f'userdata/caldata-{year}.json', 'r', encoding='utf-8') as file:
                     yearData =  json.loads(file.read())
             except FileNotFoundError: 
-                with open(f'caldata-{year}.json', 'w', encoding='utf-8') as file:
+                with open(f'userdata/caldata-{year}.json', 'w', encoding='utf-8') as file:
                     file.write('{}')
                     yearData =  {}
             self.yearData = yearData
@@ -144,19 +135,49 @@ class CalendarWindow(MDScreen):
 
     def save_data(self, newData, date_id):
         year = str(date_id)[:4]
-        filename = f'caldata-{year}.json'
+        filename = f'userdata/caldata-{year}.json'
         with open(filename, 'w', encoding='utf-8') as file:
             json.dump(SortedDict(newData), file, indent = 4)
     
     def delete_data(self,date_id):
         year = str(date_id)[:4]
-        with open(f'caldata-{year}.json', 'w', encoding='utf-8') as file:
+        with open(f'userdata/caldata-{year}.json', 'w', encoding='utf-8') as file:
             file.write('{}')
         self.make_Cal(now=True)
         self.make_Cal(now=True) # clock is not working but this yes....
+    
+    def get_self_directory(self):
+        if platform == 'android':
+            path = MDApp.get_running_app().user_data_dir
+        else:
+            path = os.path.dirname(sys.argv[0])
+        return path
+
+    def get_userdata(self):
+        if platform == 'android':
+            path = os.path.join(settings_path, 'userdata')
+        else:
+            path = os.path.join(os.path.dirname(sys.argv[0]), 'userdata')
+        return path
 
     def sync_data(self):
-    
+        #pydrive2.auth.AuthenticationError
+        current_dir = self.get_self_directory()
+        print('Aktualne sem v ' + current_dir)
+        the_way = os.path.join(current_dir, 'drivelogin/', 'client_secrets.json')
+        credentials_path = os.path.join(current_dir, 'drivelogin/', 'credentials.json')
+        # authenticate to google drive (needs my client secrets)
+        # google auth settings.yaml is set
+        settings={'client_config_file': the_way,
+                    'save_credentials': True,
+                    'save_credentials_backend': 'file',
+                    'save_credentials_file': credentials_path,
+                    'get_refresh_token': True}
+        gauth = GoogleAuth(settings=settings)
+        # Create local webserver and auto handles authentication.
+        gauth.LocalWebserverAuth()
+        drive = GoogleDrive(gauth)
+        os.chdir(self.get_userdata())
         try:
             local_file_list = os.listdir()
             local_file_meta = {}
@@ -222,6 +243,7 @@ class CalendarWindow(MDScreen):
             size_hint=(.6, .7))
             popup.bind(on_touch_down=popup.dismiss)
             popup.open()
+        os.chdir(self.get_self_directory())
 
     #create calendar view
 
@@ -329,7 +351,8 @@ class CalendarWindow(MDScreen):
             # health label with heart icon
             Rectangle(size=labelIDd.texture_size, pos=(calButtonID.x+calButtonID.width/3.4,calButtonID.y), texture=labelIDd.texture)
             if labelIDd.texture_size[0] > 0:
-                Rectangle(source = 'pict/heart.png', size=(calButtonID.width/4.5,calButtonID.width/4.5), pos=(calButtonID.x+calButtonID.width/20,calButtonID.y+calButtonID.height/15))
+                path = os.path.join(self.get_self_directory(), 'pict/', 'heart.png')
+                Rectangle(source = path, size=(calButtonID.width/4.5,calButtonID.width/4.5), pos=(calButtonID.x+calButtonID.width/20,calButtonID.y+calButtonID.height/15))
 
     def move_month(self,direction):
         if direction == 'forward':
@@ -582,6 +605,11 @@ class LifePixels(MDApp):
 
     def on_start(self):
         #self.root.get_screen('Calendar').create_user_directory()
+        
+        if platform == 'android':
+            from android.permissions import request_permissions, Permission
+            request_permissions([Permission.WRITE_EXTERNAL_STORAGE, Permission.READ_EXTERNAL_STORAGE, Permission.INTERNET])
+
         self.root.current_screen.create_user_directory()
         self.root.current_screen.make_Cal()
 
