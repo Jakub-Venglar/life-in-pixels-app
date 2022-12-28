@@ -101,7 +101,7 @@ class CalendarWindow(MDScreen):
 
 #create directory if not existing for both platfoms and change working directory to it
 
-    def create_user_directory(self):
+    def create_userdata_directory(self):
         if platform == 'android':
             path = os.path.join(settings_path, 'userdata')
             try:
@@ -120,13 +120,14 @@ class CalendarWindow(MDScreen):
     
     def pass_data(self,date_id):
         year = str(date_id)[:4]
+        userdata = self.get_userdata()
         if year != self.currentYear:
             self.currentYear = year
             try:   
-                with open(f'userdata/caldata-{year}.json', 'r', encoding='utf-8') as file:
+                with open(f'{userdata}/caldata-{year}.json', 'r', encoding='utf-8') as file:
                     yearData =  json.loads(file.read())
             except FileNotFoundError: 
-                with open(f'userdata/caldata-{year}.json', 'w', encoding='utf-8') as file:
+                with open(f'{userdata}/caldata-{year}.json', 'w', encoding='utf-8') as file:
                     file.write('{}')
                     yearData =  {}
             self.yearData = yearData
@@ -135,13 +136,15 @@ class CalendarWindow(MDScreen):
 
     def save_data(self, newData, date_id):
         year = str(date_id)[:4]
-        filename = f'userdata/caldata-{year}.json'
+        userdata = self.get_userdata()
+        filename = f'{userdata}/caldata-{year}.json'
         with open(filename, 'w', encoding='utf-8') as file:
             json.dump(SortedDict(newData), file, indent = 4)
     
     def delete_data(self,date_id):
         year = str(date_id)[:4]
-        with open(f'userdata/caldata-{year}.json', 'w', encoding='utf-8') as file:
+        userdata = self.get_userdata()
+        with open(f'{userdata}/caldata-{year}.json', 'w', encoding='utf-8') as file:
             file.write('{}')
         self.make_Cal(now=True)
         self.make_Cal(now=True) # clock is not working but this yes....
@@ -604,13 +607,13 @@ class LifePixels(MDApp):
         return sm
 
     def on_start(self):
-        #self.root.get_screen('Calendar').create_user_directory()
+        #self.root.get_screen('Calendar').create_userdata_directory()
         
         if platform == 'android':
             from android.permissions import request_permissions, Permission
             request_permissions([Permission.WRITE_EXTERNAL_STORAGE, Permission.READ_EXTERNAL_STORAGE, Permission.INTERNET])
 
-        self.root.current_screen.create_user_directory()
+        self.root.current_screen.create_userdata_directory()
         self.root.current_screen.make_Cal()
 
 
