@@ -7,6 +7,7 @@ from kivymd.uix.screen import MDScreen
 from kivy.uix.screenmanager import ScreenManager
 from kivy.uix.popup import Popup
 from kivy.uix.label import Label
+from kivy.uix.button import Button
 from kivy.core.window import Window
 from kivy.config import Config
 from kivy import platform
@@ -21,6 +22,7 @@ from pydrive2.drive import GoogleDrive
 
 
 #TODO: make menu screen
+#TODO: make popup function/class
 #TODO: create graph view for healt
 #TODO: create year stats for mood and health - make it separate screen
 #TODO: create and show hint for physical health status
@@ -51,8 +53,6 @@ if platform == 'android':
 
     from android.storage import secondary_external_storage_path
     secondary_ext_storage = secondary_external_storage_path()
-
-    print(os.getcwd)
 
 if platform == 'win':
     Window.size = (400*1.5, 712*1.5)
@@ -100,6 +100,7 @@ class CalendarWindow(MDScreen):
         self.manager.get_screen('CalLabels').fs = z/fsDivider
 
 #create directory if not existing for both platfoms and change working directory to it
+#os.makedirs
 
     def create_userdata_directory(self):
         if platform == 'android':
@@ -126,9 +127,7 @@ class CalendarWindow(MDScreen):
             try:   
                 with open(f'{userdata}/caldata-{year}.json', 'r', encoding='utf-8') as file:
                     yearData =  json.loads(file.read())
-            except FileNotFoundError: 
-                with open(f'{userdata}/caldata-{year}.json', 'w', encoding='utf-8') as file:
-                    file.write('{}')
+            except FileNotFoundError:
                     yearData =  {}
             self.yearData = yearData
             #thisYear = YearObject(year,yearData)
@@ -139,6 +138,7 @@ class CalendarWindow(MDScreen):
         userdata = self.get_userdata()
         filename = f'{userdata}/caldata-{year}.json'
         with open(filename, 'w', encoding='utf-8') as file:
+            file.write('{}')
             json.dump(SortedDict(newData), file, indent = 4)
     
     def delete_data(self,date_id):
@@ -151,7 +151,7 @@ class CalendarWindow(MDScreen):
     
     def get_self_directory(self):
         if platform == 'android':
-            path = MDApp.get_running_app().user_data_dir
+            path = os.path.join(MDApp.get_running_app().user_data_dir, 'app/')
         else:
             path = os.path.dirname(sys.argv[0])
         return path
@@ -163,25 +163,22 @@ class CalendarWindow(MDScreen):
             path = os.path.join(os.path.dirname(sys.argv[0]), 'userdata')
         return path
 
-    def sync_data(self):
-        #pydrive2.auth.AuthenticationError
-        current_dir = self.get_self_directory()
-        print('Aktualne sem v ' + current_dir)
-        the_way = os.path.join(current_dir, 'drivelogin/', 'client_secrets.json')
-        credentials_path = os.path.join(current_dir, 'drivelogin/', 'credentials.json')
-        # authenticate to google drive (needs my client secrets)
-        # google auth settings.yaml is set
-        settings={'client_config_file': the_way,
-                    'save_credentials': True,
-                    'save_credentials_backend': 'file',
-                    'save_credentials_file': credentials_path,
-                    'get_refresh_token': True}
-        gauth = GoogleAuth(settings=settings)
-        # Create local webserver and auto handles authentication.
-        gauth.LocalWebserverAuth()
-        drive = GoogleDrive(gauth)
-        os.chdir(self.get_userdata())
+    def sync_data(self,clocktime=0):
         try:
+            secrets_path = os.path.join(self.get_self_directory(), 'drivelogin/', 'client_secrets.json')
+            credentials_path = os.path.join(self.get_self_directory(), 'drivelogin/', 'credentials.json')
+            # authenticate to google drive (needs my client secrets)
+            # google auth settings.yaml is set
+            settings={'client_config_file': secrets_path,
+                        'save_credentials': True,
+                        'save_credentials_backend': 'file',
+                        'save_credentials_file': credentials_path,
+                        'get_refresh_token': True}
+            gauth = GoogleAuth(settings=settings)
+            # Create local webserver and auto handles authentication.
+            gauth.LocalWebserverAuth()
+            drive = GoogleDrive(gauth)
+            os.chdir(self.get_userdata())
             local_file_list = os.listdir()
             local_file_meta = {}
             drive_file_list = drive.ListFile({'q': "('1QRcc1s1xZQz5fWlMjut8chLO8hsTit8Y' in parents) and (trashed=false) and (mimeType != 'application/vnd.google-apps.folder')"}).GetList()
@@ -196,6 +193,18 @@ class CalendarWindow(MDScreen):
 
             try:
                 self.syncMessage = ''
+
+                if len(local_file_list)<1:
+                    for filename in drive_file_meta:
+                        new_file = drive.CreateFile({'parents': [{'id': '1QRcc1s1xZQz5fWlMjut8chLO8hsTit8Y'}],'title':filename, 'id': drive_file_meta[filename]['id']})
+                        new_file.GetContentFile(filename)
+                        self.syncMessage = 'V datech nic nebylo, soubory z drive stazeny'
+
+                elif len(local_file_list)<1 and len(drive_file_list)<1:
+                    self.syncMessage = 'Nikde nic, zaciname od nuly'
+                else: 
+                    pass
+
                 for filename in local_file_list:
                     if filename in drive_file_meta:
                         #self.syncMessage = self.syncMessage + '\n' + filename + ' nalezeno na drive' + '\n'
@@ -204,7 +213,7 @@ class CalendarWindow(MDScreen):
                             new_file.SetContentFile(filename)
                             new_file.Upload()
                             self.syncMessage = self.syncMessage + '\n' + filename + ' - lokální soubor je novější - nahráno na drive' + '\n'
-                        elif local_file_meta[filename]['modifiedDate'] < drive_file_meta[filename]['modifiedDate'] and local_file_meta[filename]['checksum'] != drive_file_meta[filename]['checksum']:
+                        elif (local_file_meta[filename]['modifiedDate'] < drive_file_meta[filename]['modifiedDate']) and (local_file_meta[filename]['checksum'] != drive_file_meta[filename]['checksum']):
                             new_file = drive.CreateFile({'parents': [{'id': '1QRcc1s1xZQz5fWlMjut8chLO8hsTit8Y'}],'title':filename, 'id': drive_file_meta[filename]['id']})
                             new_file.GetContentFile(filename)
                             self.syncMessage = self.syncMessage + '\n' + filename + ' - soubor na drive je novější - staženo' + '\n'
@@ -219,11 +228,10 @@ class CalendarWindow(MDScreen):
                         self.syncMessage = self.syncMessage + '\n' + filename +' - nově nahráno' + '\n'
                 
                 if self.syncMessage == '':
-                    popupMessage = 'Nic nebylo potřeba synchronizovat'
+                    pass #popupMessage = 'Nic nebylo potřeba synchronizovat'
                 else:
                     popupMessage = self.syncMessage
-
-                popup = Popup(title='Výsledek synchronizace', content = 
+                    popup = Popup(title='Výsledek synchronizace', content = 
                     Label(text=popupMessage, 
                     font_size= 15,
                     halign= 'center',
@@ -231,9 +239,10 @@ class CalendarWindow(MDScreen):
                     size=(Window.size[0]*0.6,Window.size[1]*0.7),
                     text_size=(Window.size[0]*0.5,Window.size[1]*0.7)), 
                     size_hint=(.6, .7))
-                popup.bind(on_touch_down=popup.dismiss)
-                popup.open()
+                    popup.bind(on_touch_down=popup.dismiss)
+                    popup.open()
 
+                
             except Exception as e: print(e)
         except httplib2.error.ServerNotFoundError:
             popup = Popup(title='Není připojení k internetu', content = 
@@ -246,9 +255,13 @@ class CalendarWindow(MDScreen):
             size_hint=(.6, .7))
             popup.bind(on_touch_down=popup.dismiss)
             popup.open()
+        self.make_Cal(now=True)
         os.chdir(self.get_self_directory())
 
     #create calendar view
+    def show_popup(self, title='Titulek', content="Zde muze byt cokoliv", button='Zavřít'):
+        pass
+
 
     def make_Cal(self,now=True, year=2020, month=6):
         self.manager.get_screen('CalLabels').fs = Window.size[1]/fsDivider
@@ -612,9 +625,14 @@ class LifePixels(MDApp):
         if platform == 'android':
             from android.permissions import request_permissions, Permission
             request_permissions([Permission.WRITE_EXTERNAL_STORAGE, Permission.READ_EXTERNAL_STORAGE, Permission.INTERNET])
-
+        cwdpath = os.getcwd()
+        print('zacinam v' + str(cwdpath))
         self.root.current_screen.create_userdata_directory()
         self.root.current_screen.make_Cal()
+        Clock.schedule_once(self.root.current_screen.sync_data)
+    
+    def on_resume(self):
+        self.root.get_screen('Calendar').sync_data()
 
 
 
