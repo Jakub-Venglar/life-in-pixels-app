@@ -7,6 +7,7 @@ from kivymd.uix.screen import MDScreen
 from kivy.uix.screenmanager import ScreenManager
 from kivy.uix.popup import Popup
 from kivy.uix.label import Label
+from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.core.window import Window
 from kivy.config import Config
@@ -21,6 +22,7 @@ from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
 
 
+#TODO: json.decoder.JSONDecodeError: Extra data: line 1 column 3 (char 2) - opravit
 #TODO: make menu screen
 #TODO: make popup function/class
 #TODO: create graph view for healt
@@ -162,6 +164,21 @@ class CalendarWindow(MDScreen):
         else:
             path = os.path.join(os.path.dirname(sys.argv[0]), 'userdata')
         return path
+    
+    def open_popup(self, title, text='pop up text', button='Zavřít'):
+        box = BoxLayout(orientation = 'vertical', padding=(10,50))
+        box.add_widget(Label(text=text, 
+            font_size= 15,
+            halign= 'center',
+            valign= 'middle',
+            size=(Window.size[0]*0.6,Window.size[1]*0.7),
+            text_size=(Window.size[0]*0.5,Window.size[1]*0.7)),
+        )
+        popup = Popup(title=title, content = box, size_hint=(.8,.8))
+        box.add_widget(Button(text = button, size_hint=(.9,.2 ), pos_hint={'center_x': .5 }, on_press=popup.dismiss))
+        popup.bind(on_touch_down=popup.dismiss)
+        popup.open()
+
 
     def sync_data(self,clocktime=0):
         try:
@@ -227,20 +244,16 @@ class CalendarWindow(MDScreen):
                         new_file.Upload() # Upload the file.
                         self.syncMessage = self.syncMessage + '\n' + filename +' - nově nahráno' + '\n'
                 
+                for filename in drive_file_meta:
+                    if filename not in local_file_meta:
+                        new_file = drive.CreateFile({'parents': [{'id': '1QRcc1s1xZQz5fWlMjut8chLO8hsTit8Y'}],'title':filename, 'id': drive_file_meta[filename]['id']})
+                        new_file.GetContentFile(filename)
+                        self.syncMessage = self.syncMessage + '\n' + filename + ' - soubor na drive neexistoval na lokálním disku - staženo' + '\n'
+
                 if self.syncMessage == '':
                     pass #popupMessage = 'Nic nebylo potřeba synchronizovat'
                 else:
-                    popupMessage = self.syncMessage
-                    popup = Popup(title='Výsledek synchronizace', content = 
-                    Label(text=popupMessage, 
-                    font_size= 15,
-                    halign= 'center',
-                    valign= 'middle',
-                    size=(Window.size[0]*0.6,Window.size[1]*0.7),
-                    text_size=(Window.size[0]*0.5,Window.size[1]*0.7)), 
-                    size_hint=(.6, .7))
-                    popup.bind(on_touch_down=popup.dismiss)
-                    popup.open()
+                    self.open_popup(title='Výsledek synchronizace', text=self.syncMessage, button='Zavřít')
 
                 
             except Exception as e: print(e)
@@ -259,9 +272,6 @@ class CalendarWindow(MDScreen):
         os.chdir(self.get_self_directory())
 
     #create calendar view
-    def show_popup(self, title='Titulek', content="Zde muze byt cokoliv", button='Zavřít'):
-        pass
-
 
     def make_Cal(self,now=True, year=2020, month=6):
         self.manager.get_screen('CalLabels').fs = Window.size[1]/fsDivider
@@ -633,6 +643,7 @@ class LifePixels(MDApp):
     
     def on_resume(self):
         self.root.get_screen('Calendar').sync_data()
+        print('pokracujem test')
 
 
 
