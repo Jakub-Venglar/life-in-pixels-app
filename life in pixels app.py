@@ -22,12 +22,12 @@ from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
 
 
-#TODO: json.decoder.JSONDecodeError: Extra data: line 1 column 3 (char 2) - opravit
 #TODO: make menu screen
-#TODO: make popup function/class
 #TODO: create graph view for healt
 #TODO: create year stats for mood and health - make it separate screen
-#TODO: create and show hint for physical health status
+#TODO: create and show hint for physical health status, create comment field for health
+
+#TODO: add, picture of the day, copy to dedicated folder and name it, backup - need to solve write external storage
 
 #TODO: show physical health status as bar??
 
@@ -40,7 +40,7 @@ from pydrive2.drive import GoogleDrive
 
 #TODO: add option for set your own colors
 #TODO: choice from default pictures or your own as BG
-#TODO: add, picture of the day, copy to dedicated folder and name it, backup
+
 #TODO: make printable page, with summary of the year/month
 # maybe todo: add location on the map, later show pins on the map
 
@@ -101,25 +101,34 @@ class CalendarWindow(MDScreen):
     def labelSize(self,x=1,y=1,z=1,clocktime=0):
         self.manager.get_screen('CalLabels').fs = z/fsDivider
 
-#create directory if not existing for both platfoms and change working directory to it
-#os.makedirs
+#create directories if not existing for both platfoms
 
-    def create_userdata_directory(self):
+    def create_userdata_directories(self):
         if platform == 'android':
             path = os.path.join(settings_path, 'userdata')
             try:
                 os.mkdir(path)
             except FileExistsError:
                 pass
+
+            path = os.path.join(primary_ext_storage, 'lifepixels/', 'user_pictures')
+            try:
+                os.makedirs(path)
+            except FileExistsError:
+                pass
+
         else:
             path = os.path.join(os.path.dirname(sys.argv[0]), 'userdata')
             try:
                 os.mkdir(path)
             except FileExistsError:
                 pass
-    
-    def switch_to_ext_storage(self):
-        pass
+
+            path = os.path.join(os.path.dirname(sys.argv[0]), 'user_pictures')
+            try:
+                os.mkdir(path)
+            except FileExistsError:
+                pass
     
     def pass_data(self,date_id):
         year = str(date_id)[:4]
@@ -163,6 +172,13 @@ class CalendarWindow(MDScreen):
             path = os.path.join(settings_path, 'userdata')
         else:
             path = os.path.join(os.path.dirname(sys.argv[0]), 'userdata')
+        return path
+
+    def get_user_pictures(self):
+        if platform == 'android':
+            path = os.path.join(primary_ext_storage, 'lifepixels/', 'user_pictures')
+        else:
+            path = os.path.join(os.path.dirname(sys.argv[0]), 'user_pictures')
         return path
     
     def open_popup(self, title, text='pop up text', button='Zavřít'):
@@ -633,17 +649,26 @@ class LifePixels(MDApp):
         #self.root.get_screen('Calendar').create_userdata_directory()
         
         if platform == 'android':
-            from android.permissions import request_permissions, Permission
-            request_permissions([Permission.WRITE_EXTERNAL_STORAGE, Permission.READ_EXTERNAL_STORAGE, Permission.INTERNET])
+            from android.permissions import request_permissions, Permission, check_permission
+            request_permissions([Permission.READ_EXTERNAL_STORAGE, Permission.WRITE_EXTERNAL_STORAGE, Permission.INTERNET])
+            permission_status = check_permission(Permission.WRITE_EXTERNAL_STORAGE)
+            print('write')
+            print(permission_status)
+            permission_status = check_permission(Permission.READ_EXTERNAL_STORAGE)
+            print('read')
+            print(permission_status)
         cwdpath = os.getcwd()
         print('zacinam v' + str(cwdpath))
-        self.root.current_screen.create_userdata_directory()
-        self.root.current_screen.make_Cal() #- done on the end of sync
-        #Clock.schedule_once(self.root.current_screen.sync_data)
+        self.root.current_screen.create_userdata_directories()
+        #self.root.current_screen.make_Cal() #- done on the end of sync
+        Clock.schedule_once(self.root.current_screen.sync_data)
     
     def on_resume(self):
         self.root.get_screen('Calendar').sync_data()
         print('pokracujem test')
+
+    def on_pause(self):
+        pass
 
 
 
