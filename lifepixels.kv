@@ -238,11 +238,12 @@
 
 <SettingsWindow>:
     name: 'Settings'
-    bgsource: 'default.jpg'
+    bgsource: 'pict/default.jpg'
     bg: (0,0,0,.9)
+    settings: {}
     FitImage:
         size_hint_y: 1
-        source: ('pict/' + app.root.get_screen('Settings').bgsource)  if app.root else 'pict/default.jpg'
+        source: root.bgsource
     
     BoxLayout:
         #size_hint: 1,1
@@ -267,7 +268,7 @@
                     pos:self.pos
             size: self.texture_size
             pos: self.pos
-            source: 'pict/' + root.bgsource            
+            source: root.bgsource            
         Button:
             text: 'Vybrat obrázek na pozadí'
             size_hint_y: .2
@@ -277,6 +278,7 @@
             text: 'Uložit a zavřít'
             size_hint_y: .2
             on_press:
+                root.manager.current_screen.save_settings()
                 root.manager.transition.direction = 'right'
                 root.manager.current = 'Calendar'
 
@@ -291,7 +293,7 @@
             pos:self.pos
     FitImage:
         size_hint_y: 1
-        source: ('pict/' + app.root.get_screen('Settings').bgsource)  if app.root else 'pict/default.jpg'
+        source: (app.root.get_screen('Settings').bgsource)  if app.root else 'pict/default.jpg'
     BoxLayout:
         padding: [0,20,0,0]
         orientation: 'vertical'
@@ -328,7 +330,7 @@
     yearData: None
     FitImage:
         size_hint_y: 1
-        source: ('pict/' + app.root.get_screen('Settings').bgsource)  if app.root else 'pict/default.jpg'
+        source: (app.root.get_screen('Settings').bgsource)  if app.root else 'pict/default.jpg'
     BoxLayout:
         size: root.width, root.height
         orientation: 'vertical'

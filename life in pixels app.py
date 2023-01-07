@@ -22,6 +22,7 @@ from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
 from plyer import filechooser
 
+#TODO: finish settings for saving and loading bg image / copy it to the pict folder
 #TODO: make menu screen
 #TODO: create graph view for healt
 #TODO: create year stats for mood and health - make it separate screen
@@ -609,23 +610,35 @@ class SettingsWindow(MDScreen):
             path = filechooser.open_file(path=self.manager.get_screen('Calendar').get_self_directory())[0]
         print(path)
         print(os.path.basename(path))
-        newFilename = 'navic-' + os.path.basename(path)
-        destination = os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), newFilename)
-        shutil.copy2(path, destination)
+        self.bgsource = path
+        self.settings['bgPicture'] = path
+        #newFilename = 'navic-' + os.path.basename(path)
+        #destination = os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), newFilename)
+        #shutil.copy2(path, destination)
 
-    def load_settings(self):
+    def set_default_settings(self):
+        self.settings.setdefault('bgPicture', 'pict/default.jpg')
+
+    def load_settings(self, clocktime=0):
+        userdata = self.manager.get_screen('Calendar').get_userdata()
+        filename = f'{userdata}/settings.json'
         try:   
-            with open('settings.json', 'r', encoding='utf-8') as file:
-                return eval(file.read())
-        except FileNotFoundError: 
-            with open('settings.json', 'w', encoding='utf-8') as file:
-                file.write('{}')
-                return eval(file.read())
+            with open(filename, 'r', encoding='utf-8') as file:
+                self.settings =  json.loads(file.read())
+            Clock.schedule_once(self.set_default_settings)
 
-    def save_settings(self,to_save):
-        with open('settings.json', 'w', encoding='utf-8') as file:
-            file.write(to_save)
-            return eval(file.read())
+        except FileNotFoundError: 
+            with open(filename, 'w', encoding='utf-8') as file:
+                file.write('')
+                self.set_default_settings()
+                json.dump(self.settings, file, indent = 4)
+
+    def save_settings(self):
+        userdata = self.manager.get_screen('Calendar').get_userdata()
+        filename = f'{userdata}/settings.json'
+        with open(filename, 'w', encoding='utf-8') as file:
+            file.write('')
+            json.dump(self.settings, file, indent = 4)
 
 class WindowManager(ScreenManager):
     pass
@@ -659,6 +672,7 @@ class LifePixels(MDApp):
             permission_statusWRITE = check_permission(Permission.WRITE_EXTERNAL_STORAGE,)
             print('WRITE:')
             print(permission_statusWRITE)
+            self.root.current_screen.create_userdata_directories()
 
     def on_start(self):
         #self.root.get_screen('Calendar').create_userdata_directory()
@@ -671,6 +685,7 @@ class LifePixels(MDApp):
         else: 
             self.root.current_screen.create_userdata_directories()
             Clock.schedule_once(self.root.current_screen.sync_data)
+        Clock.schedule_once(self.root.get_screen('Settings').load_settings)
         #self.root.current_screen.make_Cal() #- done on the end of sync
         
     
