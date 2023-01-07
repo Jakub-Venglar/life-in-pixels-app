@@ -140,7 +140,7 @@ class CalendarWindow(MDScreen):
         userdata = self.get_userdata()
         filename = f'{userdata}/caldata-{year}.json'
         with open(filename, 'w', encoding='utf-8') as file:
-            file.write('{}')
+            file.write('')
             json.dump(SortedDict(newData), file, indent = 4)
     
     def delete_data(self,date_id):
@@ -268,8 +268,8 @@ class CalendarWindow(MDScreen):
             size_hint=(.6, .7))
             popup.bind(on_touch_down=popup.dismiss)
             popup.open()
-        self.make_Cal(now=True)
         os.chdir(self.get_self_directory())
+        Clock.schedule_once(partial(self.make_Cal, True))
 
     #create calendar view
 
@@ -638,8 +638,8 @@ class LifePixels(MDApp):
         cwdpath = os.getcwd()
         print('zacinam v' + str(cwdpath))
         self.root.current_screen.create_userdata_directory()
-        self.root.current_screen.make_Cal()
-        Clock.schedule_once(self.root.current_screen.sync_data)
+        self.root.current_screen.make_Cal() #- done on the end of sync
+        #Clock.schedule_once(self.root.current_screen.sync_data)
     
     def on_resume(self):
         self.root.get_screen('Calendar').sync_data()
