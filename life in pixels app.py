@@ -1,6 +1,6 @@
 #! python3
 # Life in pixels project
-import calendar, datetime, os, sys, json, hashlib, httplib2, time
+import calendar, datetime, os, sys, json, hashlib, httplib2, shutil
 from dateutil import parser
 from kivymd.app import MDApp
 from kivymd.uix.screen import MDScreen
@@ -20,7 +20,7 @@ from kivy.graphics import Rectangle, Color, Line
 from babel.dates import format_date
 from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
-
+from plyer import filechooser
 
 #TODO: make menu screen
 #TODO: create graph view for healt
@@ -103,7 +103,7 @@ class CalendarWindow(MDScreen):
 
 #create directories if not existing for both platfoms
 
-    def create_userdata_directories(self):
+    def create_userdata_directories(self, permissions = [], grant_results = [] ):
         if platform == 'android':
             path = os.path.join(settings_path, 'userdata')
             try:
@@ -111,7 +111,7 @@ class CalendarWindow(MDScreen):
             except FileExistsError:
                 pass
 
-            path = os.path.join(primary_ext_storage, 'lifepixels/', 'user_pictures')
+            path = os.path.join(primary_ext_storage, 'Pictures/', 'lifepixels/', 'user_pictures')
             try:
                 os.makedirs(path)
             except FileExistsError:
@@ -176,7 +176,7 @@ class CalendarWindow(MDScreen):
 
     def get_user_pictures(self):
         if platform == 'android':
-            path = os.path.join(primary_ext_storage, 'lifepixels/', 'user_pictures')
+            path = os.path.join(primary_ext_storage, 'Pictures/', 'lifepixels/', 'user_pictures')
         else:
             path = os.path.join(os.path.dirname(sys.argv[0]), 'user_pictures')
         return path
@@ -273,17 +273,10 @@ class CalendarWindow(MDScreen):
 
                 
             except Exception as e: print(e)
+        
         except httplib2.error.ServerNotFoundError:
-            popup = Popup(title='Není připojení k internetu', content = 
-            Label(text='Nemůžu se připojit k internetu. \n Zapni wifi nebo data. \n Klikni kamkoliv pro zavření tohoto okna.', 
-            font_size= 20,
-            halign= 'center',
-            valign= 'middle',
-            size=(Window.size[0]*0.6,Window.size[1]*0.7),
-            text_size=(Window.size[0]*0.5,Window.size[1]*0.7)), 
-            size_hint=(.6, .7))
-            popup.bind(on_touch_down=popup.dismiss)
-            popup.open()
+            self.open_popup(title='Není připojení k internetu', text='Nemůžu se připojit k internetu. \n Zapni wifi nebo data.', button='Zavřít')
+        
         os.chdir(self.get_self_directory())
         Clock.schedule_once(partial(self.make_Cal, True))
 
@@ -462,12 +455,12 @@ class CalendarWindow(MDScreen):
         try: 
             if dateData[dateKey]['health']:
                 daySetting.ids.health.value = dateData[dateKey]['health']
-                daySetting.ids.healthLabel.questionMark = False
+                daySetting.ids.healthLabelValue.questionMark = False
             else:
-                daySetting.ids.health.value = 10
-                daySetting.ids.healthLabel.questionMark = True
+                daySetting.ids.health.value = 5
+                daySetting.ids.healthLabelValue.questionMark = True
         except KeyError:
-            daySetting.ids.health.value = 10
+            daySetting.ids.health.value = 5
         daySetting.ids.doubleMoodCheck.active = dateData[dateKey]['doubleMood']
         daySetting.ids.question.bg1 = self.choose_color(dateData[dateKey]['mood'] )
         if daySetting.ids.doubleMoodCheck.active == True:
@@ -548,7 +541,7 @@ class DayWindow(MDScreen):
         dateKey = str(self.date_id)
         dateData[dateKey] = dateData.setdefault(dateKey, emptyDayData.copy())
         dateData[dateKey]['health'] = value
-        self.ids.healthLabel.questionMark = False
+        self.ids.healthLabelValue.questionMark = False
         call.save_data(dateData,self.date_id)
         call.colorize(self.my_id,self.date_id)
 
@@ -559,8 +552,8 @@ class DayWindow(MDScreen):
         dateKey = str(self.date_id)
         dateData[dateKey] = emptyDayData.copy()
         self.ids.comment.text= ''
-        self.ids.health.value = 10
-        self.ids.healthLabel.questionMark = True
+        self.ids.health.value = 5
+        self.ids.healthLabelValue.questionMark = True
         self.ids.doubleMoodCheck.active = False
         call.save_data(dateData,self.date_id)
         call.colorize(self.my_id,self.date_id)
@@ -609,6 +602,17 @@ class SettingsWindow(MDScreen):
             self.manager.transition.direction = 'right'
             self.manager.current = 'Calendar'
 
+    def choose_file(self):
+        if platform == 'android':
+            path = filechooser.open_file(path=primary_ext_storage)[0]
+        else:
+            path = filechooser.open_file(path=self.manager.get_screen('Calendar').get_self_directory())[0]
+        print(path)
+        print(os.path.basename(path))
+        newFilename = 'navic-' + os.path.basename(path)
+        destination = os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), newFilename)
+        shutil.copy2(path, destination)
+
     def load_settings(self):
         try:   
             with open('settings.json', 'r', encoding='utf-8') as file:
@@ -644,24 +648,31 @@ class LifePixels(MDApp):
         sm.add_widget(CalendarLabels(name='CalLabels'))
         sm.current = 'Calendar'
         return sm
+    
+    def check_permissions(self, clocktime=0):
+        if platform == 'android':
+            from android.permissions import request_permissions, Permission, check_permission
+            permission_statusREAD = check_permission(Permission.READ_EXTERNAL_STORAGE)
+            print('READ:')
+            print(permission_statusREAD)
+            #permission_status = check_permission(Permission.READ_EXTERNAL_STORAGE)
+            permission_statusWRITE = check_permission(Permission.WRITE_EXTERNAL_STORAGE,)
+            print('WRITE:')
+            print(permission_statusWRITE)
 
     def on_start(self):
         #self.root.get_screen('Calendar').create_userdata_directory()
         
         if platform == 'android':
-            from android.permissions import request_permissions, Permission, check_permission
-            request_permissions([Permission.READ_EXTERNAL_STORAGE, Permission.WRITE_EXTERNAL_STORAGE, Permission.INTERNET])
-            permission_status = check_permission(Permission.WRITE_EXTERNAL_STORAGE)
-            print('write')
-            print(permission_status)
-            permission_status = check_permission(Permission.READ_EXTERNAL_STORAGE)
-            print('read')
-            print(permission_status)
-        cwdpath = os.getcwd()
-        print('zacinam v' + str(cwdpath))
-        self.root.current_screen.create_userdata_directories()
+            from android.permissions import request_permissions, Permission
+            #from androidstorage4kivy import SharedStorage
+            request_permissions([Permission.READ_EXTERNAL_STORAGE, Permission.INTERNET], callback = self.check_permissions)
+            Clock.schedule_once(self.root.current_screen.sync_data,4)
+        else: 
+            self.root.current_screen.create_userdata_directories()
+            Clock.schedule_once(self.root.current_screen.sync_data)
         #self.root.current_screen.make_Cal() #- done on the end of sync
-        Clock.schedule_once(self.root.current_screen.sync_data)
+        
     
     def on_resume(self):
         self.root.get_screen('Calendar').sync_data()

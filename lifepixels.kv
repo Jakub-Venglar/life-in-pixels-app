@@ -1,8 +1,9 @@
 <MoodButton@Button>:
     background_normal: ''
-    font_size: 20
+    font_size: 25
     halign: 'center'
     valign: 'middle'
+    padding: (15,15)
     text_size: self.size
 
 <CalButton@Button>:
@@ -72,12 +73,12 @@
                 Color:
                     rgba: self.bg1
                 Rectangle:
-                    size: self.size[0]/2,self.size[1]/8
+                    size: self.size[0]/2,self.size[1]/6
                     pos:self.pos
                 Color:
                     rgba: self.bg2
                 Rectangle:
-                    size: self.size[0]/2,self.size[1]/8
+                    size: self.size[0]/2,self.size[1]/6
                     pos:self.pos[0]+self.size[0]/2,self.pos[1]
             color: (1,1,1,1)
             #outline_width: 1
@@ -87,17 +88,20 @@
             valign: 'middle'
             #size_hint_x: None
             text_size: self.size
-            text: f'Jaký byl tvůj den? {root.current_date}'
+            markup: True
+            text: f'[b]Jaký byl tvůj den? {root.current_date}[/b]'
+            size_hint: (1,.7)
         MDTextFieldRect:
             id: comment
             multiline: True
             text: ''
             input_type: 'text'
             keyboard_suggestions: True
-            size_hint: (1, None)
-            height: root.height/3
+            size_hint: (1, 1)
+            #height: root.height/4
         BoxLayout:
             orientation: 'horizontal'
+            size_hint: (1, .6)
             canvas.before:
                 Color:
                     rgba: 97/255,105/255,140/255,.55
@@ -106,7 +110,7 @@
                     pos:self.pos
             FloatLayout:
                 orientation: 'vertical'
-                size_hint: 1,1
+                size_hint: (1, .9)
                 Label:
                     text: 'Složitější nálada?'
                     font_size: 20
@@ -162,7 +166,7 @@
                 #outline_width: 1
                 #outline_colour: (0, 0, 0, 1)
                 size_hint: .8,1
-                font_size: 20
+                font_size: 30
                 text_size: self.size
                 halign: 'left'
                 valign: 'middle'
@@ -175,10 +179,10 @@
                         size: self.size
                         pos:self.pos
             Label:
-                id:healthLabel
+                id:healthLabelValue
                 questionMark: True
                 size_hint: .2,1
-                font_size: 30
+                font_size: 40
                 halign: 'center'
                 valign: 'middle'
                 markup: True
@@ -195,9 +199,9 @@
             size_hint: 1,.4
             hint: False
             font_size: 25
-            value: 10
+            value: 5
             min: 0
-            max: 10
+            max: 5
             step: 1
             on_active: app.root.current_screen.save_health(self.value)
             canvas.before:
@@ -206,6 +210,13 @@
                 Rectangle:
                     size: self.size
                     pos:self.pos
+        MDTextFieldRect:
+            id: healthComment
+            multiline: True
+            text: ''
+            input_type: 'text'
+            keyboard_suggestions: True
+            size_hint: (1, .5)
 
         Button:         
             text: 'Uložit a zavřít'
@@ -261,8 +272,7 @@
             text: 'Vybrat obrázek na pozadí'
             size_hint_y: .2
             on_press:
-                root.manager.transition.direction = 'right'
-                root.manager.current = 'Calendar'
+                root.manager.current_screen.choose_file()
         Button:
             text: 'Uložit a zavřít'
             size_hint_y: .2
