@@ -22,7 +22,7 @@ from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
 from plyer import filechooser
 
-#TODO: finish settings for saving and loading bg image / copy it to the pict folder
+#TODO: finish settings for saving and loading bg image / copy it to the pict folder - because of different platforms (and delete if new is chosen except default)
 #TODO: make menu screen
 #TODO: create graph view for healt
 #TODO: create year stats for mood and health - make it separate screen
@@ -603,20 +603,24 @@ class SettingsWindow(MDScreen):
             self.manager.transition.direction = 'right'
             self.manager.current = 'Calendar'
 
-    def choose_file(self):
+    def open_filechooser(self):
         if platform == 'android':
-            path = filechooser.open_file(path=primary_ext_storage)[0]
+            filechooser.open_file(on_selection=self.choose_file)
         else:
-            path = filechooser.open_file(path=self.manager.get_screen('Calendar').get_self_directory())[0]
+            filechooser.open_file(path=self.manager.get_screen('Calendar').get_self_directory(), on_selection=self.choose_file)
+
+    def choose_file(self, opened):
+        path = opened[0]
+        print(opened)
         print(path)
         print(os.path.basename(path))
-        self.bgsource = path
-        self.settings['bgPicture'] = path
-        #newFilename = 'navic-' + os.path.basename(path)
-        #destination = os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), newFilename)
-        #shutil.copy2(path, destination)
+        newFilename = 'BG_' + os.path.basename(path)
+        destination = os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), newFilename)
+        shutil.copy2(path, destination)
+        self.bgsource = destination
+        self.settings['bgPicture'] = destination
 
-    def set_default_settings(self):
+    def set_default_settings(self, clocktime=0):
         self.settings.setdefault('bgPicture', 'pict/default.jpg')
 
     def load_settings(self, clocktime=0):
@@ -632,6 +636,10 @@ class SettingsWindow(MDScreen):
                 file.write('')
                 self.set_default_settings()
                 json.dump(self.settings, file, indent = 4)
+
+        self.bgsource = self.settings['bgPicture']
+        
+        print('Vsechna aktualni nastaveni: ' + str(self.settings))
 
     def save_settings(self):
         userdata = self.manager.get_screen('Calendar').get_userdata()
@@ -669,10 +677,10 @@ class LifePixels(MDApp):
             print('READ:')
             print(permission_statusREAD)
             #permission_status = check_permission(Permission.READ_EXTERNAL_STORAGE)
-            permission_statusWRITE = check_permission(Permission.WRITE_EXTERNAL_STORAGE,)
-            print('WRITE:')
-            print(permission_statusWRITE)
-            self.root.current_screen.create_userdata_directories()
+            #permission_statusWRITE = check_permission(Permission.WRITE_EXTERNAL_STORAGE,)
+            #print('WRITE:')
+            #print(permission_statusWRITE)
+            return permission_statusREAD
 
     def on_start(self):
         #self.root.get_screen('Calendar').create_userdata_directory()
@@ -680,17 +688,22 @@ class LifePixels(MDApp):
         if platform == 'android':
             from android.permissions import request_permissions, Permission
             #from androidstorage4kivy import SharedStorage
-            request_permissions([Permission.READ_EXTERNAL_STORAGE, Permission.INTERNET], callback = self.check_permissions)
-            Clock.schedule_once(self.root.current_screen.sync_data,4)
+            if self.check_permissions() != True:
+                request_permissions([Permission.READ_EXTERNAL_STORAGE, Permission.INTERNET])
+                Clock.schedule_once(self.root.current_screen.create_userdata_directories)
+                Clock.schedule_once(self.root.current_screen.sync_data,4)
+            else:
+                Clock.schedule_once(self.root.current_screen.sync_data)
         else: 
             self.root.current_screen.create_userdata_directories()
             Clock.schedule_once(self.root.current_screen.sync_data)
+
         Clock.schedule_once(self.root.get_screen('Settings').load_settings)
         #self.root.current_screen.make_Cal() #- done on the end of sync
         
     
     def on_resume(self):
-        self.root.get_screen('Calendar').sync_data()
+        #self.root.get_screen('Calendar').sync_data()
         print('pokracujem test')
 
     def on_pause(self):
