@@ -1,6 +1,6 @@
 #! python3
 # Life in pixels project
-import calendar, datetime, os, sys, json, hashlib, httplib2, shutil
+import calendar, datetime, os, sys, json, hashlib, httplib2, shutil, time
 from dateutil import parser
 from kivymd.app import MDApp
 from kivymd.uix.screen import MDScreen
@@ -20,6 +20,7 @@ from kivy.graphics import Rectangle, Color, Line
 from babel.dates import format_date
 from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
+from kivymd.uix.filemanager import MDFileManager
 from plyer import filechooser
 
 #TODO: finish settings for saving and loading bg image / copy it to the pict folder - because of different platforms (and delete if new is chosen except default)
@@ -603,22 +604,45 @@ class SettingsWindow(MDScreen):
             self.manager.transition.direction = 'right'
             self.manager.current = 'Calendar'
 
-    def open_filechooser(self):
+    def open_filemanager(self):
+        self.file_manager = MDFileManager(
+            exit_manager=self.exit_manager,
+            select_path=self.choose_file,
+            preview=True,
+        )
+
         if platform == 'android':
-            filechooser.open_file(on_selection=self.choose_file)
+            openPath = primary_ext_storage
         else:
-            filechooser.open_file(path=self.manager.get_screen('Calendar').get_self_directory(), on_selection=self.choose_file)
+            openPath = '/'
+
+        self.file_manager.show(openPath)
+
+        #if platform == 'android':
+        #    filechooser.open_file(on_selection=self.choose_file)
+        #pro windows else:
+        #    filechooser.open_file(path=self.manager.get_screen('Calendar').get_self_directory(), on_selection=self.choose_file)
+        # bacha pridat [0]
+
+    def exit_manager(self):
+        self.file_manager.close()
 
     def choose_file(self, opened):
-        path = opened[0]
-        print(opened)
-        print(path)
-        print(os.path.basename(path))
-        newFilename = 'BG_' + os.path.basename(path)
-        destination = os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), newFilename)
-        shutil.copy2(path, destination)
-        self.bgsource = destination
-        self.settings['bgPicture'] = destination
+        # for win filechooser plyeru
+        path = opened
+
+        try:
+            print(path)
+            print(os.path.basename(path))
+            newFilename = 'BG_' + os.path.basename(path)
+            destination = os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), newFilename)
+            shutil.copy2(path, destination)
+            self.bgsource = destination
+            self.settings['bgPicture'] = destination
+            self.file_manager.close()
+
+        except PermissionError:
+            self.file_manager.close()
 
     def set_default_settings(self, clocktime=0):
         self.settings.setdefault('bgPicture', 'pict/default.jpg')
@@ -631,10 +655,10 @@ class SettingsWindow(MDScreen):
                 self.settings =  json.loads(file.read())
             Clock.schedule_once(self.set_default_settings)
 
-        except FileNotFoundError: 
+        except FileNotFoundError:
+            self.set_default_settings()
             with open(filename, 'w', encoding='utf-8') as file:
                 file.write('')
-                self.set_default_settings()
                 json.dump(self.settings, file, indent = 4)
 
         self.bgsource = self.settings['bgPicture']
@@ -697,20 +721,18 @@ class LifePixels(MDApp):
         else: 
             self.root.current_screen.create_userdata_directories()
             Clock.schedule_once(self.root.current_screen.sync_data)
+        
+        # time.sleep() while true break check for result true
 
         Clock.schedule_once(self.root.get_screen('Settings').load_settings)
-        #self.root.current_screen.make_Cal() #- done on the end of sync
-        
-    
-    def on_resume(self):
-        #self.root.get_screen('Calendar').sync_data()
-        print('pokracujem test')
+        #self.root.current_screen.make_Cal() #- done on the end of sync - maybe after on pause true not needed
 
     def on_pause(self):
-        pass
+        return True
 
-
+    def on_resume(self):
+    #self.root.get_screen('Calendar').sync_data()
+        print('pokracujem test')
 
 if __name__ == "__main__":
-
     LifePixels().run()
