@@ -24,6 +24,7 @@ from kivymd.uix.filemanager import MDFileManager
 from plyer import filechooser
 
 #TODO: finish settings for saving and loading bg image / copy it to the pict folder - because of different platforms (and delete if new is chosen except default)
+#TODO: handling pict of the day
 #TODO: make menu screen
 #TODO: create graph view for healt
 #TODO: create year stats for mood and health - make it separate screen
@@ -595,6 +596,9 @@ class SettingsWindow(MDScreen):
 
     def on_enter(self):
         Window.bind(on_keyboard=self.back_click)
+        if os.path.exists(self.settings['bgPicture']) == False:
+            self.settings['bgPicture'] = 'pict/default.jpg'
+            self.bgsource = self.settings['bgPicture']
 
     def on_pre_leave(self):
         Window.unbind(on_keyboard=self.back_click)
@@ -605,44 +609,50 @@ class SettingsWindow(MDScreen):
             self.manager.current = 'Calendar'
 
     def open_filemanager(self):
-        self.file_manager = MDFileManager(
+        if platform == 'android':
+            self.file_manager = MDFileManager(
             exit_manager=self.exit_manager,
             select_path=self.choose_file,
             preview=True,
         )
-
-        if platform == 'android':
+        
             openPath = primary_ext_storage
+            self.file_manager.show(openPath)
+
         else:
-            openPath = '/'
-
-        self.file_manager.show(openPath)
-
-        #if platform == 'android':
-        #    filechooser.open_file(on_selection=self.choose_file)
-        #pro windows else:
-        #    filechooser.open_file(path=self.manager.get_screen('Calendar').get_self_directory(), on_selection=self.choose_file)
+            #openPath = '/'
+            filechooser.open_file(path=self.manager.get_screen('Calendar').get_self_directory(), on_selection=self.choose_file)
         # bacha pridat [0]
 
     def exit_manager(self):
         self.file_manager.close()
 
     def choose_file(self, opened):
-        # for win filechooser plyeru
-        path = opened
-
         try:
-            print(path)
-            print(os.path.basename(path))
-            newFilename = 'BG_' + os.path.basename(path)
-            destination = os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), newFilename)
-            shutil.copy2(path, destination)
-            self.bgsource = destination
-            self.settings['bgPicture'] = destination
-            self.file_manager.close()
+            if platform == 'android':
+                path = opened
+            else:
+                path = opened[0]
+            
+            try:
+                print(path)
+                print(os.path.basename(path))
+                newFilename = 'BG_' + os.path.basename(path)
+                destination = os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), newFilename)
+                shutil.copy2(path, destination)
+                self.bgsource = destination
+                self.settings['bgPicture'] = destination
+                if platform == 'android':
+                    self.file_manager.close()
 
-        except PermissionError:
-            self.file_manager.close()
+            except PermissionError:
+                if platform == 'android':
+                    self.file_manager.close()
+
+        except IndexError:
+            pass
+        
+        
 
     def set_default_settings(self, clocktime=0):
         self.settings.setdefault('bgPicture', 'pict/default.jpg')
