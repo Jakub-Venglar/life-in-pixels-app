@@ -49,6 +49,8 @@ from plyer import filechooser
 
 
 if platform == 'android':
+
+    from androidstorage4kivy import Chooser, SharedStorage
     
     from android.storage import app_storage_path
     settings_path = app_storage_path()
@@ -610,49 +612,68 @@ class SettingsWindow(MDScreen):
 
     def open_filemanager(self):
         if platform == 'android':
-            self.file_manager = MDFileManager(
-            exit_manager=self.exit_manager,
-            select_path=self.choose_file,
-            preview=True,
-        )
-        
-            openPath = primary_ext_storage
-            self.file_manager.show(openPath)
+            self.chooser = Chooser(self.choose_file)
+            self.chooser.choose_content()
+            print('OTVIRAM')
+        #    self.file_manager = MDFileManager(
+        #    exit_manager=self.exit_manager,
+        #    select_path=self.choose_file,
+        #    preview=True,
+        #)
+        #    openPath = '/storage/7CA3-28B4/DCIM'          
+        #    self.file_manager(openPath)
 
         else:
             #openPath = '/'
             filechooser.open_file(path=self.manager.get_screen('Calendar').get_self_directory(), on_selection=self.choose_file)
-        # bacha pridat [0]
-
-    def exit_manager(self):
+        
+    def exit_manager(self, path):
         self.file_manager.close()
 
     def choose_file(self, opened):
+        
         try:
+
+            print('VYBRANO')
+            print(opened[0])
+
             if platform == 'android':
-                path = opened
+                ss = SharedStorage()
+                path = ss.copy_from_shared(opened[0])
+                print('CESTA - ' + path)
+                
             else:
                 path = opened[0]
             
             try:
-                print(path)
-                print(os.path.basename(path))
-                newFilename = 'BG_' + os.path.basename(path)
-                destination = os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), newFilename)
-                shutil.copy2(path, destination)
-                self.bgsource = destination
-                self.settings['bgPicture'] = destination
-                if platform == 'android':
-                    self.file_manager.close()
+                
+                if os.path.isfile(path): #because it can be directory
+                    oldpath = self.settings['bgPicture']
+                    
+                    if os.path.exists(oldpath):
+                        if os.path.basename(oldpath)[:3] == 'BG_':
+                            os.remove(oldpath)
+
+                    newFilename = 'BG_' + os.path.basename(path)
+                    print('BASENAME - ' + newFilename)
+                    destination = os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), 'BG/', newFilename)
+                    shutil.copy2(path, destination)
+                    print('DESTINATION - ' + destination)
+                    Clock.schedule_once(partial(self.update_pict, destination))
+                    
 
             except PermissionError:
-                if platform == 'android':
-                    self.file_manager.close()
+                print('CHYBA PERMISSION error')
+            #    if platform == 'android':
+            #        self.file_manager.close()
 
         except IndexError:
-            pass
-        
-        
+            print('CHYBA INDEX error')
+
+    def update_pict(self, destination, clocktime=0):
+        self.bgsource = destination
+        self.settings['bgPicture'] = destination
+        print('self SETTINGS - ' + self.settings['bgPicture'])
 
     def set_default_settings(self, clocktime=0):
         self.settings.setdefault('bgPicture', 'pict/default.jpg')
@@ -725,24 +746,25 @@ class LifePixels(MDApp):
             if self.check_permissions() != True:
                 request_permissions([Permission.READ_EXTERNAL_STORAGE, Permission.INTERNET])
                 Clock.schedule_once(self.root.current_screen.create_userdata_directories)
-                Clock.schedule_once(self.root.current_screen.sync_data,4)
+                #Clock.schedule_once(self.root.current_screen.sync_data,4)
             else:
-                Clock.schedule_once(self.root.current_screen.sync_data)
+                pass
+                #Clock.schedule_once(self.root.current_screen.sync_data)
         else: 
             self.root.current_screen.create_userdata_directories()
-            Clock.schedule_once(self.root.current_screen.sync_data)
+            #Clock.schedule_once(self.root.current_screen.sync_data)
         
         # time.sleep() while true break check for result true
 
         Clock.schedule_once(self.root.get_screen('Settings').load_settings)
-        #self.root.current_screen.make_Cal() #- done on the end of sync - maybe after on pause true not needed
+        self.root.current_screen.make_Cal() #- done on the end of sync - maybe after on pause true not needed
 
     def on_pause(self):
         return True
 
     def on_resume(self):
     #self.root.get_screen('Calendar').sync_data()
-        print('pokracujem test')
+        pass
 
 if __name__ == "__main__":
     LifePixels().run()
