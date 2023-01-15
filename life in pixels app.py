@@ -20,9 +20,9 @@ from kivy.graphics import Rectangle, Color, Line
 from babel.dates import format_date
 from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
-from kivymd.uix.filemanager import MDFileManager
 from plyer import filechooser
 
+#TODO: switch days
 #TODO: handling pict of the day
 #TODO: make menu screen
 #TODO: create graph view for healt
@@ -30,8 +30,6 @@ from plyer import filechooser
 #TODO: create and show hint for physical health status, create comment field for health
 
 #TODO: add, picture of the day, copy to dedicated folder and name it, backup - need to solve write external storage
-
-#TODO: show physical health status as bar??
 
 #TODO: @solve how to show habit labels
 
@@ -494,6 +492,12 @@ class DayWindow(MDScreen):
             self.manager.transition.direction = 'right'
             self.manager.current = 'Calendar'
         #if key == 13: do stuff for enter
+    
+    def move_day(self, direction):
+        if direction == 'backward':
+            pass
+        if direction == 'forward':
+            pass
 
     def mood_click(self,value, text):
         call = self.manager.get_screen('Calendar')

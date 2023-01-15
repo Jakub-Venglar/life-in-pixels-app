@@ -58,39 +58,49 @@
         source: ('pict/' + app.root.get_screen('Settings').bgsource)  if app.root else 'pict/default.jpg'
     BoxLayout:
         orientation: 'vertical'
-        Label:
-            id: question
-            size_hint_y: .8
-            bg1: (1,1,1,0)
-            bg2: (1,1,1,0)
-            canvas.before:
-                Color:
-                    rgba: 97/255,105/255,140/255,.55
-                Rectangle:
-                    size: self.size
-                    pos:self.pos
-            canvas:
-                Color:
-                    rgba: self.bg1
-                Rectangle:
-                    size: self.size[0]/2,self.size[1]/6
-                    pos:self.pos
-                Color:
-                    rgba: self.bg2
-                Rectangle:
-                    size: self.size[0]/2,self.size[1]/6
-                    pos:self.pos[0]+self.size[0]/2,self.pos[1]
-            color: (1,1,1,1)
-            #outline_width: 1
-            #outline_colour: (0, 0, 0, 1)
-            font_size: 30
-            halign: 'center'
-            valign: 'middle'
-            #size_hint_x: None
-            text_size: self.size
-            markup: True
-            text: f'[b]Jaký byl tvůj den? {root.current_date}[/b]'
-            size_hint: (1,.7)
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint: (1,.5)
+            MoveButton:
+                text:'<'
+                size_hint: (.2,1)
+                on_press: root.move_day('backward')
+            Label:
+                id: question
+                #size_hint_y: .8
+                bg1: (1,1,1,0)
+                bg2: (1,1,1,0)
+                canvas.before:
+                    Color:
+                        rgba: 97/255,105/255,140/255,.55
+                    Rectangle:
+                        size: self.size
+                        pos:self.pos
+                canvas:
+                    Color:
+                        rgba: self.bg1
+                    Rectangle:
+                        size: self.size[0]/2,self.size[1]/6
+                        pos:self.pos
+                    Color:
+                        rgba: self.bg2
+                    Rectangle:
+                        size: self.size[0]/2,self.size[1]/6
+                        pos:self.pos[0]+self.size[0]/2,self.pos[1]
+                color: (1,1,1,1)
+                #outline_width: 1
+                #outline_colour: (0, 0, 0, 1)
+                font_size: 30
+                halign: 'center'
+                valign: 'middle'
+                text_size: self.size
+                markup: True
+                text: f'[b]Jaký byl tvůj den? {root.current_date}[/b]'
+            MoveButton:
+                text:'>'
+                size_hint: (.2,1)
+                on_press: root.move_day('forward')
+
         MDTextFieldRect:
             id: comment
             multiline: True
