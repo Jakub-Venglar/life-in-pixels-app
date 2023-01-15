@@ -115,7 +115,7 @@ class CalendarWindow(MDScreen):
             except FileExistsError:
                 pass
 
-            path = os.path.join(primary_ext_storage, 'Pictures/', 'lifepixels/', 'user_pictures')
+            path = os.path.join(primary_ext_storage, 'Pictures/', 'lifepixels/', 'user_pictures/', 'BG/')
             try:
                 os.makedirs(path)
             except FileExistsError:
@@ -128,7 +128,7 @@ class CalendarWindow(MDScreen):
             except FileExistsError:
                 pass
 
-            path = os.path.join(os.path.dirname(sys.argv[0]), 'user_pictures')
+            path = os.path.join(os.path.dirname(sys.argv[0]), 'user_pictures', 'BG/')
             try:
                 os.mkdir(path)
             except FileExistsError:
