@@ -222,7 +222,7 @@
             text: 'Uložit a zavřít'
             size_hint: 1,.5
             on_release: 
-                app.root.current_screen.save_text(comment.text)
+                app.root.current_screen.save_text(comment.text, healthComment.text )
                 app.root.transition.direction = 'right'
                 app.root.current = 'Calendar'
         Button:         

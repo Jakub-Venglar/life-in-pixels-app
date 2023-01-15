@@ -23,7 +23,6 @@ from pydrive2.drive import GoogleDrive
 from kivymd.uix.filemanager import MDFileManager
 from plyer import filechooser
 
-#TODO: finish settings for saving and loading bg image / copy it to the pict folder - because of different platforms (and delete if new is chosen except default)
 #TODO: handling pict of the day
 #TODO: make menu screen
 #TODO: create graph view for healt
@@ -68,7 +67,7 @@ if platform == 'win':
 
 Config.set('kivy', 'exit_on_escape', '0')
 
-emptyDayData = {'mood':'','mood2':'','doubleMood': False, 'comment':'','health': None}
+emptyDayData = {'mood':'','mood2':'','doubleMood': False, 'comment':'','health': None, 'healthComment': ''}
 fsDivider = 35
 
 superColor= (242/255,85/255,12/255,.8)#(227/255,65/255,25/255,.8) #(255/255,232/255,28/255,.8)
@@ -441,6 +440,11 @@ class CalendarWindow(MDScreen):
             return clearColor
     
     #click on any date, call popup 
+    def set_default_values(self, dayDict):
+        for key, value in emptyDayData.items():
+            dayDict.setdefault(key, value)
+        return dayDict
+
 
     def cal_click(self, date_id, my_id):
         self.manager.transition.direction = 'left'
@@ -456,7 +460,8 @@ class CalendarWindow(MDScreen):
         daySetting.ids.average.background_color = averageColor
         daySetting.ids.good.background_color = goodColor
         daySetting.ids.super.background_color = superColor
-        dateData[dateKey] = dateData.setdefault(dateKey, emptyDayData.copy())
+        dateData[dateKey] = dateData.setdefault(dateKey, {})
+        dateData[dateKey] = dateData.setdefault(dateKey, self.set_default_values(dateData[dateKey]))
         try: 
             if dateData[dateKey]['health']:
                 daySetting.ids.health.value = dateData[dateKey]['health']
@@ -473,6 +478,7 @@ class CalendarWindow(MDScreen):
         else:
             daySetting.ids.question.bg2 = self.choose_color(dateData[dateKey]['mood'] )
         daySetting.ids.comment.text = dateData[dateKey]['comment']
+        daySetting.ids.healthComment.text = dateData[dateKey]['healthComment']
 
 class DayWindow(MDScreen):
 
@@ -493,7 +499,7 @@ class DayWindow(MDScreen):
         call = self.manager.get_screen('Calendar')
         dateData = call.pass_data(self.date_id)
         dateKey = str(self.date_id)
-        dateData[dateKey] = dateData.setdefault(dateKey, emptyDayData.copy())
+        #dateData[dateKey] = dateData.setdefault(dateKey, call.set_default_values(dateData[dateKey]))
         if self.ids.doubleMoodCheck.active == True:
             if self.setMoodNum == 1:
                 dateData[dateKey]['mood'] =  value
@@ -516,7 +522,7 @@ class DayWindow(MDScreen):
         call = self.manager.get_screen('Calendar')
         dateData = call.pass_data(self.date_id)
         dateKey = str(self.date_id)
-        dateData[dateKey] = dateData.setdefault(dateKey, emptyDayData.copy())
+        #dateData[dateKey] = dateData.setdefault(dateKey, call.set_default_values(dateData[dateKey]))
         if self.ids.doubleMoodCheck.active == True:
             dateData[dateKey]['doubleMood'] = True
         else:
@@ -531,12 +537,13 @@ class DayWindow(MDScreen):
             self.ids.question.bg2 = call.choose_color(dateData[dateKey]['mood'] )
         call.colorize(self.my_id,self.date_id)
 
-    def save_text(self, text):
+    def save_text(self, text, healthText):
         call = self.manager.get_screen('Calendar')
         dateData = call.pass_data(self.date_id)
         dateKey = str(self.date_id)
-        dateData[dateKey] = dateData.setdefault(dateKey, emptyDayData.copy())
+        #dateData[dateKey] = dateData.setdefault(dateKey, call.set_default_values(dateData[dateKey]))
         dateData[dateKey]['comment'] = text
+        dateData[dateKey]['healthComment'] = healthText
         call.save_data(dateData,self.date_id)
         call.colorize(self.my_id,self.date_id)
     
@@ -544,7 +551,7 @@ class DayWindow(MDScreen):
         call = self.manager.get_screen('Calendar')
         dateData = call.pass_data(self.date_id)
         dateKey = str(self.date_id)
-        dateData[dateKey] = dateData.setdefault(dateKey, emptyDayData.copy())
+        #dateData[dateKey] = dateData.setdefault(dateKey, call.set_default_values(dateData[dateKey]))
         dateData[dateKey]['health'] = value
         self.ids.healthLabelValue.questionMark = False
         call.save_data(dateData,self.date_id)
@@ -557,6 +564,7 @@ class DayWindow(MDScreen):
         dateKey = str(self.date_id)
         dateData[dateKey] = emptyDayData.copy()
         self.ids.comment.text= ''
+        self.ids.healthComment.text = ''
         self.ids.health.value = 5
         self.ids.healthLabelValue.questionMark = True
         self.ids.doubleMoodCheck.active = False
@@ -742,7 +750,7 @@ class LifePixels(MDApp):
         
         if platform == 'android':
             from android.permissions import request_permissions, Permission
-            #from androidstorage4kivy import SharedStorage
+            
             if self.check_permissions() != True:
                 request_permissions([Permission.READ_EXTERNAL_STORAGE, Permission.INTERNET])
                 Clock.schedule_once(self.root.current_screen.create_userdata_directories)
