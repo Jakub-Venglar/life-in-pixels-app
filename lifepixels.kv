@@ -64,7 +64,7 @@
             MoveButton:
                 text:'<'
                 size_hint: (.2,1)
-                on_press: root.move_day('backward')
+                on_press: root.move_day('backward', root.date_id, root.my_id)
             Label:
                 id: question
                 #size_hint_y: .8
@@ -95,11 +95,11 @@
                 valign: 'middle'
                 text_size: self.size
                 markup: True
-                text: f'[b]Jaký byl tvůj den? {root.current_date}[/b]'
+                text: f'[b]Jaký byl tvůj den? \n {root.current_date}[/b]'
             MoveButton:
                 text:'>'
                 size_hint: (.2,1)
-                on_press: root.move_day('forward')
+                on_press: root.move_day('forward', root.date_id, root.my_id)
 
         MDTextFieldRect:
             id: comment
@@ -233,18 +233,18 @@
             size_hint: 1,.5
             on_release: 
                 app.root.current_screen.save_text(comment.text, healthComment.text )
-                app.root.transition.direction = 'right'
-                app.root.current = 'Calendar'
+                root.close_day(root.date_id)
         Button:         
             text: 'Vymazat vše o tomto dni'
             size_hint: 1,.5
-            on_press: app.root.current_screen.delete_day(), #app.root.cal_click(app.root.date_id, app.root.my_id)
+            on_press: app.root.current_screen.delete_day(),
         Button:         
             text: 'Zavřít'
             size_hint: 1,.5
-            on_release: 
-                app.root.transition.direction = 'right' #both is working
-                root.manager.current = 'Calendar' #both is working
+            on_release:
+                root.close_day(root.date_id)
+                #app.root.transition.direction = 'right' #both is working
+                #root.manager.current = 'Calendar' #both is working
 
 <SettingsWindow>:
     name: 'Settings'

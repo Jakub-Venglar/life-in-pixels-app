@@ -23,6 +23,7 @@ from pydrive2.drive import GoogleDrive
 from plyer import filechooser
 
 #TODO: switch days
+#TODO: sync bg picture (and also make it real BG)
 #TODO: handling pict of the day
 #TODO: make menu screen
 #TODO: create graph view for healt
@@ -84,6 +85,10 @@ calList = [['1-1','1-2','1-3','1-4','1-5','1-6','1-7'],
                     ['3-1','3-2','3-3','3-4','3-5','3-6','3-7'],
                     ['4-1','4-2','4-3','4-4','4-5','4-6','4-7'],
                     ['5-1','5-2','5-3','5-4','5-5','5-6','5-7']]
+listOfMyIds = []
+for week in calList:
+    for day in week:
+        listOfMyIds.append(day)
 
 #experimental class / probably no need for using it
 
@@ -493,17 +498,37 @@ class DayWindow(MDScreen):
             self.manager.current = 'Calendar'
         #if key == 13: do stuff for enter
     
-    def move_day(self, direction):
+    # move day
+
+    def move_day(self, direction, date_id, my_id):
+        index = listOfMyIds.index(my_id)
         if direction == 'backward':
-            pass
+            date_id = date_id - datetime.timedelta(days=1)
+            if index != 0:
+                my_id = listOfMyIds[index-1]
+            else:
+                my_id = listOfMyIds[-1]
+            print(date_id)
         if direction == 'forward':
-            pass
+            date_id = date_id + datetime.timedelta(days=1)
+            if index != 34:
+                my_id = listOfMyIds[index+1]
+            else:
+                my_id = listOfMyIds[0]
+            print(date_id)
+        self.my_id = my_id
+        self.date_id = date_id
+        self.manager.get_screen('Calendar').cal_click(date_id, my_id)
+
+    def close_day (self, date_id):
+        self.manager.transition.direction = 'right'
+        self.manager.current = 'Calendar'
+        self.manager.get_screen('Calendar').make_Cal(now=False, year = date_id.year, month = date_id.month)
 
     def mood_click(self,value, text):
         call = self.manager.get_screen('Calendar')
         dateData = call.pass_data(self.date_id)
         dateKey = str(self.date_id)
-        #dateData[dateKey] = dateData.setdefault(dateKey, call.set_default_values(dateData[dateKey]))
         if self.ids.doubleMoodCheck.active == True:
             if self.setMoodNum == 1:
                 dateData[dateKey]['mood'] =  value
@@ -515,7 +540,6 @@ class DayWindow(MDScreen):
             dateData[dateKey]['mood'] =  value
         dateData[dateKey]['comment'] = text
         call.save_data(dateData,self.date_id)
-        call.colorize(self.my_id,self.date_id)
         self.ids.question.bg1 = call.choose_color(dateData[dateKey]['mood'] )
         if self.ids.doubleMoodCheck.active == True:
             self.ids.question.bg2 = call.choose_color(dateData[dateKey]['mood2'] )
@@ -526,7 +550,6 @@ class DayWindow(MDScreen):
         call = self.manager.get_screen('Calendar')
         dateData = call.pass_data(self.date_id)
         dateKey = str(self.date_id)
-        #dateData[dateKey] = dateData.setdefault(dateKey, call.set_default_values(dateData[dateKey]))
         if self.ids.doubleMoodCheck.active == True:
             dateData[dateKey]['doubleMood'] = True
         else:
@@ -539,27 +562,23 @@ class DayWindow(MDScreen):
             self.ids.question.bg2 = call.choose_color(dateData[dateKey]['mood2'] )
         else:
             self.ids.question.bg2 = call.choose_color(dateData[dateKey]['mood'] )
-        call.colorize(self.my_id,self.date_id)
 
     def save_text(self, text, healthText):
         call = self.manager.get_screen('Calendar')
         dateData = call.pass_data(self.date_id)
         dateKey = str(self.date_id)
-        #dateData[dateKey] = dateData.setdefault(dateKey, call.set_default_values(dateData[dateKey]))
         dateData[dateKey]['comment'] = text
         dateData[dateKey]['healthComment'] = healthText
         call.save_data(dateData,self.date_id)
-        call.colorize(self.my_id,self.date_id)
+
     
     def save_health(self, value):
         call = self.manager.get_screen('Calendar')
         dateData = call.pass_data(self.date_id)
         dateKey = str(self.date_id)
-        #dateData[dateKey] = dateData.setdefault(dateKey, call.set_default_values(dateData[dateKey]))
         dateData[dateKey]['health'] = value
         self.ids.healthLabelValue.questionMark = False
         call.save_data(dateData,self.date_id)
-        call.colorize(self.my_id,self.date_id)
 
 
     def delete_day(self):
@@ -573,7 +592,6 @@ class DayWindow(MDScreen):
         self.ids.healthLabelValue.questionMark = True
         self.ids.doubleMoodCheck.active = False
         call.save_data(dateData,self.date_id)
-        call.colorize(self.my_id,self.date_id)
     
     def close(self):
         pass
