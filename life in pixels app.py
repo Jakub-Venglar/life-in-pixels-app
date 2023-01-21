@@ -22,7 +22,6 @@ from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
 from plyer import filechooser
 
-#TODO: switch days
 #TODO: sync bg picture (and also make it real BG)
 #TODO: handling pict of the day
 #TODO: make menu screen
@@ -138,7 +137,7 @@ class CalendarWindow(MDScreen):
                 pass
     
     def pass_data(self,date_id):
-        year = str(date_id)[:4]
+        year = str(date_id.year)
         userdata = self.get_userdata()
         if year != self.currentYear:
             self.currentYear = year
@@ -152,7 +151,7 @@ class CalendarWindow(MDScreen):
         return self.yearData
 
     def save_data(self, newData, date_id):
-        year = str(date_id)[:4]
+        year = str(date_id.year)
         userdata = self.get_userdata()
         filename = f'{userdata}/caldata-{year}.json'
         with open(filename, 'w', encoding='utf-8') as file:
@@ -160,7 +159,7 @@ class CalendarWindow(MDScreen):
             json.dump(SortedDict(newData), file, indent = 4)
     
     def delete_data(self,date_id):
-        year = str(date_id)[:4]
+        year = str(date_id.year)
         userdata = self.get_userdata()
         with open(f'{userdata}/caldata-{year}.json', 'w', encoding='utf-8') as file:
             file.write('{}')
