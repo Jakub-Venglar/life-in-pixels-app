@@ -4,6 +4,7 @@ import calendar, datetime, os, sys, json, hashlib, httplib2, shutil, time
 from dateutil import parser
 from kivymd.app import MDApp
 from kivymd.uix.screen import MDScreen
+from kivymd.toast import toast
 from kivy.uix.screenmanager import ScreenManager
 from kivy.uix.popup import Popup
 from kivy.uix.label import Label
@@ -48,6 +49,7 @@ from plyer import filechooser
 if platform == 'android':
 
     from androidstorage4kivy import Chooser, SharedStorage
+    from kvdroid.tools.network import network_status, wifi_status, mobile_status
     
     from android.storage import app_storage_path
     settings_path = app_storage_path()
@@ -137,6 +139,7 @@ class CalendarWindow(MDScreen):
                 pass
     
     def pass_data(self,date_id):
+        print(date_id)
         year = str(date_id.year)
         userdata = self.get_userdata()
         if year != self.currentYear:
@@ -200,23 +203,26 @@ class CalendarWindow(MDScreen):
         box.add_widget(Button(text = button, size_hint=(.9,.2 ), pos_hint={'center_x': .5 }, on_press=popup.dismiss))
         popup.bind(on_touch_down=popup.dismiss)
         popup.open()
+    
+    def authenticate(self):
+        secrets_path = os.path.join(self.get_self_directory(), 'drivelogin/', 'client_secrets.json')
+        credentials_path = os.path.join(self.get_self_directory(), 'drivelogin/', 'credentials.json')
+        # authenticate to google drive (needs my client secrets)
+        # google auth settings.yaml is set
+        settings={'client_config_file': secrets_path,
+                    'save_credentials': True,
+                    'save_credentials_backend': 'file',
+                    'save_credentials_file': credentials_path,
+                    'get_refresh_token': True}
+        gauth = GoogleAuth(settings=settings)
+        # Create local webserver and auto handles authentication.
+        gauth.LocalWebserverAuth()
+        return gauth
 
 
     def sync_data(self,clocktime=0):
         try:
-            secrets_path = os.path.join(self.get_self_directory(), 'drivelogin/', 'client_secrets.json')
-            credentials_path = os.path.join(self.get_self_directory(), 'drivelogin/', 'credentials.json')
-            # authenticate to google drive (needs my client secrets)
-            # google auth settings.yaml is set
-            settings={'client_config_file': secrets_path,
-                        'save_credentials': True,
-                        'save_credentials_backend': 'file',
-                        'save_credentials_file': credentials_path,
-                        'get_refresh_token': True}
-            gauth = GoogleAuth(settings=settings)
-            # Create local webserver and auto handles authentication.
-            gauth.LocalWebserverAuth()
-            drive = GoogleDrive(gauth)
+            drive = GoogleDrive(self.authenticate())
             os.chdir(self.get_userdata())
             local_file_list = os.listdir()
             local_file_meta = {}
@@ -275,9 +281,9 @@ class CalendarWindow(MDScreen):
                 if self.syncMessage == '':
                     pass #popupMessage = 'Nic nebylo potřeba synchronizovat'
                 else:
-                    self.open_popup(title='Výsledek synchronizace', text=self.syncMessage, button='Zavřít')
+                    toast(self.syncMessage, length_long=3)
+                    #self.open_popup(title='Výsledek synchronizace', text=self.syncMessage, button='Zavřít')
 
-                
             except Exception as e: print(e)
         
         except httplib2.error.ServerNotFoundError:
@@ -779,6 +785,9 @@ class LifePixels(MDApp):
             else:
                 pass
                 #Clock.schedule_once(self.root.current_screen.sync_data)
+            
+            print(network_status())
+            
         else: 
             self.root.current_screen.create_userdata_directories()
             #Clock.schedule_once(self.root.current_screen.sync_data)
