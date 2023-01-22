@@ -727,13 +727,13 @@ class SettingsWindow(MDScreen):
                 self.set_default_settings()
 
         except FileNotFoundError:
+            self.set_default_settings()
             with open(filename, 'w', encoding='utf-8') as file:
                 file.write('')
                 json.dump(self.settings, file, indent = 4) 
 
         for screen in self.manager.screens:
             screen.bgsource = self.settings['bgPicture']
-            print(screen.bgsource)
 
         #screen= self.manager.current_screen
 
