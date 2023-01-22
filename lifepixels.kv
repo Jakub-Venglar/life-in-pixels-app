@@ -1,3 +1,10 @@
+ScreenManager:
+    CalendarWindow:
+    DayWindow:
+    HabitsWindow:
+    SettingsWindow:
+    CalendarLabels:
+
 <MoodButton@Button>:
     background_normal: ''
     font_size: 25
@@ -53,9 +60,10 @@
     name: 'DayMood'
     current_date: ''
     setMoodNum: 1
+    bgsource: ''
     FitImage:
         size_hint_y: 1
-        source: ('pict/' + app.root.get_screen('Settings').bgsource)  if app.root else 'pict/default.jpg'
+        source: root.bgsource
     BoxLayout:
         orientation: 'vertical'
         BoxLayout:
@@ -248,13 +256,12 @@
 
 <SettingsWindow>:
     name: 'Settings'
-    bgsource: 'pict/default.jpg'
     bg: (0,0,0,.9)
     settings: {}
+    bgsource: ''
     FitImage:
         size_hint_y: 1
-        source: root.bgsource
-    
+        source: root.bgsource 
     BoxLayout:
         #size_hint: 1,1
         orientation: 'vertical'
@@ -295,6 +302,7 @@
 <HabitsWindow>:
     name: 'Habits'
     bg: (.5,.5,.5,.5)
+    bgsource: ''
     canvas:
         Color:
             rgba: self.bg
@@ -303,7 +311,7 @@
             pos:self.pos
     FitImage:
         size_hint_y: 1
-        source: (app.root.get_screen('Settings').bgsource)  if app.root else 'pict/default.jpg'
+        source: root.bgsource
     BoxLayout:
         padding: [0,20,0,0]
         orientation: 'vertical'
@@ -338,9 +346,10 @@
     dateToShow: ''
     currentYear: ''
     yearData: None
+    bgsource: ''
     FitImage:
         size_hint_y: 1
-        source: (app.root.get_screen('Settings').bgsource)  if app.root else 'pict/default.jpg'
+        source: root.bgsource 
     BoxLayout:
         size: root.width, root.height
         orientation: 'vertical'

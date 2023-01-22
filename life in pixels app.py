@@ -23,6 +23,7 @@ from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
 from plyer import filechooser
 
+#TODO: current screen in load settings not working - try pass the screen as parameter
 #TODO: sync bg picture (and also make it real BG)
 #TODO: handling pict of the day
 #TODO: make menu screen
@@ -108,6 +109,13 @@ class CalendarWindow(MDScreen):
 
     def labelSize(self,x=1,y=1,z=1,clocktime=0):
         self.manager.get_screen('CalLabels').fs = z/fsDivider
+    
+    #def on_pre_enter(self):
+    #    print('jdeme do kalendare')
+    #    try:
+    #        self.manager.get_screen('Settings').load_settings
+    #    except Exception as e: print(e)
+        
 
 #create directories if not existing for both platfoms
 
@@ -139,7 +147,6 @@ class CalendarWindow(MDScreen):
                 pass
     
     def pass_data(self,date_id):
-        print(date_id)
         year = str(date_id.year)
         userdata = self.get_userdata()
         if year != self.currentYear:
@@ -631,11 +638,12 @@ class HabitsWindow(MDScreen):
 
 class SettingsWindow(MDScreen):
 
-    def on_enter(self):
+    def on_pre_enter(self):
         Window.bind(on_keyboard=self.back_click)
-        if os.path.exists(self.settings['bgPicture']) == False:
-            self.settings['bgPicture'] = 'pict/default.jpg'
-            self.bgsource = self.settings['bgPicture']
+
+        #if os.path.exists(self.settings['bgPicture']) == False:
+        #    self.settings['bgPicture'] = 'pict/default.jpg'
+        #    self.bgsource = self.settings['bgPicture']
 
     def on_pre_leave(self):
         Window.unbind(on_keyboard=self.back_click)
@@ -694,8 +702,8 @@ class SettingsWindow(MDScreen):
                     destination = os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), 'BG/', newFilename)
                     shutil.copy2(path, destination)
                     print('DESTINATION - ' + destination)
-                    Clock.schedule_once(partial(self.update_pict, destination))
-                    
+                    self.bgsource = destination
+                    self.settings['bgPicture'] = destination
 
             except PermissionError:
                 print('CHYBA PERMISSION error')
@@ -705,30 +713,30 @@ class SettingsWindow(MDScreen):
         except IndexError:
             print('CHYBA INDEX error')
 
-    def update_pict(self, destination, clocktime=0):
-        self.bgsource = destination
-        self.settings['bgPicture'] = destination
-        print('self SETTINGS - ' + self.settings['bgPicture'])
-
     def set_default_settings(self, clocktime=0):
         self.settings.setdefault('bgPicture', 'pict/default.jpg')
 
     def load_settings(self, clocktime=0):
+        
         userdata = self.manager.get_screen('Calendar').get_userdata()
         filename = f'{userdata}/settings.json'
+        
         try:   
             with open(filename, 'r', encoding='utf-8') as file:
                 self.settings =  json.loads(file.read())
-            Clock.schedule_once(self.set_default_settings)
+                self.set_default_settings()
 
         except FileNotFoundError:
-            self.set_default_settings()
             with open(filename, 'w', encoding='utf-8') as file:
                 file.write('')
-                json.dump(self.settings, file, indent = 4)
+                json.dump(self.settings, file, indent = 4) 
 
-        self.bgsource = self.settings['bgPicture']
-        
+        for screen in self.manager.screens:
+            screen.bgsource = self.settings['bgPicture']
+            print(screen.bgsource)
+
+        #screen= self.manager.current_screen
+
         print('Vsechna aktualni nastaveni: ' + str(self.settings))
 
     def save_settings(self):
@@ -737,6 +745,7 @@ class SettingsWindow(MDScreen):
         with open(filename, 'w', encoding='utf-8') as file:
             file.write('')
             json.dump(self.settings, file, indent = 4)
+        self.load_settings()
 
 class WindowManager(ScreenManager):
     pass
@@ -787,7 +796,7 @@ class LifePixels(MDApp):
                 #Clock.schedule_once(self.root.current_screen.sync_data)
             
             print(network_status())
-            
+
         else: 
             self.root.current_screen.create_userdata_directories()
             #Clock.schedule_once(self.root.current_screen.sync_data)
