@@ -498,16 +498,22 @@ class CalendarWindow(MDScreen):
 class DayWindow(MDScreen):
 
     def on_enter(self):
-        Window.bind(on_keyboard=self.back_click)
+        Window.bind(on_keyboard=self.key_click)
 
     def on_pre_leave(self):
-        Window.unbind(on_keyboard=self.back_click)
+        Window.unbind(on_keyboard=self.key_click)
 
-    def back_click(self,window, key, keycode, *largs):
+    def key_click(self,window, key, keycode, *largs):
         #print('key ' + str(key) + '----' + 'keycode ' + str(keycode))
         if key == 27:
             self.manager.transition.direction = 'right'
             self.manager.current = 'Calendar'
+        
+        if key == 275: # right arrow
+            self.move_day('forward', self.date_id, self.my_id)
+        if key == 276: # left arrow
+            self.move_day('backward', self.date_id, self.my_id)
+        
         #if key == 13: do stuff for enter
     
     # move day
@@ -516,18 +522,14 @@ class DayWindow(MDScreen):
         index = listOfMyIds.index(my_id)
         if direction == 'backward':
             date_id = date_id - datetime.timedelta(days=1)
-            if index != 0:
-                my_id = listOfMyIds[index-1]
-            else:
-                my_id = listOfMyIds[-1]
-            print(date_id)
+            my_id = listOfMyIds[(index-1) % len(listOfMyIds)]
+            print(my_id)
+            
         if direction == 'forward':
             date_id = date_id + datetime.timedelta(days=1)
-            if index != 34:
-                my_id = listOfMyIds[index+1]
-            else:
-                my_id = listOfMyIds[0]
-            print(date_id)
+            my_id = listOfMyIds[(index+1) % len(listOfMyIds)]
+            print(my_id)
+
         self.my_id = my_id
         self.date_id = date_id
         self.manager.get_screen('Calendar').cal_click(date_id, my_id)
@@ -652,6 +654,8 @@ class SettingsWindow(MDScreen):
         if key == 27:
             self.manager.transition.direction = 'right'
             self.manager.current = 'Calendar'
+        
+        print(key)
 
     def open_filemanager(self):
         if platform == 'android':
