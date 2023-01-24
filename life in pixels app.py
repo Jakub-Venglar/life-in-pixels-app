@@ -1,6 +1,7 @@
 #! python3
 # Life in pixels project
 import calendar, datetime, os, sys, json, hashlib, httplib2, shutil, time
+from threading import Thread
 from dateutil import parser
 from kivymd.app import MDApp
 from kivymd.uix.screen import MDScreen
@@ -23,7 +24,6 @@ from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
 from plyer import filechooser
 
-#TODO: current screen in load settings not working - try pass the screen as parameter
 #TODO: sync bg picture (and also make it real BG)
 #TODO: handling pict of the day
 #TODO: make menu screen
@@ -225,7 +225,18 @@ class CalendarWindow(MDScreen):
         # Create local webserver and auto handles authentication.
         gauth.LocalWebserverAuth()
         return gauth
+    
+    syncText = {}
 
+    def sync_thread(self):
+        t = Thread(target=self.sync_data)
+        t.start()
+        t.join()
+        text = self.syncText['message']
+        if text == '':
+            pass #popupMessage = 'Nic nebylo potřeba synchronizovat'
+        else:
+            toast(text)
 
     def sync_data(self,clocktime=0):
         try:
@@ -285,10 +296,7 @@ class CalendarWindow(MDScreen):
                         new_file.GetContentFile(filename)
                         self.syncMessage = self.syncMessage + '\n' + filename + ' - soubor na drive neexistoval na lokálním disku - staženo' + '\n'
 
-                if self.syncMessage == '':
-                    pass #popupMessage = 'Nic nebylo potřeba synchronizovat'
-                else:
-                    toast(self.syncMessage, length_long=3)
+                self.syncText['message'] = self.syncMessage
                     #self.open_popup(title='Výsledek synchronizace', text=self.syncMessage, button='Zavřít')
 
             except Exception as e: print(e)

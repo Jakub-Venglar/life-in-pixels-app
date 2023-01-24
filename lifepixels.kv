@@ -1,3 +1,5 @@
+#:import Thread threading
+
 ScreenManager:
     CalendarWindow:
     DayWindow:
@@ -562,7 +564,7 @@ ScreenManager:
             pos_hint: {'center_x': .5}
             text: 'Synchronizuj s drive'
             on_press: 
-                root.sync_data()
+                root.sync_thread()
 
 <TextureLabel@Label>
     text: ''
