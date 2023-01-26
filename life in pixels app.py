@@ -94,6 +94,27 @@ for week in calList:
     for day in week:
         listOfMyIds.append(day)
 
+def open_confirmation_popup(self, function_to_pass = None , title='Potvrzení', text='pop up text', button1='Ano', button2='Ne'):
+    if function_to_pass == None:
+        function_to_pass = self.empty_function
+    box = BoxLayout(orientation = 'vertical', padding=(10,50))
+    box.add_widget(Label(text=text, 
+        font_size= 15,
+        halign= 'center',
+        valign= 'middle',
+        size=(Window.size[0]*0.6,Window.size[1]*0.7),
+        text_size=(Window.size[0]*0.5,Window.size[1]*0.7)),
+    )
+    
+    popup = Popup(title=title, content = box, size_hint=(.8,.8))
+    box.add_widget(Button(text = button1, size_hint=(.9,.3), padding_y= 300, pos_hint={'center_x': .5 }, on_press = function_to_pass, on_release=popup.dismiss))
+    box.add_widget(Button(text = button2, size_hint=(.9,.3), pos_hint={'center_x': .5 }, on_release=popup.dismiss))
+    #popup.bind(on_touch_down=popup.dismiss)
+    popup.open()
+
+def empty_function(self, obj):
+    pass
+
 #experimental class / probably no need for using it
 
 class YearObject():
@@ -199,20 +220,6 @@ class CalendarWindow(MDScreen):
             path = os.path.join(os.path.dirname(sys.argv[0]), 'user_pictures')
         return path
     
-    def open_popup(self, title, text='pop up text', button='Zavřít'):
-        box = BoxLayout(orientation = 'vertical', padding=(10,50))
-        box.add_widget(Label(text=text, 
-            font_size= 15,
-            halign= 'center',
-            valign= 'middle',
-            size=(Window.size[0]*0.6,Window.size[1]*0.7),
-            text_size=(Window.size[0]*0.5,Window.size[1]*0.7)),
-        )
-        popup = Popup(title=title, content = box, size_hint=(.8,.8))
-        box.add_widget(Button(text = button, size_hint=(.9,.2 ), pos_hint={'center_x': .5 }, on_press=popup.dismiss))
-        popup.bind(on_touch_down=popup.dismiss)
-        popup.open()
-    
     def authenticate(self):
         secrets_path = os.path.join(self.get_self_directory(), 'drivelogin/', 'client_secrets.json')
         credentials_path = os.path.join(self.get_self_directory(), 'drivelogin/', 'credentials.json')
@@ -303,15 +310,15 @@ class CalendarWindow(MDScreen):
                         self.syncMessage = self.syncMessage + '\n' + filename + ' - soubor na drive neexistoval na lokálním disku - staženo' + '\n'
 
                 self.syncText['message'] = self.syncMessage
-                    #self.open_popup(title='Výsledek synchronizace', text=self.syncMessage, button='Zavřít')
 
             except Exception as e: print(e)
         
         except httplib2.error.ServerNotFoundError:
-            self.open_popup(title='Není připojení k internetu', text='Nemůžu se připojit k internetu. \n Zapni wifi nebo data.', button='Zavřít')
+            toast('Nemůžu se připojit k internetu. \n Zapni wifi nebo data.')
+            #self.open_popup(title='Není připojení k internetu', text='Nemůžu se připojit k internetu. \n Zapni wifi nebo data.', button='Zavřít')
         
         os.chdir(self.get_self_directory())
-        
+
         if self.syncText['message'] != '':
             Clock.schedule_once(partial(self.make_Cal, True))
 
@@ -513,6 +520,8 @@ class CalendarWindow(MDScreen):
 
 class DayWindow(MDScreen):
 
+  
+
     def on_enter(self):
         Window.bind(on_keyboard=self.key_click)
 
@@ -612,6 +621,9 @@ class DayWindow(MDScreen):
 
 
     def delete_day(self):
+        open_confirmation_popup(self, text = 'Chceš vymazat celý den?', function_to_pass=self.delete_day_func)
+    
+    def delete_day_func(self, obj):
         call = self.manager.get_screen('Calendar')
         dateData = call.pass_data(self.date_id)
         dateKey = str(self.date_id)
@@ -621,10 +633,13 @@ class DayWindow(MDScreen):
         self.ids.health.value = 5
         self.ids.healthLabelValue.questionMark = True
         self.ids.doubleMoodCheck.active = False
+        self.ids.question.bg1 = clearColor
+        self.ids.question.bg2 = clearColor
         call.save_data(dateData,self.date_id)
 
     def choose_day_pict(self):
         pass
+
 
 class HabitsWindow(MDScreen):
 
@@ -826,7 +841,7 @@ class LifePixels(MDApp):
         self.root.current_screen.make_Cal() #- done on the end of sync - maybe after on pause true not needed
 
     def on_pause(self):
-        return True
+        return True #because othervise it is stopping unpredictably
 
     def on_resume(self):
     #self.root.get_screen('Calendar').sync_data()

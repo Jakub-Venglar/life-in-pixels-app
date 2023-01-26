@@ -244,19 +244,20 @@ ScreenManager:
             Button:         
                 text: 'Přidej obrázek'
                 on_release: app.root.current_screen.choose_day_pict(),
-
-            Button:         
-                text: 'Vymazat vše o tomto dni'
-                on_release: app.root.current_screen.delete_day(),
-
-        BoxLayout:
-            orientation: 'horizontal'
-            size_hint: 1,.4
+            
             Button:         
                 text: 'Uložit a zavřít'
                 on_release: 
                     app.root.current_screen.save_text(comment.text, healthComment.text )
                     root.close_day(root.date_id)
+
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint: 1,.4
+            
+            Button:         
+                text: 'Vymazat vše o tomto dni'
+                on_release: app.root.current_screen.delete_day(),
                 
             Button:         
                 text: 'Zavřít'
