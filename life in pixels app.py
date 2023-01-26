@@ -131,14 +131,7 @@ class CalendarWindow(MDScreen):
         Window.bind(on_resize = self.labelSize)
 
     def labelSize(self,x=1,y=1,z=1,clocktime=0):
-        self.manager.get_screen('CalLabels').fs = z/fsDivider
-    
-    #def on_pre_enter(self):
-    #    print('jdeme do kalendare')
-    #    try:
-    #        self.manager.get_screen('Settings').load_settings
-    #    except Exception as e: print(e)
-        
+        self.manager.get_screen('CalLabels').fs = z/fsDivider        
 
 #create directories if not existing for both platfoms
 
