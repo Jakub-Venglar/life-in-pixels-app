@@ -74,7 +74,7 @@ ScreenManager:
             MoveButton:
                 text:'<'
                 size_hint: (.2,1)
-                on_press: root.move_day('backward', root.date_id, root.my_id)
+                on_release: root.move_day('backward', root.date_id, root.my_id)
             Label:
                 id: question
                 #size_hint_y: .8
@@ -109,7 +109,7 @@ ScreenManager:
             MoveButton:
                 text:'>'
                 size_hint: (.2,1)
-                on_press: root.move_day('forward', root.date_id, root.my_id)
+                on_release: root.move_day('forward', root.date_id, root.my_id)
 
         MDTextFieldRect:
             id: comment
@@ -151,27 +151,27 @@ ScreenManager:
            #MoodButton:
            #    id: terrible
            #    text: 'Katastrofa'
-           #    on_press: app.root.current_screen.mood_click('terrible', comment.text)
+           #    on_release: app.root.current_screen.mood_click('terrible', comment.text)
            #    on_release: 
            #        app.root.transition.direction = 'right'
            #        app.root.current = 'Calendar'
             MoodButton:
                 id: bad
                 text: 'Na houby'
-                on_press: app.root.current_screen.mood_click('bad', comment.text)
+                on_release: app.root.current_screen.mood_click('bad', comment.text)
             MoodButton:
                 id: average  
                 text: 'Šedivý průměr'
-                on_press: app.root.current_screen.mood_click('average', comment.text)
+                on_release: app.root.current_screen.mood_click('average', comment.text)
             MoodButton:
                 id: good
                 text: 'Užil(a) jsem si ho'
-                on_press: app.root.current_screen.mood_click('good', comment.text)
+                on_release: app.root.current_screen.mood_click('good', comment.text)
 
             MoodButton:
                 id: super
                 text: 'Boží!'
-                on_press: app.root.current_screen.mood_click('super', comment.text)
+                on_release: app.root.current_screen.mood_click('super', comment.text)
         BoxLayout:
             orientation: 'horizontal'
             size_hint: 1,.4
@@ -238,23 +238,32 @@ ScreenManager:
             keyboard_suggestions: True
             size_hint: (1, .5)
 
-        Button:         
-            text: 'Uložit a zavřít'
-            size_hint: 1,.5
-            on_release: 
-                app.root.current_screen.save_text(comment.text, healthComment.text )
-                root.close_day(root.date_id)
-        Button:         
-            text: 'Vymazat vše o tomto dni'
-            size_hint: 1,.5
-            on_press: app.root.current_screen.delete_day(),
-        Button:         
-            text: 'Zavřít'
-            size_hint: 1,.5
-            on_release:
-                root.close_day(root.date_id)
-                #app.root.transition.direction = 'right' #both is working
-                #root.manager.current = 'Calendar' #both is working
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint: 1,.4
+            Button:         
+                text: 'Přidej obrázek'
+                on_release: app.root.current_screen.choose_day_pict(),
+
+            Button:         
+                text: 'Vymazat vše o tomto dni'
+                on_release: app.root.current_screen.delete_day(),
+
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint: 1,.4
+            Button:         
+                text: 'Uložit a zavřít'
+                on_release: 
+                    app.root.current_screen.save_text(comment.text, healthComment.text )
+                    root.close_day(root.date_id)
+                
+            Button:         
+                text: 'Zavřít'
+                on_release:
+                    root.close_day(root.date_id)
+                    #app.root.transition.direction = 'right' #both is working
+                    #root.manager.current = 'Calendar' #both is working
 
 <SettingsWindow>:
     name: 'Settings'
@@ -291,12 +300,12 @@ ScreenManager:
         Button:
             text: 'Vybrat obrázek na pozadí'
             size_hint_y: .2
-            on_press:
+            on_release:
                 root.manager.current_screen.open_filemanager()
         Button:
             text: 'Uložit a zavřít'
             size_hint_y: .2
-            on_press:
+            on_release:
                 root.manager.current_screen.save_settings()
                 root.manager.transition.direction = 'right'
                 root.manager.current = 'Calendar'
@@ -336,7 +345,7 @@ ScreenManager:
             text: 'Přidat aktivitu'
         Button:
             text: 'Zavřít'
-            on_press:
+            on_release:
                 root.manager.transition.direction = 'right'
                 root.manager.current = 'Calendar'
 
@@ -367,10 +376,10 @@ ScreenManager:
                     pos:self.pos
             MoveButton:
                 text:'<<<'
-                on_press: root.move_year('backward')
+                on_release: root.move_year('backward')
             MoveButton:
                 text:'<'
-                on_press: root.move_month('backward')
+                on_release: root.move_month('backward')
             Label:
                 id: month_Label
                 text: ''
@@ -385,10 +394,10 @@ ScreenManager:
                 font_size: self.height/2.5 + self.width/40
             MoveButton:
                 text:'>'
-                on_press: root.move_month('forward')
+                on_release: root.move_month('forward')
             MoveButton:
                 text:'>>>'
-                on_press: root.move_year('forward')
+                on_release: root.move_year('forward')
         BoxLayout:
             orientation: 'horizontal'
             size_hint: 1, .2
@@ -534,20 +543,20 @@ ScreenManager:
             size_hint:  (1,.1)
             pos_hint: {'center_x': .5}
             text: 'Vrať mě do současnosti'
-            on_press: root.present_click()
+            on_release: root.present_click()
         Button:
             id: delete
             date_id: 
             size_hint:  (1,.1)
             pos_hint: {'center_x': .5}
             text: 'Vymaž celý kalendář'
-            on_press: root.delete_data(self.date_id)
+            on_release: root.delete_data(self.date_id)
         Button:
             id: activities
             size_hint:  (1,.1)
             pos_hint: {'center_x': .5}
             text: 'Přidat aktivitu'
-            on_press: 
+            on_release: 
                 root.manager.transition.direction = 'left'
                 root.manager.current = 'Habits'
         Button:
@@ -555,7 +564,7 @@ ScreenManager:
             size_hint:  (1,.1)
             pos_hint: {'center_x': .5}
             text: 'Nastavení'
-            on_press: 
+            on_release: 
                 root.manager.transition.direction = 'left'
                 root.manager.current = 'Settings'
         Button:
@@ -563,7 +572,7 @@ ScreenManager:
             size_hint:  (1,.1)
             pos_hint: {'center_x': .5}
             text: 'Synchronizuj s drive'
-            on_press: 
+            on_release: 
                 root.sync_thread()
 
 <TextureLabel@Label>

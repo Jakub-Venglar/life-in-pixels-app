@@ -24,7 +24,9 @@ from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
 from plyer import filechooser
 
-#TODO: sync bg picture (and also make it real BG)
+#TODO: add confirmation for deleting via pop up
+
+#TODO: sync bg picture, load settings at the end of the sync
 #TODO: handling pict of the day
 #TODO: make menu screen
 #TODO: create graph view for healt
@@ -229,12 +231,16 @@ class CalendarWindow(MDScreen):
     syncText = {}
 
     def sync_thread(self):
+        toast('Provádím synchronizaci')
+        Clock.schedule_once(self.thread_handle,.5)
+    
+    def thread_handle(self, clocktime=0):
         t = Thread(target=self.sync_data)
         t.start()
         t.join()
         text = self.syncText['message']
         if text == '':
-            pass #popupMessage = 'Nic nebylo potřeba synchronizovat'
+            toast('Nic nebylo potřeba synchronizovat')
         else:
             toast(text)
 
@@ -305,7 +311,9 @@ class CalendarWindow(MDScreen):
             self.open_popup(title='Není připojení k internetu', text='Nemůžu se připojit k internetu. \n Zapni wifi nebo data.', button='Zavřít')
         
         os.chdir(self.get_self_directory())
-        Clock.schedule_once(partial(self.make_Cal, True))
+        
+        if self.syncText['message'] != '':
+            Clock.schedule_once(partial(self.make_Cal, True))
 
     #create calendar view
 
@@ -385,7 +393,7 @@ class CalendarWindow(MDScreen):
                 call.ids[my_id].background_color = noColor
                 call.ids[my_id].doublemood = True
                 call.ids[my_id].colorset = (mood1[0],mood1[1],mood1[2],mood1[3]-.2)
-                call.ids[my_id].colorset2 = (mood2[0],mood2[1],mood2[2],mood1[3]-.2) #call.choose_color(dateData[str(self.ids[my_id].date_id)]['mood'])
+                call.ids[my_id].colorset2 = (mood2[0],mood2[1],mood2[2],mood1[3]-.2)
             else:
                 call.ids[my_id].background_color = call.choose_color(dateData[str(self.ids[my_id].date_id)]['mood'])
         else: 
@@ -614,10 +622,9 @@ class DayWindow(MDScreen):
         self.ids.healthLabelValue.questionMark = True
         self.ids.doubleMoodCheck.active = False
         call.save_data(dateData,self.date_id)
-    
-    def close(self):
+
+    def choose_day_pict(self):
         pass
-        
 
 class HabitsWindow(MDScreen):
 
