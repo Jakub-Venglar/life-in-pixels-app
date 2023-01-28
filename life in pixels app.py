@@ -24,16 +24,14 @@ from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
 from plyer import filechooser
 
-#TODO: add confirmation for deleting via pop up
+#TODO: better view of day color
 
-#TODO: sync bg picture, load settings at the end of the sync
-#TODO: handling pict of the day
+#TODO: handling pict of the day, sync and load it
+#TODO: see text comment on long press in calendar
 #TODO: make menu screen
 #TODO: create graph view for healt
 #TODO: create year stats for mood and health - make it separate screen
 #TODO: create and show hint for physical health status, create comment field for health
-
-#TODO: add, picture of the day, copy to dedicated folder and name it, backup - need to solve write external storage
 
 #TODO: @solve how to show habit labels
 
@@ -52,7 +50,7 @@ from plyer import filechooser
 if platform == 'android':
 
     from androidstorage4kivy import Chooser, SharedStorage
-    from kvdroid.tools.network import network_status, wifi_status, mobile_status
+    #from kvdroid.tools.network import network_status, wifi_status, mobile_status / not working on android, cant import jnius
     
     from android.storage import app_storage_path
     settings_path = app_storage_path()
@@ -70,7 +68,7 @@ if platform == 'win':
 
 Config.set('kivy', 'exit_on_escape', '0')
 
-emptyDayData = {'mood':'','mood2':'','doubleMood': False, 'comment':'','health': None, 'healthComment': ''}
+emptyDayData = {'mood':'','mood2':'','doubleMood': False, 'comment':'','health': None, 'healthComment': '', 'dayImage': ''}
 fsDivider = 35
 
 superColor= (242/255,85/255,12/255,.8)#(227/255,65/255,25/255,.8) #(255/255,232/255,28/255,.8)
@@ -99,7 +97,7 @@ def open_confirmation_popup(self, function_to_pass = None , title='Potvrzení', 
         function_to_pass = self.empty_function
     box = BoxLayout(orientation = 'vertical', padding=(10,50))
     box.add_widget(Label(text=text, 
-        font_size= 15,
+        font_size= 30,
         halign= 'center',
         valign= 'middle',
         size=(Window.size[0]*0.6,Window.size[1]*0.7),
@@ -228,14 +226,14 @@ class CalendarWindow(MDScreen):
         gauth.LocalWebserverAuth()
         return gauth
     
-    syncText = {}
-
-    def sync_thread(self):
+    def sync_data_thread(self):
         toast('Provádím synchronizaci')
         Clock.schedule_once(self.thread_handle,.5)
     
+    syncText = {}
+    
     def thread_handle(self, clocktime=0):
-        t = Thread(target=self.sync_data)
+        t = Thread(target=self.call_sync_data)
         t.start()
         t.join()
         text = self.syncText['message']
@@ -244,68 +242,35 @@ class CalendarWindow(MDScreen):
         else:
             toast(text)
 
-    def sync_data(self,clocktime=0):
+    def call_sync_data(self,clocktime=0):
         try:
             drive = GoogleDrive(self.authenticate())
+            mimetype = 'application/vnd.google-apps.folder'
+
+            parentID = '1QRcc1s1xZQz5fWlMjut8chLO8hsTit8Y'
+
             os.chdir(self.get_userdata())
             local_file_list = os.listdir()
             local_file_meta = {}
-            drive_file_list = drive.ListFile({'q': "('1QRcc1s1xZQz5fWlMjut8chLO8hsTit8Y' in parents) and (trashed=false) and (mimeType != 'application/vnd.google-apps.folder')"}).GetList()
+            drive_file_list = drive.ListFile({'q': f"( '{parentID}' in parents) and (trashed=false) and (mimeType != 'application/vnd.google-apps.folder')"}).GetList()
             drive_file_meta = {}
-            for file in local_file_list:
-                with open(file,'rb') as f:
-                    data = f.read()
-                    md5checksum = hashlib.md5(data).hexdigest()
-                local_file_meta[file] = {'checksum': md5checksum, 'modifiedDate': os.path.getmtime(file),'dtobject': datetime.datetime.fromtimestamp(os.path.getmtime(file))} #datetime.datetime.fromtimestamp
-            for file in drive_file_list:
-                drive_file_meta[file['title']] = {'id': file['id'],'checksum': file['md5Checksum'], 'modifiedDate': datetime.datetime.timestamp(parser.parse(file['modifiedDate'])), 'dtobject': parser.parse(file['modifiedDate'])}
 
-            try:
-                self.syncMessage = ''
-
-                if len(local_file_list)<1:
-                    for filename in drive_file_meta:
-                        new_file = drive.CreateFile({'parents': [{'id': '1QRcc1s1xZQz5fWlMjut8chLO8hsTit8Y'}],'title':filename, 'id': drive_file_meta[filename]['id']})
-                        new_file.GetContentFile(filename)
-                        self.syncMessage = 'V datech nic nebylo, soubory z drive stazeny'
-
-                elif len(local_file_list)<1 and len(drive_file_list)<1:
-                    self.syncMessage = 'Nikde nic, zaciname od nuly'
-                else: 
-                    pass
-
-                for filename in local_file_list:
-                    if filename in drive_file_meta:
-                        #self.syncMessage = self.syncMessage + '\n' + filename + ' nalezeno na drive' + '\n'
-                        if local_file_meta[filename]['modifiedDate'] > drive_file_meta[filename]['modifiedDate'] and local_file_meta[filename]['checksum'] != drive_file_meta[filename]['checksum']:
-                            new_file = drive.CreateFile({'parents': [{'id': '1QRcc1s1xZQz5fWlMjut8chLO8hsTit8Y'}],'title': filename, 'id': drive_file_meta[filename]['id']})
-                            new_file.SetContentFile(filename)
-                            new_file.Upload()
-                            self.syncMessage = self.syncMessage + '\n' + filename + ' - lokální soubor je novější - nahráno na drive' + '\n'
-                        elif (local_file_meta[filename]['modifiedDate'] < drive_file_meta[filename]['modifiedDate']) and (local_file_meta[filename]['checksum'] != drive_file_meta[filename]['checksum']):
-                            new_file = drive.CreateFile({'parents': [{'id': '1QRcc1s1xZQz5fWlMjut8chLO8hsTit8Y'}],'title':filename, 'id': drive_file_meta[filename]['id']})
-                            new_file.GetContentFile(filename)
-                            self.syncMessage = self.syncMessage + '\n' + filename + ' - soubor na drive je novější - staženo' + '\n'
-                        else:
-                            pass
-                            #self.syncMessage = self.syncMessage + '\n' + filename + ' má stejné datum nebo checsksum, nic se neděje' + '\n'
-                    else:
-                        new_file = drive.CreateFile({'parents': [{'id': '1QRcc1s1xZQz5fWlMjut8chLO8hsTit8Y'}],'title':filename, 'mimeType':'application/json'})
-                        # Read file and set it as a content of this instance.
-                        new_file.SetContentFile(filename)
-                        new_file.Upload() # Upload the file.
-                        self.syncMessage = self.syncMessage + '\n' + filename +' - nově nahráno' + '\n'
-                
-                for filename in drive_file_meta:
-                    if filename not in local_file_meta:
-                        new_file = drive.CreateFile({'parents': [{'id': '1QRcc1s1xZQz5fWlMjut8chLO8hsTit8Y'}],'title':filename, 'id': drive_file_meta[filename]['id']})
-                        new_file.GetContentFile(filename)
-                        self.syncMessage = self.syncMessage + '\n' + filename + ' - soubor na drive neexistoval na lokálním disku - staženo' + '\n'
-
-                self.syncText['message'] = self.syncMessage
-
-            except Exception as e: print(e)
+            MIMEtype = 'application/json'
         
+            self.sync_data(drive, parentID, MIMEtype, local_file_list,local_file_meta,drive_file_list,drive_file_meta)
+
+            parentID = '1vZCpinF7V4NT8AiDA3Hbwe3T2DRAvlBH'
+            
+            os.chdir(os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), 'BG/'))
+            local_file_list = os.listdir()
+            local_file_meta = {}
+            drive_file_list = drive.ListFile({'q': f"( '{parentID}' in parents) and (trashed=false) and (mimeType != 'application/vnd.google-apps.folder')"}).GetList()
+            drive_file_meta = {}
+
+            MIMEtype = 'image/*'
+
+            self.sync_data(drive, parentID, MIMEtype, local_file_list,local_file_meta,drive_file_list,drive_file_meta)
+
         except httplib2.error.ServerNotFoundError:
             toast('Nemůžu se připojit k internetu. \n Zapni wifi nebo data.')
             #self.open_popup(title='Není připojení k internetu', text='Nemůžu se připojit k internetu. \n Zapni wifi nebo data.', button='Zavřít')
@@ -314,6 +279,65 @@ class CalendarWindow(MDScreen):
 
         if self.syncText['message'] != '':
             Clock.schedule_once(partial(self.make_Cal, True))
+            Clock.schedule_once(self.manager.get_screen('Settings').load_settings)
+    
+    def sync_data(self, drive, parentID, MIMEtype, local_file_list, local_file_meta, drive_file_list, drive_file_meta):
+        for file in local_file_list:
+                with open(file,'rb') as f:
+                    data = f.read()
+                    md5checksum = hashlib.md5(data).hexdigest()
+                local_file_meta[file] = {'checksum': md5checksum, 'modifiedDate': os.path.getmtime(file),'dtobject': datetime.datetime.fromtimestamp(os.path.getmtime(file))} #datetime.datetime.fromtimestamp
+        for file in drive_file_list:
+            drive_file_meta[file['title']] = {'id': file['id'],'checksum': file['md5Checksum'], 'modifiedDate': datetime.datetime.timestamp(parser.parse(file['modifiedDate'])), 'dtobject': parser.parse(file['modifiedDate'])}
+
+        try:
+            syncMessage = ''
+
+            if len(local_file_list)<1:
+                for filename in drive_file_meta:
+                    new_file = drive.CreateFile({'parents': [{'id': parentID }],'title':filename, 'id': drive_file_meta[filename]['id'], 'mimeType': MIMEtype})
+                    new_file.GetContentFile(filename)
+                    syncMessage = 'V datech nic nebylo, soubory z drive stazeny'
+
+            elif len(local_file_list)<1 and len(drive_file_list)<1:
+                syncMessage = 'Nikde nic, zaciname od nuly'
+            else: 
+                pass
+
+            for filename in local_file_list:
+                if filename in drive_file_meta:
+                    #self.syncMessage = self.syncMessage + '\n' + filename + ' nalezeno na drive' + '\n'
+                    
+                    if local_file_meta[filename]['modifiedDate'] > drive_file_meta[filename]['modifiedDate'] and local_file_meta[filename]['checksum'] != drive_file_meta[filename]['checksum']:
+                        new_file = drive.CreateFile({'parents': [{'id': parentID }],'title': filename, 'id': drive_file_meta[filename]['id'], 'mimeType': MIMEtype})
+                        new_file.SetContentFile(filename)
+                        new_file.Upload()
+                        syncMessage = syncMessage + '\n' + filename + ' - lokální soubor je novější - nahráno na drive' + '\n'
+                    
+                    elif (local_file_meta[filename]['modifiedDate'] < drive_file_meta[filename]['modifiedDate']) and (local_file_meta[filename]['checksum'] != drive_file_meta[filename]['checksum']):
+                        new_file = drive.CreateFile({'parents': [{'id': parentID }],'title':filename, 'id': drive_file_meta[filename]['id'], 'mimeType': MIMEtype})
+                        new_file.GetContentFile(filename)
+                        syncMessage = syncMessage + '\n' + filename + ' - soubor na drive je novější - staženo' + '\n'
+                    
+                    else:
+                        pass
+                        #self.syncMessage = self.syncMessage + '\n' + filename + ' má stejné datum nebo checsksum, nic se neděje' + '\n'
+                else:
+                    new_file = drive.CreateFile({'parents': [{'id': parentID }],'title':filename, 'mimeType': MIMEtype})
+                    # Read file and set it as a content of this instance.
+                    new_file.SetContentFile(filename)
+                    new_file.Upload() # Upload the file.
+                    syncMessage = syncMessage + '\n' + filename +' - nově nahráno' + '\n'
+            
+            for filename in drive_file_meta:
+                if filename not in local_file_meta:
+                    new_file = drive.CreateFile({'parents': [{'id': parentID }],'title':filename, 'id': drive_file_meta[filename]['id'], 'mimeType': MIMEtype})
+                    new_file.GetContentFile(filename)
+                    syncMessage = syncMessage + '\n' + filename + ' - soubor na drive neexistoval na lokálním disku - staženo' + '\n'
+
+            self.syncText['message'] = syncMessage
+                
+        except Exception as e: print(e)
 
     #create calendar view
 
@@ -502,18 +526,19 @@ class CalendarWindow(MDScreen):
                 daySetting.ids.healthLabelValue.questionMark = True
         except KeyError:
             daySetting.ids.health.value = 5
+
         daySetting.ids.doubleMoodCheck.active = dateData[dateKey]['doubleMood']
         daySetting.ids.question.bg1 = self.choose_color(dateData[dateKey]['mood'] )
         if daySetting.ids.doubleMoodCheck.active == True:
             daySetting.ids.question.bg2 = self.choose_color(dateData[dateKey]['mood2'] )
         else:
             daySetting.ids.question.bg2 = self.choose_color(dateData[dateKey]['mood'] )
+        
         daySetting.ids.comment.text = dateData[dateKey]['comment']
         daySetting.ids.healthComment.text = dateData[dateKey]['healthComment']
+        daySetting.ids.dayImage.image_source = dateData[dateKey]['dayImage']
 
 class DayWindow(MDScreen):
-
-  
 
     def on_enter(self):
         Window.bind(on_keyboard=self.key_click)
@@ -524,8 +549,7 @@ class DayWindow(MDScreen):
     def key_click(self,window, key, keycode, *largs):
         #print('key ' + str(key) + '----' + 'keycode ' + str(keycode))
         if key == 27:
-            self.manager.transition.direction = 'right'
-            self.manager.current = 'Calendar'
+            self.close_day(self.date_id)
         
         if key == 275: # right arrow
             self.move_day('forward', self.date_id, self.my_id)
@@ -612,8 +636,15 @@ class DayWindow(MDScreen):
         self.ids.healthLabelValue.questionMark = False
         call.save_data(dateData,self.date_id)
 
+    #trick with long press button / schedule event on press and cancel it on release
 
-    def delete_day(self):
+    def schedule_delete_day(self):
+        self.event = Clock.schedule_once(self.delete_day,0.3)
+
+    def unschedule(self):
+        self.event.cancel()
+
+    def delete_day(self, clocktime=0):
         open_confirmation_popup(self, text = 'Chceš vymazat celý den?', function_to_pass=self.delete_day_func)
     
     def delete_day_func(self, obj):
@@ -631,8 +662,79 @@ class DayWindow(MDScreen):
         call.save_data(dateData,self.date_id)
 
     def choose_day_pict(self):
-        pass
+        
+        if platform == 'android':
+            self.chooser = Chooser(self.choose_file)
+            self.chooser.choose_content()
 
+        else:
+            #openPath = '/'
+            filechooser.open_file(path=self.manager.get_screen('Calendar').get_self_directory(), on_selection=self.choose_image)
+        
+
+    def choose_image(self, opened):
+        
+        call = self.manager.get_screen('Calendar')
+        dateData = call.pass_data(self.date_id)
+        dateKey = str(self.date_id)
+        
+        try:
+
+            if platform == 'android':
+                ss = SharedStorage()
+                path = ss.copy_from_shared(opened[0])
+                
+            else:
+                path = opened[0]
+            
+            try:
+                
+                if os.path.isfile(path): #because it can be directory
+                    oldpath = dateData[dateKey]['dayImage']
+                    if os.path.exists(oldpath):
+                        os.remove(oldpath)
+
+                    newFilename = dateKey + os.path.splitext(path)[1]
+
+                    dest_folder = os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), str(self.date_id.year))
+                    try:
+                        os.makedirs(dest_folder)
+                    except FileExistsError:
+                        pass
+
+                    destination = os.path.join(dest_folder, newFilename)
+                    shutil.copy(path, destination)
+
+                    self.ids.dayImage.image_source = destination
+                    dateData[dateKey]['dayImage'] = destination
+                    call.save_data(dateData,self.date_id)
+                    #print('ratio ' + str(self.ids.dayImage.image_ratio)) #landscape is more than 1
+
+                    #self.ids.dayImage.reload()
+
+            except PermissionError:
+                print('CHYBA PERMISSION error')
+
+        except IndexError:
+            print('CHYBA INDEX error')
+
+    def imageRefresh(self):
+        for screen in self.manager.screens:
+            for ID in screen.ids:
+                if 'bgImage' in ID:
+                    screen.ids[ID].reload()
+        
+
+    def on_touch_down(self, touch):
+
+        if self.ids.dayImage.collide_point(*touch.pos):
+            self.choose_day_pict()
+        
+        return super().on_touch_down(touch)
+
+    def on_touch_move(self, touch):
+        print(touch.ox - touch.x)
+        return super().on_touch_move(touch)
 
 class HabitsWindow(MDScreen):
 
@@ -684,33 +786,19 @@ class SettingsWindow(MDScreen):
         if platform == 'android':
             self.chooser = Chooser(self.choose_file)
             self.chooser.choose_content()
-            print('OTVIRAM')
-        #    self.file_manager = MDFileManager(
-        #    exit_manager=self.exit_manager,
-        #    select_path=self.choose_file,
-        #    preview=True,
-        #)
-        #    openPath = '/storage/7CA3-28B4/DCIM'          
-        #    self.file_manager(openPath)
 
         else:
             #openPath = '/'
             filechooser.open_file(path=self.manager.get_screen('Calendar').get_self_directory(), on_selection=self.choose_file)
         
-    def exit_manager(self, path):
-        self.file_manager.close()
 
     def choose_file(self, opened):
         
         try:
 
-            print('VYBRANO')
-            print(opened[0])
-
             if platform == 'android':
                 ss = SharedStorage()
                 path = ss.copy_from_shared(opened[0])
-                print('CESTA - ' + path)
                 
             else:
                 path = opened[0]
@@ -721,24 +809,31 @@ class SettingsWindow(MDScreen):
                     oldpath = self.settings['bgPicture']
                     
                     if os.path.exists(oldpath):
-                        if os.path.basename(oldpath)[:3] == 'BG_':
-                            os.remove(oldpath)
+                        os.remove(oldpath)
 
-                    newFilename = 'BG_' + os.path.basename(path)
-                    print('BASENAME - ' + newFilename)
+                    newFilename = 'BG_' + os.path.splitext(path)[1]
+
                     destination = os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), 'BG/', newFilename)
-                    shutil.copy2(path, destination)
-                    print('DESTINATION - ' + destination)
+                    shutil.copy(path, destination)
+
                     self.bgsource = destination
                     self.settings['bgPicture'] = destination
+                    self.imageRefresh()
 
             except PermissionError:
                 print('CHYBA PERMISSION error')
-            #    if platform == 'android':
-            #        self.file_manager.close()
 
         except IndexError:
             print('CHYBA INDEX error')
+
+    def imageRefresh(self):
+        for screen in self.manager.screens:
+            for ID in screen.ids:
+                if 'bgImage' in ID:
+                    screen.ids[ID].reload()
+
+
+        #self.ids.bgImage.reload()
 
     def set_default_settings(self, clocktime=0):
         self.settings.setdefault('bgPicture', 'pict/default.jpg')
@@ -821,8 +916,6 @@ class LifePixels(MDApp):
             else:
                 pass
                 #Clock.schedule_once(self.root.current_screen.sync_data)
-            
-            print(network_status())
 
         else: 
             self.root.current_screen.create_userdata_directories()
