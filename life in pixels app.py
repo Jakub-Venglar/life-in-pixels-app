@@ -24,9 +24,13 @@ from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
 from plyer import filechooser
 
+#TODO: zrusit zavreni kdyz podrzim zavrit
+#TODO: možnost smazat obrázek
+#TODO: videt ze mam pripojeny obrazek
+#TODO: lepší info po syncu (zvlášť - takhle se nahraje json ale settings se nezmění a hlásí že není potřeba sync (ale provede))
 #TODO: better view of day color
-
-#TODO: handling pict of the day, sync and load it
+#TODO bg image / choose if mine or random +/- 1 month
+#TODO: handling pict of the day, sync and load it - zvlášť
 #TODO: see text comment on long press in calendar
 #TODO: make menu screen
 #TODO: create graph view for healt
@@ -542,19 +546,28 @@ class DayWindow(MDScreen):
 
     def on_enter(self):
         Window.bind(on_keyboard=self.key_click)
+        self.ids.comment.bind(focus=self.focus_change)
+        self.ids.healthComment.bind(focus=self.focus_change)
+
+    def focus_change(self, object, state):
+        if state == False: 
+            self.save_text(object)
 
     def on_pre_leave(self):
         Window.unbind(on_keyboard=self.key_click)
+        
 
     def key_click(self,window, key, keycode, *largs):
         #print('key ' + str(key) + '----' + 'keycode ' + str(keycode))
         if key == 27:
             self.close_day(self.date_id)
         
-        if key == 275: # right arrow
-            self.move_day('forward', self.date_id, self.my_id)
-        if key == 276: # left arrow
-            self.move_day('backward', self.date_id, self.my_id)
+        if (self.ids.comment.focus or self.ids.healthComment.focus) == False:
+                
+            if key == 275: # right arrow
+                self.move_day('forward', self.date_id, self.my_id)
+            if key == 276: # left arrow
+                self.move_day('backward', self.date_id, self.my_id)
         
         #if key == 13: do stuff for enter
     
@@ -594,7 +607,6 @@ class DayWindow(MDScreen):
                 self.setMoodNum = 1
         else:
             dateData[dateKey]['mood'] =  value
-        dateData[dateKey]['comment'] = text
         call.save_data(dateData,self.date_id)
         self.ids.question.bg1 = call.choose_color(dateData[dateKey]['mood'] )
         if self.ids.doubleMoodCheck.active == True:
@@ -619,12 +631,16 @@ class DayWindow(MDScreen):
         else:
             self.ids.question.bg2 = call.choose_color(dateData[dateKey]['mood'] )
 
-    def save_text(self, text, healthText):
+    def save_text(self, object):
         call = self.manager.get_screen('Calendar')
         dateData = call.pass_data(self.date_id)
         dateKey = str(self.date_id)
-        dateData[dateKey]['comment'] = text
-        dateData[dateKey]['healthComment'] = healthText
+        if object == self.ids.comment:
+            dateData[dateKey]['comment'] = self.ids.comment.text
+            print(dateData[dateKey]['comment'])
+        if object == self.ids.healthComment:
+            dateData[dateKey]['healthComment'] = self.ids.healthComment.text
+            print(dateData[dateKey]['healthComment'])
         call.save_data(dateData,self.date_id)
 
     

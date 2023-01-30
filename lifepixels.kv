@@ -263,13 +263,12 @@ ScreenManager:
 
             
         Button:         
-            text: 'Uložit a zavřít'
+            text: 'Zavřít'
             size_hint: 1,.25
             on_press: 
                 root.schedule_delete_day()
             on_release:
                 root.unschedule()
-                app.root.current_screen.save_text(comment.text, healthComment.text )
                 root.close_day(root.date_id)
 
 <SettingsWindow>:
