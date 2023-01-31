@@ -257,11 +257,16 @@ ScreenManager:
                 Rectangle:
                     size: self.size
                     pos:self.pos
-            size: self.texture_size
-            pos: self.pos
+            #size: self.texture_size
+            #pos: self.pos
             source: self.image_source
 
-            
+        #FloatLayout:
+        #    Label:
+        #        text: 'Kliknutim nahraj'
+        #        pos: root.ids.dayImage.pos
+        #        size:root.ids.dayImage.size
+
         Button:         
             text: 'Zavřít'
             size_hint: 1,.25
@@ -270,6 +275,8 @@ ScreenManager:
             on_release:
                 root.unschedule()
                 root.close_day(root.date_id)
+        
+        
 
 <SettingsWindow>:
     name: 'Settings'

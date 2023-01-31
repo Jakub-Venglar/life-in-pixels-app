@@ -27,7 +27,6 @@ from plyer import filechooser
 #TODO: lepsi ukladani / done, jeste do stop a close (if on day win screen)
 #TODO: zrusit zavreni kdyz podrzim zavrit
 #TODO: možnost smazat obrázek
-#TODO: videt ze mam pripojeny obrazek
 #TODO: lepší info po syncu (zvlášť - takhle se nahraje json ale settings se nezmění a hlásí že není potřeba sync (ale provede))
 #TODO: better view of day color
 #TODO bg image / choose if mine or random +/- 1 month
@@ -445,7 +444,12 @@ class CalendarWindow(MDScreen):
             Color(rgba = (1,1,1,1))
             # comment label
             Rectangle(size=labelIDa.texture_size, pos=(calButtonID.x+calButtonID.width/20, calButtonID.top-labelIDa.texture_size[1]), texture=labelIDa.texture)
-            Rectangle(size=labelIDb.texture_size, pos=(calButtonID.right-labelIDb.texture_size[0], calButtonID.top-labelIDb.texture_size[1]), texture=labelIDb.texture)
+            #Rectangle(size=labelIDb.texture_size, pos=(calButtonID.right-labelIDb.texture_size[0], calButtonID.top-labelIDb.texture_size[1]), texture=labelIDb.texture)
+            try:
+                if dateData[dateKey]['dayImage'] != '':
+                    Rectangle(source = dateData[dateKey]['dayImage'], size=(calButtonID.width/3.2,calButtonID.width/3.2), pos=(calButtonID.right-calButtonID.width/3.2,calButtonID.top-calButtonID.width/3.2))
+            except KeyError:
+                pass
             Rectangle(size=labelIDc.texture_size, pos=(calButtonID.right-labelIDc.texture_size[0], calButtonID.y), texture=labelIDc.texture)
             # health label with heart icon
             Rectangle(size=labelIDd.texture_size, pos=(calButtonID.x+calButtonID.width/3.4,calButtonID.y), texture=labelIDd.texture)
@@ -555,7 +559,12 @@ class DayWindow(MDScreen):
         
         daySetting.ids.comment.text = daySetting.dateData[dateKey]['comment']
         daySetting.ids.healthComment.text = daySetting.dateData[dateKey]['healthComment']
-        daySetting.ids.dayImage.image_source = daySetting.dateData[dateKey]['dayImage']
+        if daySetting.dateData[dateKey]['dayImage'] != '':
+            daySetting.ids.dayImage.image_source = daySetting.dateData[dateKey]['dayImage']
+            daySetting.ids.dayImage.color = [1,1,1,1]
+        else:
+            daySetting.ids.dayImage.image_source = self.manager.get_screen('Settings').settings['bgPicture']
+            daySetting.ids.dayImage.color = [.6,.6,.6,.6]
 
     def set_default_values(self, dayDict):
         for key, value in emptyDayData.items():
