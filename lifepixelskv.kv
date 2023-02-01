@@ -1,0 +1,899 @@
+#:import Thread threading
+
+ScreenManager:
+    CalendarWindow:
+    DayWindow:
+    HabitsWindow:
+    SettingsWindow:
+    CalendarLabels:
+
+<MoodButton@Button>:
+    background_normal: ''
+    font_size: 25
+    halign: 'center'
+    valign: 'middle'
+    padding: (15,15)
+    text_size: self.size
+
+<CalButton@Button>:
+    date_id: None
+    font_size: (self.height+self.width)/4
+    testobr: 'dsfsdfs'
+    color: (1,1,1,1) 
+    outline_width: 1
+    outline_colour: (0, 0, 0, 1)
+    background_normal: ''
+    markup:True
+    text: ''
+    doublemood: False
+    colorset: (0,0,0,0)
+    colorset2: (0,0,0,0)
+    #on_press: 
+    #    app.root.get_screen('Calendar').schedule_long_cal_click(self.date_id, self.my_id)
+    on_release:
+        app.root.get_screen('Calendar').cal_click(self.date_id, self.my_id)
+    canvas.before:
+        Color: 
+            rgba: self.colorset
+        Triangle:
+            points: self.x, self.y, self.x, self.top, self.right, self.top
+        Color: 
+            rgba: self.colorset2
+        Triangle:
+            points: self.x, self.y, self.right, self.y, self.right, self.top
+        Color: 
+            rgba: (1,1,1,.8)
+        Line:
+            width: 1
+            rectangle: self.x, self.y, self.width, self.height         
+
+<DayLabel@Label>:
+    font_size: (self.height+self.width)/4
+    outline_width: 1
+    outline_colour: (0, 0, 0, 1)
+    canvas.before:
+        Color: 
+            rgba: (1,1,1,.8)
+        Line:
+            width: 1
+            rectangle: self.x, self.y, self.width, self.height
+
+<MoveButton@Button>:
+
+
+<DayWindow>:
+    name: 'DayMood'
+    current_date: ''
+    setMoodNum: 1
+    bgsource: ''
+    bg: (0,0,0,.9)
+    FitImage:
+        id: bgImage5
+        size_hint_y: 1
+        source: root.bgsource
+    BoxLayout:
+        orientation: 'vertical'
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint: (1,.3)
+            MoveButton:
+                text:'<'
+                size_hint: (.2,1)
+                on_release: root.move_day('backward', root.date_id, root.my_id)
+            Label:
+                id: question
+                #size_hint_y: .8
+                bg1: (1,1,1,0)
+                bg2: (1,1,1,0)
+                canvas.before:
+                    Color:
+                        rgba: 97/255,105/255,140/255,.55
+                    Rectangle:
+                        size: self.size
+                        pos:self.pos
+                canvas:
+                    Color:
+                        rgba: self.bg1
+                    Rectangle:
+                        size: self.size[0]/2,self.size[1]/5
+                        pos:self.pos
+                    Color:
+                        rgba: self.bg2
+                    Rectangle:
+                        size: self.size[0]/2,self.size[1]/5
+                        pos:self.pos[0]+self.size[0]/2,self.pos[1]
+                color: (1,1,1,1)
+                #outline_width: 1
+                #outline_colour: (0, 0, 0, 1)
+                font_size: 30
+                line_height: 1.05
+                halign: 'center'
+                valign: 'top'
+                text_size: self.size
+                markup: True
+                text: f'[b]Jaký byl tvůj den? \n {root.current_date}[/b]'
+            MoveButton:
+                text:'>'
+                size_hint: (.2,1)
+                on_release: root.move_day('forward', root.date_id, root.my_id)
+
+        MDTextFieldRect:
+            id: comment
+            multiline: True
+            text: ''
+            input_type: 'text'
+            keyboard_suggestions: True
+            size_hint: (1, .7)
+            #height: root.height/4
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint: (1, .35)
+            canvas.before:
+                Color:
+                    rgba: 97/255,105/255,140/255,.55
+                Rectangle:
+                    size: self.size
+                    pos:self.pos
+            FloatLayout:
+                orientation: 'vertical'
+                size_hint: (1, .9)
+                Label:
+                    text: 'Složitější nálada?'
+                    font_size: 20
+                    text_size: self.size
+                    halign: 'center'
+                    valign: 'middle'
+                    size_hint:1,.5
+                    pos_hint: {'center_x': .5, 'center_y': .8}
+                    #size: self.parent.width,self.parent.height/4
+                MDCheckbox:
+                    id: doubleMoodCheck
+                    size_hint: None, None
+                    size: "48dp", "48dp"
+                    pos_hint: {'center_x': .5, 'center_y': .4}
+                    on_active:
+                        app.root.current_screen.double_mood(self.active)
+
+           #MoodButton:
+           #    id: terrible
+           #    text: 'Katastrofa'
+           #    on_release: app.root.current_screen.mood_click('terrible', comment.text)
+           #    on_release: 
+           #        app.root.transition.direction = 'right'
+           #        app.root.current = 'Calendar'
+            MoodButton:
+                id: bad
+                text: 'Na houby'
+                on_release: app.root.current_screen.mood_click('bad', comment.text)
+            MoodButton:
+                id: average  
+                text: 'Šedivý průměr'
+                on_release: app.root.current_screen.mood_click('average', comment.text)
+            MoodButton:
+                id: good
+                text: 'Užil(a) jsem si ho'
+                on_release: app.root.current_screen.mood_click('good', comment.text)
+
+            MoodButton:
+                id: super
+                text: 'Boží!'
+                on_release: app.root.current_screen.mood_click('super', comment.text)
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint: 1,.2
+            canvas.after:
+                Color: 
+                    rgba: (1,1,1,.8)
+                Line:
+                    width: 2
+                    rectangle: self.x, self.y, self.width, self.height 
+            Label:
+                id:healthLabel
+                #outline_width: 1
+                #outline_colour: (0, 0, 0, 1)
+                size_hint: .8,1
+                font_size: 30
+                text_size: self.size
+                halign: 'left'
+                valign: 'middle'
+                padding_x: 10
+                text: 'Jak ses tento den cítil fyzicky?'
+                canvas.before:
+                    Color:
+                        rgba: 97/255,105/255,140/255,.55
+                    Rectangle:
+                        size: self.size
+                        pos:self.pos
+            Label:
+                id:healthLabelValue
+                questionMark: True
+                size_hint: .2,1
+                font_size: 40
+                halign: 'center'
+                valign: 'middle'
+                markup: True
+                healthvalue: str(int(root.ids.health.value))
+                text: f'[b]{self.healthvalue}?[/b]' if self.questionMark == True else f'[b]{self.healthvalue}[/b]'
+                canvas.before:
+                    Color:
+                        rgba: 97/255,105/255,140/255,.55
+                    Rectangle:
+                        size: self.size
+                        pos:self.pos
+        MDSlider:
+            id: health
+            size_hint: 1,.15
+            hint: False
+            font_size: 25
+            value: 5
+            min: 0
+            max: 5
+            step: 1
+            on_active: app.root.current_screen.store_health(self.value)
+            canvas.before:
+                Color:
+                    rgba: 97/255,105/255,140/255,.55
+                Rectangle:
+                    size: self.size
+                    pos:self.pos
+        MDTextFieldRect:
+            id: healthComment
+            multiline: True
+            text: ''
+            input_type: 'text'
+            keyboard_suggestions: True
+            size_hint: (1, .3)
+        
+        #BoxLayout:
+        #    orientation: 'vertical'
+#
+        #    FitImage:
+        #        size_hint_y: 1
+        #        source: root.bgsource
+        
+        Image:
+            id: dayImage
+            image_source: ''
+            canvas.before:
+                Color:
+                    rgba: root.bg
+                Rectangle:
+                    size: self.size
+                    pos:self.pos
+            #size: self.texture_size
+            #pos: self.pos
+            source: self.image_source
+            #canvas.after:
+            #    #Color:
+            #    #    rgba: (1,1,1,1)
+            #    Rectangle:
+            #        texture: app.root.get_screen('CalLabels').ids.textOnImage.texture if app.root else None
+            #        pos: self.pos
+
+        #FloatLayout:
+        #    Label:
+        #        text: 'Kliknutim nahraj'
+        #        pos: root.ids.dayImage.pos
+        #        size:root.ids.dayImage.size
+
+        Button:         
+            text: 'Zavřít'
+            size_hint: 1,.25
+            on_press: 
+                root.schedule_delete_day()
+            on_release:
+                root.unschedule_delete()
+        
+        
+
+<SettingsWindow>:
+    name: 'Settings'
+    bg: (0,0,0,.9)
+    settings: {}
+    bgsource: ''
+    FitImage:
+        id: bgImage1
+        size_hint_y: 1
+        source: root.bgsource 
+    BoxLayout:
+        #size_hint: 1,1
+        orientation: 'vertical'
+        Label:
+            text: 'Aktuální obrázek'
+            font_size: 30
+            size_hint_y: None
+            height: 50
+            canvas.before:
+                Color:
+                    rgba: root.bg
+                Rectangle:
+                    size: self.size
+                    pos:self.pos
+        Image:
+            id: bgImage2
+            canvas.before:
+                Color:
+                    rgba: root.bg
+                Rectangle:
+                    size: self.size
+                    pos:self.pos
+            size: self.texture_size
+            pos: self.pos
+            source: root.bgsource            
+        Button:
+            text: 'Vybrat obrázek na pozadí'
+            size_hint_y: .2
+            on_release:
+                root.manager.current_screen.open_filemanager()
+        Button:
+            text: 'Uložit a zavřít'
+            size_hint_y: .2
+            on_release:
+                root.manager.current_screen.save_settings()
+                root.manager.transition.direction = 'right'
+                root.manager.current = 'Calendar'
+
+<HabitsWindow>:
+    name: 'Habits'
+    bg: (.5,.5,.5,.5)
+    bgsource: ''
+    canvas:
+        Color:
+            rgba: self.bg
+        Rectangle:
+            size: self.size
+            pos:self.pos
+    FitImage:
+        id: bgImage3
+        size_hint_y: 1
+        source: root.bgsource
+    BoxLayout:
+        padding: [0,20,0,0]
+        orientation: 'vertical'
+        Label:
+            id: actQuestion
+            font_size: 30
+            halign: 'center'
+            valign: 'middle'
+            height: root.height*.2
+            text_size: self.size
+            text: 'Tvé aktivity:'
+        GridLayout:
+            cols:2
+            Label:
+                text: 'Aktivita'
+            Label:
+                text: 'Zobrazení v kalendáři'
+        TextInput:          
+        Button:
+            text: 'Přidat aktivitu'
+        Button:
+            text: 'Zavřít'
+            on_release:
+                root.manager.transition.direction = 'right'
+                root.manager.current = 'Calendar'
+
+<CalendarWindow>:
+    name: 'Calendar'
+    syncMessage: ''
+    yearID: ''
+    monthID: ''
+    dateToShow: ''
+    currentYear: ''
+    yearData: None
+    bgsource: ''
+    FitImage:
+        id: bgImage4
+        size_hint_y: 1
+        source: root.bgsource 
+    BoxLayout:
+        size: root.width, root.height
+        orientation: 'vertical'
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint: 1, .2
+            pos_hint: {'center_x': .5}
+            canvas.before:
+                Color: 
+                    rgba: 97/255,105/255,140/255,.55 #(53/255,85/255,166/255,.65)
+                Rectangle:
+                    size: self.size
+                    pos:self.pos
+            MoveButton:
+                text:'<<<'
+                size_hint: .6, 1
+                on_release: root.move_year('backward')
+            MoveButton:
+                text:'<'
+                size_hint: .6, 1
+                on_release: root.move_month('backward')
+            Label:
+                id: month_Label
+                text: ''
+                outline_width: 1
+                outline_colour: (0, 0, 0, 1)
+                line_height: .85
+                halign: 'center'
+                valign: 'middle'
+                size_hint_x: None
+                text_size: self.size
+                width: root.width/1.8
+                font_size: self.height/2.5 + self.width/40
+            MoveButton:
+                text:'>'
+                size_hint: .6, 1
+                on_release: root.move_month('forward')
+            MoveButton:
+                text:'>>>'
+                size_hint: .6, 1
+                on_release: root.move_year('forward')
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint: 1, .2
+            pos_hint: {'center_x': .5}
+            canvas.before:
+                Color: 
+                    rgba: 97/255,105/255,140/255,.55
+                Rectangle:
+                    size: self.size
+                    pos:self.pos
+            canvas.after:
+                Color: 
+                    rgba: (1,1,1,.9)
+                Line:
+                    width: 4
+                    points: self.x, self.y+2, self.width, self.y+2 
+            DayLabel:
+                text: 'Po'
+            DayLabel:
+                text: 'Út'
+            DayLabel:
+                text: 'St'
+            DayLabel:
+                text: 'Čt'
+            DayLabel:
+                text: 'Pá'
+            DayLabel:
+                text: 'So'
+            DayLabel:
+                text: 'Ne'
+        GridLayout:
+            cols: 7
+            rows: 5
+            size_hint: 1, .9
+            pos_hint: {'center_x': .5}
+            CalButton:
+                id: 1-1
+                my_id: '1-1'
+            CalButton:
+                id: 1-2
+                my_id: '1-2'
+            CalButton:
+                id: 1-3
+                my_id: '1-3'
+            CalButton:
+                id: 1-4
+                my_id: '1-4'
+            CalButton:
+                id: 1-5
+                my_id: '1-5'
+            CalButton:
+                id: 1-6
+                my_id: '1-6'
+            CalButton:
+                id: 1-7
+                my_id: '1-7'
+            CalButton:
+                id: 2-1
+                my_id: '2-1'
+            CalButton:
+                id: 2-2
+                my_id: '2-2'
+            CalButton:
+                id: 2-3
+                my_id: '2-3'
+            CalButton:
+                id: 2-4
+                my_id: '2-4'
+            CalButton:
+                id: 2-5
+                my_id: '2-5'
+            CalButton:
+                id: 2-6
+                my_id: '2-6'
+            CalButton:
+                id: 2-7
+                my_id: '2-7'
+            CalButton:
+                id: 3-1
+                my_id: '3-1'
+            CalButton:
+                id: 3-2
+                my_id: '3-2'
+            CalButton:
+                id: 3-3
+                my_id: '3-3'
+            CalButton:
+                id: 3-4
+                my_id: '3-4'
+            CalButton:
+                id: 3-5
+                my_id: '3-5'
+            CalButton:
+                id: 3-6
+                my_id: '3-6'
+            CalButton:
+                id: 3-7
+                my_id: '3-7'
+            CalButton:
+                id: 4-1
+                my_id: '4-1'
+            CalButton:
+                id: 4-2
+                my_id: '4-2'
+            CalButton:
+                id: 4-3
+                my_id: '4-3'
+            CalButton:
+                id: 4-4
+                my_id: '4-4'
+            CalButton:
+                id: 4-5
+                my_id: '4-5'
+            CalButton:
+                id: 4-6
+                my_id: '4-6'
+            CalButton:
+                id: 4-7
+                my_id: '4-7'
+            CalButton:
+                id: 5-1
+                my_id: '5-1'
+            CalButton:
+                id: 5-2
+                my_id: '5-2'
+            CalButton:
+                id: 5-3
+                my_id: '5-3'
+            CalButton:
+                id: 5-4
+                my_id: '5-4'
+            CalButton:
+                id: 5-5
+                my_id: '5-5'
+            CalButton:
+                id: 5-6
+                my_id: '5-6'
+            CalButton:
+                id: 5-7
+                my_id: '5-7'
+        Button:
+            id: home
+            size_hint:  (1,.1)
+            pos_hint: {'center_x': .5}
+            text: 'Vrať mě do současnosti'
+            on_release: root.present_click()
+        Button:
+            id: delete
+            date_id: 
+            size_hint:  (1,.1)
+            pos_hint: {'center_x': .5}
+            text: 'Vymaž celý kalendář'
+            on_release: root.delete_data(self.date_id)
+        Button:
+            id: activities
+            size_hint:  (1,.1)
+            pos_hint: {'center_x': .5}
+            text: 'Přidat aktivitu'
+            on_release: 
+                root.manager.transition.direction = 'left'
+                root.manager.current = 'Habits'
+        Button:
+            id: settings
+            size_hint:  (1,.1)
+            pos_hint: {'center_x': .5}
+            text: 'Nastavení'
+            on_release: 
+                root.manager.transition.direction = 'left'
+                root.manager.current = 'Settings'
+        Button:
+            id: backup
+            size_hint:  (1,.1)
+            pos_hint: {'center_x': .5}
+            text: 'Synchronizuj s drive'
+            on_release: 
+                root.sync_data_thread()
+
+<TextureLabel@Label>
+    text: ''
+    size: self.texture_size
+    font_size: root.parent.parent.fs
+
+<CalendarLabels>:
+    name: 'CalLabels'
+    fs: 20
+    BoxLayout:
+        TextureLabel:
+            id: textOnImage
+            text: 'Kliknutím přidej obrázek'
+    BoxLayout:
+        TextureLabel:
+            id: 1-1a
+        TextureLabel:
+            id: 1-1b
+        TextureLabel:
+            id: 1-1c
+        TextureLabel:
+            id: 1-1d
+        TextureLabel:
+            id: 1-2a
+        TextureLabel:
+            id: 1-2b
+        TextureLabel:
+            id: 1-2c
+        TextureLabel:
+            id: 1-2d
+        TextureLabel:
+            id: 1-3a
+        TextureLabel:
+            id: 1-3b
+        TextureLabel:
+            id: 1-3c
+        TextureLabel:
+            id: 1-3d
+        TextureLabel:
+            id: 1-4a
+        TextureLabel:
+            id: 1-4b
+        TextureLabel:
+            id: 1-4c
+        TextureLabel:
+            id: 1-4d
+        TextureLabel:
+            id: 1-5a
+        TextureLabel:
+            id: 1-5b
+        TextureLabel:
+            id: 1-5c
+        TextureLabel:
+            id: 1-5d
+        TextureLabel:
+            id: 1-6a
+        TextureLabel:
+            id: 1-6b
+        TextureLabel:
+            id: 1-6c
+        TextureLabel:
+            id: 1-6d
+        TextureLabel:
+            id: 1-7a
+        TextureLabel:
+            id: 1-7b
+        TextureLabel:
+            id: 1-7c
+        TextureLabel:
+            id: 1-7d
+        TextureLabel:
+            id: 2-1a
+        TextureLabel:
+            id: 2-1b
+        TextureLabel:
+            id: 2-1c
+        TextureLabel:
+            id: 2-1d
+        TextureLabel:
+            id: 2-2a
+        TextureLabel:
+            id: 2-2b
+        TextureLabel:
+            id: 2-2c
+        TextureLabel:
+            id: 2-2d
+        TextureLabel:
+            id: 2-3a
+        TextureLabel:
+            id: 2-3b
+        TextureLabel:
+            id: 2-3c
+        TextureLabel:
+            id: 2-3d
+        TextureLabel:
+            id: 2-4a
+        TextureLabel:
+            id: 2-4b
+        TextureLabel:
+            id: 2-4c
+        TextureLabel:
+            id: 2-4d
+        TextureLabel:
+            id: 2-5a
+        TextureLabel:
+            id: 2-5b
+        TextureLabel:
+            id: 2-5c
+        TextureLabel:
+            id: 2-5d
+        TextureLabel:
+            id: 2-6a
+        TextureLabel:
+            id: 2-6b
+        TextureLabel:
+            id: 2-6c
+        TextureLabel:
+            id: 2-6d
+        TextureLabel:
+            id: 2-7a
+        TextureLabel:
+            id: 2-7b
+        TextureLabel:
+            id: 2-7c
+        TextureLabel:
+            id: 2-7d
+        TextureLabel:
+            id: 3-1a
+        TextureLabel:
+            id: 3-1b
+        TextureLabel:
+            id: 3-1c
+        TextureLabel:
+            id: 3-1d
+        TextureLabel:
+            id: 3-2a
+        TextureLabel:
+            id: 3-2b
+        TextureLabel:
+            id: 3-2c
+        TextureLabel:
+            id: 3-2d
+        TextureLabel:
+            id: 3-3a
+        TextureLabel:
+            id: 3-3b
+        TextureLabel:
+            id: 3-3c
+        TextureLabel:
+            id: 3-3d
+        TextureLabel:
+            id: 3-4a
+        TextureLabel:
+            id: 3-4b
+        TextureLabel:
+            id: 3-4c
+        TextureLabel:
+            id: 3-4d
+        TextureLabel:
+            id: 3-5a
+        TextureLabel:
+            id: 3-5b
+        TextureLabel:
+            id: 3-5c
+        TextureLabel:
+            id: 3-5d
+        TextureLabel:
+            id: 3-6a
+        TextureLabel:
+            id: 3-6b
+        TextureLabel:
+            id: 3-6c
+        TextureLabel:
+            id: 3-6d
+        TextureLabel:
+            id: 3-7a
+        TextureLabel:
+            id: 3-7b
+        TextureLabel:
+            id: 3-7c
+        TextureLabel:
+            id: 3-7d
+        TextureLabel:
+            id: 4-1a
+        TextureLabel:
+            id: 4-1b
+        TextureLabel:
+            id: 4-1c
+        TextureLabel:
+            id: 4-1d
+        TextureLabel:
+            id: 4-2a
+        TextureLabel:
+            id: 4-2b
+        TextureLabel:
+            id: 4-2c
+        TextureLabel:
+            id: 4-2d
+        TextureLabel:
+            id: 4-3a
+        TextureLabel:
+            id: 4-3b
+        TextureLabel:
+            id: 4-3c
+        TextureLabel:
+            id: 4-3d
+        TextureLabel:
+            id: 4-4a
+        TextureLabel:
+            id: 4-4b
+        TextureLabel:
+            id: 4-4c
+        TextureLabel:
+            id: 4-4d
+        TextureLabel:
+            id: 4-5a
+        TextureLabel:
+            id: 4-5b
+        TextureLabel:
+            id: 4-5c
+        TextureLabel:
+            id: 4-5d
+        TextureLabel:
+            id: 4-6a
+        TextureLabel:
+            id: 4-6b
+        TextureLabel:
+            id: 4-6c
+        TextureLabel:
+            id: 4-6d
+        TextureLabel:
+            id: 4-7a
+        TextureLabel:
+            id: 4-7b
+        TextureLabel:
+            id: 4-7c
+        TextureLabel:
+            id: 4-7d
+        TextureLabel:
+            id: 5-1a
+        TextureLabel:
+            id: 5-1b
+        TextureLabel:
+            id: 5-1c
+        TextureLabel:
+            id: 5-1d
+        TextureLabel:
+            id: 5-2a
+        TextureLabel:
+            id: 5-2b
+        TextureLabel:
+            id: 5-2c
+        TextureLabel:
+            id: 5-2d
+        TextureLabel:
+            id: 5-3a
+        TextureLabel:
+            id: 5-3b
+        TextureLabel:
+            id: 5-3c
+        TextureLabel:
+            id: 5-3d
+        TextureLabel:
+            id: 5-4a
+        TextureLabel:
+            id: 5-4b
+        TextureLabel:
+            id: 5-4c
+        TextureLabel:
+            id: 5-4d
+        TextureLabel:
+            id: 5-5a
+        TextureLabel:
+            id: 5-5b
+        TextureLabel:
+            id: 5-5c
+        TextureLabel:
+            id: 5-5d
+        TextureLabel:
+            id: 5-6a
+        TextureLabel:
+            id: 5-6b
+        TextureLabel:
+            id: 5-6c
+        TextureLabel:
+            id: 5-6d
+        TextureLabel:
+            id: 5-7a
+        TextureLabel:
+            id: 5-7b
+        TextureLabel:
+            id: 5-7c
+        TextureLabel:
+            id: 5-7d

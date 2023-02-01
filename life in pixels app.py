@@ -445,6 +445,8 @@ class CalendarWindow(MDScreen):
             # comment label
             Rectangle(size=labelIDa.texture_size, pos=(calButtonID.x+calButtonID.width/20, calButtonID.top-labelIDa.texture_size[1]), texture=labelIDa.texture)
             #Rectangle(size=labelIDb.texture_size, pos=(calButtonID.right-labelIDb.texture_size[0], calButtonID.top-labelIDb.texture_size[1]), texture=labelIDb.texture)
+            
+            # add small image if is present as Day image
             try:
                 if dateData[dateKey]['dayImage'] != '':
                     Rectangle(source = dateData[dateKey]['dayImage'], size=(calButtonID.width/3.2,calButtonID.width/3.2), pos=(calButtonID.right-calButtonID.width/3.2,calButtonID.top-calButtonID.width/3.2))
@@ -513,6 +515,19 @@ class CalendarWindow(MDScreen):
         daySetting.my_id = my_id
         daySetting.load_day(date_id)
 
+
+    '''def schedule_delete_day(self):
+        self.event = Clock.schedule_once(self.delete_day,0.3)
+        self.close = True
+
+    def unschedule_delete(self):
+        self.event.cancel()
+        if self.close == True:
+            self.close_day(self.date_id)
+
+    def delete_day(self, clocktime=0):
+        self.close = False'''
+
 class DayWindow(MDScreen):
 
     def on_pre_enter(self):
@@ -559,12 +574,27 @@ class DayWindow(MDScreen):
         
         daySetting.ids.comment.text = daySetting.dateData[dateKey]['comment']
         daySetting.ids.healthComment.text = daySetting.dateData[dateKey]['healthComment']
+        
+        with self.ids.dayImage.canvas.after:
+            self.ids.dayImage.canvas.after.clear()
+
         if daySetting.dateData[dateKey]['dayImage'] != '':
             daySetting.ids.dayImage.image_source = daySetting.dateData[dateKey]['dayImage']
             daySetting.ids.dayImage.color = [1,1,1,1]
         else:
             daySetting.ids.dayImage.image_source = self.manager.get_screen('Settings').settings['bgPicture']
             daySetting.ids.dayImage.color = [.6,.6,.6,.6]
+            Clock.schedule_once(self.add_text_on_image)
+        
+
+    def add_text_on_image(self, clocktime=0):
+
+        with self.ids.dayImage.canvas.after:
+            textonImage = self.manager.get_screen('CalLabels').ids.textOnImage
+            Color(rgba = (.95,.95,.95,.95))
+            Rectangle( size = textonImage.texture_size, pos=(self.ids.dayImage.center_x-(textonImage.texture_size[0]/2), self.ids.dayImage.center_y), texture=self.manager.get_screen('CalLabels').ids.textOnImage.texture)
+        
+        #self.ids.dayImage.canvas.ask_update()
 
     def set_default_values(self, dayDict):
         for key, value in emptyDayData.items():
@@ -663,11 +693,15 @@ class DayWindow(MDScreen):
 
     def schedule_delete_day(self):
         self.event = Clock.schedule_once(self.delete_day,0.3)
+        self.close = True
 
-    def unschedule(self):
+    def unschedule_delete(self):
         self.event.cancel()
+        if self.close == True:
+            self.close_day(self.date_id)
 
     def delete_day(self, clocktime=0):
+        self.close = False
         open_confirmation_popup(self, text = 'Chceš vymazat celý den?', function_to_pass=self.delete_day_func)
     
     def delete_day_func(self, obj):
@@ -903,7 +937,7 @@ class CalendarLabels(MDScreen):
 class LifePixels(MDApp):
     title = 'Life in Pixels'
     def build(self):
-        Builder.load_file('lifepixels.kv')
+        Builder.load_file('lifepixelskv.kv') #same name for kv file causes some events fired twice
         # Create the screen manager
         sm = ScreenManager()
         sm.add_widget(CalendarWindow(name='Calendar'))
