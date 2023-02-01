@@ -25,7 +25,7 @@ from pydrive2.drive import GoogleDrive
 from plyer import filechooser
 
 #TODO: lepsi ukladani / done, jeste do stop a close (if on day win screen)
-#TODO: možnost smazat obrázek
+#TODO: možnost smazat obrázek / pres long press
 #TODO: lepší info po syncu (zvlášť - takhle se nahraje json ale settings se nezmění a hlásí že není potřeba sync (ale provede))
 #TODO: better view of day color
 #TODO bg image / choose if mine or random +/- 1 month
@@ -544,6 +544,7 @@ class DayWindow(MDScreen):
         Window.bind(on_keyboard=self.key_click)
         self.ids.comment.bind(focus=self.focus_change)
         self.ids.healthComment.bind(focus=self.focus_change)
+        self.ids.comment.focus = True
 
     def on_pre_leave(self):
         self.manager.get_screen('Calendar').save_data(self.dateData,self.date_id)
@@ -792,9 +793,24 @@ class DayWindow(MDScreen):
     def on_touch_down(self, touch):
 
         if self.ids.dayImage.collide_point(*touch.pos):
-            self.choose_day_pict()
+            
+            self.choose_day_pict()           
         
         return super().on_touch_down(touch)
+
+
+        ''' def schedule_delete_day(self):
+        self.event = Clock.schedule_once(self.delete_day,0.3)
+        self.close = True
+
+    def unschedule_delete(self):
+        self.event.cancel()
+        if self.close == True:
+            self.close_day(self.date_id)
+
+    def delete_day(self, clocktime=0):
+        self.close = False
+        open_confirmation_popup(self, text = 'Chceš vymazat celý den?', function_to_pass=self.delete_day_func)'''
 
     def on_touch_move(self, touch):
         print(touch.ox - touch.x)
