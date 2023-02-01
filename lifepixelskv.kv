@@ -28,10 +28,10 @@ ScreenManager:
     doublemood: False
     colorset: (0,0,0,0)
     colorset2: (0,0,0,0)
-    #on_press: 
-    #    app.root.get_screen('Calendar').schedule_long_cal_click(self.date_id, self.my_id)
+    on_press: 
+        app.root.get_screen('Calendar').schedule_long_cal_click(self.date_id, self.my_id)
     on_release:
-        app.root.get_screen('Calendar').cal_click(self.date_id, self.my_id)
+        app.root.get_screen('Calendar').ulp_call_cal_click(self.date_id, self.my_id)
     canvas.before:
         Color: 
             rgba: self.colorset

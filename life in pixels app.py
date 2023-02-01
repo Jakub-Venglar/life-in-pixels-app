@@ -25,7 +25,6 @@ from pydrive2.drive import GoogleDrive
 from plyer import filechooser
 
 #TODO: lepsi ukladani / done, jeste do stop a close (if on day win screen)
-#TODO: zrusit zavreni kdyz podrzim zavrit
 #TODO: možnost smazat obrázek
 #TODO: lepší info po syncu (zvlášť - takhle se nahraje json ale settings se nezmění a hlásí že není potřeba sync (ale provede))
 #TODO: better view of day color
@@ -516,17 +515,25 @@ class CalendarWindow(MDScreen):
         daySetting.load_day(date_id)
 
 
-    '''def schedule_delete_day(self):
-        self.event = Clock.schedule_once(self.delete_day,0.3)
-        self.close = True
+    def schedule_long_cal_click(self,date_id, my_id):
+        self.open = True
+        self.event = Clock.schedule_once(partial(self.show_text, date_id, my_id), 0.3)
+        #self.close = True
 
-    def unschedule_delete(self):
+    def ulp_call_cal_click(self,date_id, my_id):
         self.event.cancel()
-        if self.close == True:
-            self.close_day(self.date_id)
+        if self.open == True:
+            self.cal_click(date_id, my_id)
 
-    def delete_day(self, clocktime=0):
-        self.close = False'''
+    def show_text(self, date_id, my_id, clocktime=0):
+        self.open = False
+        dateData = self.pass_data(date_id)
+        dateKey = str(date_id)
+        toast(dateData[dateKey]['comment'], duration=5)
+        
+
+    def textuj(self, touch):
+        print('neco')
 
 class DayWindow(MDScreen):
 
