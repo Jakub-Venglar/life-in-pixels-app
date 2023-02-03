@@ -24,9 +24,18 @@ from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
 from plyer import filechooser
 
+#TODO: check what is happening in sync in mobile / 
+# po úplně novém stažení mi to neupdatlo kalendář, - neudělá ani v počítači - nevolám překreslení? AŽ PO restartu app (dokonce ne ani po reloadu kalendáře)
+
+#nestáhlo to bg picture - stáhne ho to, ale neprojeví - nejprve check, jestli je něco ve složce a pak to zapsat ?
+#asi nejprve zmrší settings a pak už to nezvládá - není potřeba si zapisovat - alg - check cesty a když není tak default
+#mobil nezvládne ani výběr bg picture najednou - asi souvisí viz výše? - možná s pomalejším kopírováním?
+
+
 #TODO: lepsi ukladani / done, jeste do stop a close (if on day win screen)
 #TODO: možnost smazat obrázek / pres long press
 #TODO: lepší info po syncu (zvlášť - takhle se nahraje json ale settings se nezmění a hlásí že není potřeba sync (ale provede))
+
 #TODO: better view of day color
 #TODO bg image / choose if mine or random +/- 1 month
 #TODO: handling pict of the day, sync and load it - zvlášť
@@ -166,14 +175,14 @@ class CalendarWindow(MDScreen):
     def pass_data(self,date_id):
         year = str(date_id.year)
         userdata = self.get_userdata()
-        if year != self.currentYear:
-            self.currentYear = year
-            try:   
-                with open(f'{userdata}/caldata-{year}.json', 'r', encoding='utf-8') as file:
-                    yearData =  json.loads(file.read())
-            except FileNotFoundError:
-                    yearData =  {}
-            self.yearData = yearData
+        #if year != self.currentYear: protože to pak neprojde, když se nemění rok a nereloaduje kalendář
+            #self.currentYear = year
+        try:   
+            with open(f'{userdata}/caldata-{year}.json', 'r', encoding='utf-8') as file:
+                yearData =  json.loads(file.read())
+        except FileNotFoundError:
+                yearData =  {}
+        self.yearData = yearData
             #thisYear = YearObject(year,yearData)
         return self.yearData
 
@@ -236,16 +245,24 @@ class CalendarWindow(MDScreen):
     syncText = {}
     
     def thread_handle(self, clocktime=0):
-        t = Thread(target=self.call_sync_data)
+        t = Thread(target=self.sync_data_prep)
         t.start()
         t.join()
+
         text = self.syncText['message']
+
+        Clock.schedule_once(partial(self.make_Cal, True))
+        Clock.schedule_once(self.manager.get_screen('Settings').load_settings)
+
+        #if text != '':
+            
+
         if text == '':
             toast('Nic nebylo potřeba synchronizovat')
         else:
             toast(text)
 
-    def call_sync_data(self,clocktime=0):
+    def sync_data_prep(self,clocktime=0):
         try:
             drive = GoogleDrive(self.authenticate())
             mimetype = 'application/vnd.google-apps.folder'
@@ -275,14 +292,11 @@ class CalendarWindow(MDScreen):
             self.sync_data(drive, parentID, MIMEtype, local_file_list,local_file_meta,drive_file_list,drive_file_meta)
 
         except httplib2.error.ServerNotFoundError:
-            toast('Nemůžu se připojit k internetu. \n Zapni wifi nebo data.')
+            self.syncText['message'] = 'Nemůžu se připojit k internetu. \n Zapni wifi nebo data.'
             #self.open_popup(title='Není připojení k internetu', text='Nemůžu se připojit k internetu. \n Zapni wifi nebo data.', button='Zavřít')
         
         os.chdir(self.get_self_directory())
 
-        if self.syncText['message'] != '':
-            Clock.schedule_once(partial(self.make_Cal, True))
-            Clock.schedule_once(self.manager.get_screen('Settings').load_settings)
     
     def sync_data(self, drive, parentID, MIMEtype, local_file_list, local_file_meta, drive_file_list, drive_file_meta):
         for file in local_file_list:
@@ -419,8 +433,8 @@ class CalendarWindow(MDScreen):
                 mood2 = call.choose_color(dateData[str(self.ids[my_id].date_id)]['mood2'])
                 call.ids[my_id].background_color = noColor
                 call.ids[my_id].doublemood = True
-                call.ids[my_id].colorset = (mood1[0],mood1[1],mood1[2],mood1[3]-.2)
-                call.ids[my_id].colorset2 = (mood2[0],mood2[1],mood2[2],mood1[3]-.2)
+                call.ids[my_id].colorset = (mood1[0],mood1[1],mood1[2],mood1[3])
+                call.ids[my_id].colorset2 = (mood2[0],mood2[1],mood2[2],mood1[3])
             else:
                 call.ids[my_id].background_color = call.choose_color(dateData[str(self.ids[my_id].date_id)]['mood'])
         else: 
@@ -729,7 +743,7 @@ class DayWindow(MDScreen):
     def choose_day_pict(self):
         
         if platform == 'android':
-            self.chooser = Chooser(self.choose_file)
+            self.chooser = Chooser(self.choose_image)
             self.chooser.choose_content()
 
         else:
