@@ -24,8 +24,7 @@ from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
 from plyer import filechooser
 
-#TODO: check what is happening in sync in mobile / 
-# po úplně novém stažení mi to neupdatlo kalendář, - neudělá ani v počítači - nevolám překreslení? AŽ PO restartu app (dokonce ne ani po reloadu kalendáře)
+
 
 #nestáhlo to bg picture - stáhne ho to, ale neprojeví - nejprve check, jestli je něco ve složce a pak to zapsat ?
 #asi nejprve zmrší settings a pak už to nezvládá - není potřeba si zapisovat - alg - check cesty a když není tak default
@@ -568,44 +567,44 @@ class DayWindow(MDScreen):
         self.dateData = self.manager.get_screen('Calendar').pass_data(self.date_id)
         call = self.manager.get_screen('Calendar')
         dateKey = str(date_id)
-        daySetting = self.manager.current_screen
-        daySetting.current_date = format_date(self.date_id,"full", locale='cs_CZ').capitalize()
-        #daySetting.ids.terrible.background_color = terribleColor
-        daySetting.ids.bad.background_color = badColor
-        daySetting.ids.average.background_color = averageColor
-        daySetting.ids.good.background_color = goodColor
-        daySetting.ids.super.background_color = superColor
-        daySetting.dateData[dateKey] = daySetting.dateData.setdefault(dateKey, {})
-        daySetting.dateData[dateKey] = daySetting.dateData.setdefault(dateKey, self.set_default_values(daySetting.dateData[dateKey]))
-        try: 
-            if daySetting.dateData[dateKey]['health']:
-                daySetting.ids.health.value = daySetting.dateData[dateKey]['health']
-                daySetting.ids.healthLabelValue.questionMark = False
-            else:
-                daySetting.ids.health.value = 5
-                daySetting.ids.healthLabelValue.questionMark = True
-        except KeyError:
-            daySetting.ids.health.value = 5
 
-        daySetting.ids.doubleMoodCheck.active = daySetting.dateData[dateKey]['doubleMood']
-        daySetting.ids.question.bg1 = call.choose_color(daySetting.dateData[dateKey]['mood'] )
-        if daySetting.ids.doubleMoodCheck.active == True:
-            daySetting.ids.question.bg2 = call.choose_color(daySetting.dateData[dateKey]['mood2'] )
+        self.current_date = format_date(self.date_id,"full", locale='cs_CZ').capitalize()
+        #self.ids.terrible.background_color = terribleColor
+        self.ids.bad.background_color = badColor
+        self.ids.average.background_color = averageColor
+        self.ids.good.background_color = goodColor
+        self.ids.super.background_color = superColor
+        self.dateData[dateKey] = self.dateData.setdefault(dateKey, {})
+        self.dateData[dateKey] = self.dateData.setdefault(dateKey, self.set_default_values(self.dateData[dateKey]))
+        try: 
+            if self.dateData[dateKey]['health']:
+                self.ids.health.value = self.dateData[dateKey]['health']
+                self.ids.healthLabelValue.questionMark = False
+            else:
+                self.ids.health.value = 5
+                self.ids.healthLabelValue.questionMark = True
+        except KeyError:
+            self.ids.health.value = 5
+
+        self.ids.doubleMoodCheck.active = self.dateData[dateKey]['doubleMood']
+        self.ids.question.bg1 = call.choose_color(self.dateData[dateKey]['mood'] )
+        if self.ids.doubleMoodCheck.active == True:
+            self.ids.question.bg2 = call.choose_color(self.dateData[dateKey]['mood2'] )
         else:
-            daySetting.ids.question.bg2 = call.choose_color(daySetting.dateData[dateKey]['mood'] )
+            self.ids.question.bg2 = call.choose_color(self.dateData[dateKey]['mood'] )
         
-        daySetting.ids.comment.text = daySetting.dateData[dateKey]['comment']
-        daySetting.ids.healthComment.text = daySetting.dateData[dateKey]['healthComment']
+        self.ids.comment.text = self.dateData[dateKey]['comment']
+        self.ids.healthComment.text = self.dateData[dateKey]['healthComment']
         
         with self.ids.dayImage.canvas.after:
             self.ids.dayImage.canvas.after.clear()
 
-        if daySetting.dateData[dateKey]['dayImage'] != '':
-            daySetting.ids.dayImage.image_source = daySetting.dateData[dateKey]['dayImage']
-            daySetting.ids.dayImage.color = [1,1,1,1]
+        if self.dateData[dateKey]['dayImage'] != '':
+            self.ids.dayImage.image_source = self.dateData[dateKey]['dayImage']
+            self.ids.dayImage.color = [1,1,1,1]
         else:
-            daySetting.ids.dayImage.image_source = self.manager.get_screen('Settings').settings['bgPicture']
-            daySetting.ids.dayImage.color = [.6,.6,.6,.6]
+            self.ids.dayImage.image_source = self.manager.get_screen('Settings').settings[self.and_or_win('bgPicture')]
+            self.ids.dayImage.color = [.6,.6,.6,.6]
             Clock.schedule_once(self.add_text_on_image)
         
 
@@ -739,6 +738,17 @@ class DayWindow(MDScreen):
         self.ids.question.bg1 = clearColor
         self.ids.question.bg2 = clearColor
         call.save_data(dateData,self.date_id)
+    
+    def and_or_win(self, key):
+        
+        '''function to find correct path for key in dictionary'''
+
+        if platform == 'android':
+            result = 'and_'+key
+        else:
+            result = 'win_'+key
+
+        return result
 
     def choose_day_pict(self):
         
@@ -887,6 +897,8 @@ class SettingsWindow(MDScreen):
         
 
     def choose_file(self, opened):
+
+        daySetting = self.manager.get_screen('DayMood')
         
         try:
 
@@ -900,7 +912,7 @@ class SettingsWindow(MDScreen):
             try:
                 
                 if os.path.isfile(path): #because it can be directory
-                    oldpath = self.settings['bgPicture']
+                    oldpath = self.settings[daySetting.and_or_win('bgPicture')]
                     
                     if os.path.exists(oldpath):
                         os.remove(oldpath)
@@ -911,7 +923,7 @@ class SettingsWindow(MDScreen):
                     shutil.copy(path, destination)
 
                     self.bgsource = destination
-                    self.settings['bgPicture'] = destination
+                    self.settings[daySetting.and_or_win('bgPicture')] = destination
                     self.imageRefresh()
 
             except PermissionError:
@@ -930,9 +942,12 @@ class SettingsWindow(MDScreen):
         #self.ids.bgImage.reload()
 
     def set_default_settings(self, clocktime=0):
-        self.settings.setdefault('bgPicture', 'pict/default.jpg')
+        self.settings.setdefault('and_bgPicture', 'pict/default.jpg')
+        self.settings.setdefault('win_bgPicture', 'pict/default.jpg')
 
     def load_settings(self, clocktime=0):
+
+        daySetting = self.manager.get_screen('DayMood')
         
         userdata = self.manager.get_screen('Calendar').get_userdata()
         filename = f'{userdata}/settings.json'
@@ -949,7 +964,7 @@ class SettingsWindow(MDScreen):
                 json.dump(self.settings, file, indent = 4) 
 
         for screen in self.manager.screens:
-            screen.bgsource = self.settings['bgPicture']
+            screen.bgsource = self.settings[daySetting.and_or_win('bgPicture')]
 
         #screen= self.manager.current_screen
 
