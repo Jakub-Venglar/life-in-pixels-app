@@ -832,7 +832,9 @@ class DayWindow(MDScreen):
     #    #self.ids.dayImage.image_source = os.path.join(dest_folder, newFilename)
 #
     #    print('RELOADED')
-        
+    
+    op_fi = False
+
     def on_touch_down(self, touch):
 
         if self.ids.dayImage.collide_point(*touch.pos):
@@ -941,8 +943,7 @@ class SettingsWindow(MDScreen):
                     destination = os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), 'BG', newFilename)
                     shutil.copy2(path, destination)
                     
-                    self.settings[daySetting.and_or_win('bgPicture')] = destination
-                    print('SETTINGS SET')
+                    self.settings['bgPicture'] = newFilename
                     Clock.schedule_once(partial(self.insert_image, destination))
 
             except Exception as e:
@@ -952,8 +953,9 @@ class SettingsWindow(MDScreen):
             print(e)
 
     def insert_image(self, destination, clocktime=0):
-        self.bgsource = destination
-        self.imageRefresh()
+        for screen in self.manager.screens:
+            screen.bgsource = destination
+            self.imageRefresh()
 
     def imageRefresh(self, clocktime=0):
         for screen in self.manager.screens:
@@ -963,8 +965,7 @@ class SettingsWindow(MDScreen):
 
 
     def set_default_settings(self, clocktime=0):
-        self.settings.setdefault('and_bgPicture', 'pict/default.jpg')
-        self.settings.setdefault('win_bgPicture', 'pict/default.jpg')
+        self.settings.setdefault('bgPicture', 'default.jpg')
 
     def load_settings(self, clocktime=0):
 
@@ -985,7 +986,11 @@ class SettingsWindow(MDScreen):
                 json.dump(self.settings, file, indent = 4) 
 
         for screen in self.manager.screens:
-            screen.bgsource = self.settings[daySetting.and_or_win('bgPicture')]
+            if self.settings['bgPicture'] == 'default.jpg':
+                screen.bgsource = 'pict/default.jpg'
+            else:
+                destination = os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), 'BG', self.settings['bgPicture'])
+                screen.bgsource = destination
 
         print('Vsechna aktualni nastaveni: ' + str(self.settings))
 
