@@ -20,13 +20,14 @@ from kivy.clock import Clock
 from functools import partial
 from sortedcontainers import SortedDict
 from kivy.graphics import Rectangle, Color, Line
-from babel.dates import format_date
+from babel.dates import format_date, format_datetime
 from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
 from plyer import filechooser
 
 
-#TODO: handling pict of the day, sync and load it - zvlášť
+#TODO: pop up kde si můžu vybrat, jak s nimi naložím (co smazat, co nechat)
+# handling pict of the day, sync and load it - zvlášť
 
 #TODO: upravit velikosti okna, viz screeny v mobilu
 
@@ -254,20 +255,23 @@ class CalendarWindow(MDScreen):
         # Create local webserver and auto handles authentication.
         gauth.LocalWebserverAuth()
         return gauth
+
+    def sync_day_pictures():
+        pass
     
     def sync_data_thread(self):
         toast('Provádím synchronizaci')
         Clock.schedule_once(self.thread_handle,.5)
     
-    syncText = {}
+    syncText = {'caldata': '', 'settings': ''}
     noInternet = 'Nemůžu se připojit k internetu. \n Zapni wifi nebo data.'
-    
+ 
     def thread_handle(self, clocktime=0):
         t = Thread(target=self.sync_data_prep)
         t.start()
         t.join()
 
-        text = self.syncText['message']
+        text = self.syncText['caldata'] + '\n' + self.syncText['settings']
 
         Clock.schedule_once(partial(self.make_Cal, True))
         Clock.schedule_once(self.manager.get_screen('Settings').load_settings)
@@ -276,14 +280,14 @@ class CalendarWindow(MDScreen):
         #if text != '':
             
 
-        if text == '':
+        if text == '\n':
             toast('Nic nebylo potřeba synchronizovat')
         elif text == self.noInternet:
             toast(self.noInternet)
         else:
             toast('Synchronizace dokončena \nDetaily najdeš v nastavení')
         
-        self.manager.get_screen('Settings').ids.sync_info.text = text
+        self.manager.get_screen('Settings').ids.sync_info.text = 'Naposledy synchronizovano: ' + format_datetime(datetime.datetime.now(),"d.L. yyyy -- HH:mm:ss ", locale='cs_CZ') + '\n' + text
 
     def sync_data_prep(self,clocktime=0):
         try:
@@ -300,7 +304,7 @@ class CalendarWindow(MDScreen):
 
             MIMEtype = 'application/json'
         
-            self.sync_data(drive, parentID, MIMEtype, local_file_list,local_file_meta,drive_file_list,drive_file_meta)
+            self.sync_data(drive, parentID, MIMEtype, local_file_list,local_file_meta,drive_file_list,drive_file_meta,'caldata')
 
             parentID = '1vZCpinF7V4NT8AiDA3Hbwe3T2DRAvlBH'
             
@@ -312,7 +316,7 @@ class CalendarWindow(MDScreen):
 
             MIMEtype = 'image/*'
 
-            self.sync_data(drive, parentID, MIMEtype, local_file_list,local_file_meta,drive_file_list,drive_file_meta)
+            self.sync_data(drive, parentID, MIMEtype, local_file_list,local_file_meta,drive_file_list,drive_file_meta,'settings')
 
         except httplib2.error.ServerNotFoundError:
             self.syncText['message'] = self.noInternet
@@ -321,7 +325,7 @@ class CalendarWindow(MDScreen):
         os.chdir(self.get_self_directory())
 
     
-    def sync_data(self, drive, parentID, MIMEtype, local_file_list, local_file_meta, drive_file_list, drive_file_meta):
+    def sync_data(self, drive, parentID, MIMEtype, local_file_list, local_file_meta, drive_file_list, drive_file_meta, what_syncing):
         for file in local_file_list:
                 with open(file,'rb') as f:
                     data = f.read()
@@ -375,7 +379,7 @@ class CalendarWindow(MDScreen):
                     new_file.GetContentFile(filename)
                     syncMessage = syncMessage + '\n' + filename + ' - soubor na drive neexistoval na lokálním disku - staženo' + '\n'
 
-            self.syncText['message'] = syncMessage
+            self.syncText[what_syncing] = syncMessage
                 
         except Exception as e: print(e)
 
@@ -427,7 +431,7 @@ class CalendarWindow(MDScreen):
                 # if mood for date already set then render it, otherwise make field clear
                 Clock.schedule_once(partial(self.colorize,id,self.ids[id].date_id))
         
-        self.ids['delete'].date_id = self.ids['3-3'].date_id #set id for deleting whole calendar
+        self.ids['syncPictures'].date_id = self.ids['3-3'].date_id #set id for deleting whole calendar
 
     def colorize(self,my_id,date_id,clocktime=0):
         call = self.manager.get_screen('Calendar')

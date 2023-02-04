@@ -312,7 +312,7 @@ ScreenManager:
         Label:
             id: sync_info
             text: ''
-            font_size: 15
+            font_size: 20
             valign: 'top'
             halign: 'center'
             size_hint_y: .6
@@ -608,13 +608,6 @@ ScreenManager:
             text: 'Vrať mě do současnosti'
             on_release: root.present_click()
         Button:
-            id: delete
-            date_id: 
-            size_hint:  (1,.1)
-            pos_hint: {'center_x': .5}
-            text: 'Vymaž celý kalendář'
-            on_release: root.delete_data(self.date_id)
-        Button:
             id: activities
             size_hint:  (1,.1)
             pos_hint: {'center_x': .5}
@@ -630,6 +623,15 @@ ScreenManager:
             on_release: 
                 root.manager.transition.direction = 'left'
                 root.manager.current = 'Settings'
+        Button:
+            id: syncPictures
+            date_id: 
+            size_hint:  (1,.1)
+            pos_hint: {'center_x': .5}
+            text: 'Synchronizuj obrázky pro celý rok'
+            on_release: root.sync_day_pictures()
+            #root.delete_data(self.date_id)
+
         Button:
             id: backup
             size_hint:  (1,.1)
