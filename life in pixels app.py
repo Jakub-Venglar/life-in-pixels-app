@@ -25,12 +25,6 @@ from pydrive2.drive import GoogleDrive
 from plyer import filechooser
 
 
-
-#nestáhlo to bg picture - stáhne ho to, ale neprojeví - nejprve check, jestli je něco ve složce a pak to zapsat ?
-#asi nejprve zmrší settings a pak už to nezvládá - není potřeba si zapisovat - alg - check cesty a když není tak default
-#mobil nezvládne ani výběr bg picture najednou - asi souvisí viz výše? - možná s pomalejším kopírováním?
-
-
 #TODO: lepsi ukladani / done, jeste do stop a close (if on day win screen)
 #TODO: možnost smazat obrázek / pres long press
 #TODO: lepší info po syncu (zvlášť - takhle se nahraje json ale settings se nezmění a hlásí že není potřeba sync (ale provede))
@@ -462,13 +456,14 @@ class CalendarWindow(MDScreen):
             try:
                 if dateData[dateKey]['dayImage'] != '':
                     Rectangle(source = dateData[dateKey]['dayImage'], size=(calButtonID.width/3.2,calButtonID.width/3.2), pos=(calButtonID.right-calButtonID.width/3.2,calButtonID.top-calButtonID.width/3.2))
+                    call.ids[my_id].canvas.ask_update()
             except KeyError:
                 pass
             Rectangle(size=labelIDc.texture_size, pos=(calButtonID.right-labelIDc.texture_size[0], calButtonID.y), texture=labelIDc.texture)
             # health label with heart icon
             Rectangle(size=labelIDd.texture_size, pos=(calButtonID.x+calButtonID.width/3.4,calButtonID.y), texture=labelIDd.texture)
             if labelIDd.texture_size[0] > 0:
-                path = os.path.join(self.get_self_directory(), 'pict/', 'heart.png')
+                path = os.path.join(self.get_self_directory(), 'pict', 'heart.png')
                 Rectangle(source = path, size=(calButtonID.width/4.5,calButtonID.width/4.5), pos=(calButtonID.x+calButtonID.width/20,calButtonID.y+calButtonID.height/15))
 
     def move_month(self,direction):
@@ -779,9 +774,10 @@ class DayWindow(MDScreen):
             try:
                 
                 if os.path.isfile(path): #because it can be directory
-                    oldpath = dateData[dateKey]['dayImage']
-                    if os.path.exists(oldpath):
-                        os.remove(oldpath)
+                    
+                    #oldpath = dateData[dateKey]['dayImage']
+                    #if os.path.exists(oldpath):
+                    #    os.remove(oldpath)
 
                     newFilename = dateKey + os.path.splitext(path)[1]
 
@@ -799,7 +795,7 @@ class DayWindow(MDScreen):
                     call.save_data(dateData,self.date_id)
                     #print('ratio ' + str(self.ids.dayImage.image_ratio)) #landscape is more than 1
 
-                    #self.ids.dayImage.reload()
+                    self.ids.dayImage.reload()
 
             except PermissionError:
                 print('CHYBA PERMISSION error')
@@ -919,16 +915,24 @@ class SettingsWindow(MDScreen):
 
                     destination = os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), 'BG', newFilename)
                     shutil.copy(path, destination)
-
-                    self.bgsource = destination
+                    print('COPIED')
                     self.settings[daySetting.and_or_win('bgPicture')] = destination
-                    Clock.schedule_once(self.imageRefresh)
+                    print('SETTINGS SET')
+                    Clock.schedule_once(partial(self.insert_image, destination))
 
             except Exception as e:
                 print(e)
 
         except Exception as e:
             print(e)
+
+    def insert_image(self, destination, clocktime=0):
+        self.bgsource = destination
+        print('SELF BGSOURCE SET')
+        for ID in self.ids:
+            if 'bgImage' in ID:
+                self.ids[ID].reload()
+        print('REFRESH DONE')
 
     def imageRefresh(self, clocktime=0):
         for screen in self.manager.screens:
@@ -963,8 +967,6 @@ class SettingsWindow(MDScreen):
             screen.bgsource = self.settings[daySetting.and_or_win('bgPicture')]
         
         Clock.schedule_once(self.imageRefresh)
-
-        #screen= self.manager.current_screen
 
         print('Vsechna aktualni nastaveni: ' + str(self.settings))
 
