@@ -26,24 +26,21 @@ from pydrive2.drive import GoogleDrive
 from plyer import filechooser
 
 
+#TODO: handling pict of the day, sync and load it - zvlášť
+
 #TODO: 
 
 # settings bg image je znamy / nakodovat tvrdeji - vyresi i problem syncu
+
 # apk je potřeba dělat poměřování pro sync jinak (bo metadata nebudou sedet)
 #asi zápisem do settings nebo speciálního file, který se stáhne automaticky a porovná se
 #pak už stačí stáhnout/uploadnout jen soubory co mají jiny checksum
 
-
-# kdyz smazu den / nesmaze se obrazek (fuyicky) pridat i moznost smazat obr
-
-
-# lepsi ukladani / done, jeste do stop a close (if on day win screen)
-#TODO: možnost smazat obrázek / pres long press
 #TODO: lepší info po syncu (zvlášť - takhle se nahraje json ale settings se nezmění a hlásí že není potřeba sync (ale provede))
 
 #TODO: better view of day color
 #TODO bg image / choose if mine or random +/- 1 month
-#TODO: handling pict of the day, sync and load it - zvlášť
+
 #TODO: see text comment on long press in calendar
 #TODO: make menu screen
 #TODO: create graph view for healt
@@ -840,23 +837,27 @@ class DayWindow(MDScreen):
 
         if self.ids.dayImage.collide_point(*touch.pos):
             
-            self.open_filemanager()           
-        
+            self.event = Clock.schedule_once(self.delete_image, 0.3)           
+            self.op_fi = True
+
         return super().on_touch_down(touch)
 
-
-        ''' def schedule_delete_day(self):
-        self.event = Clock.schedule_once(self.delete_day,0.3)
-        self.close = True
-
-    def unschedule_delete(self):
+    def on_touch_up(self, touch):
+        
         self.event.cancel()
-        if self.close == True:
-            self.close_day(self.date_id)
+        if self.op_fi == True:
+            self.open_filemanager()
 
-    def delete_day(self, clocktime=0):
-        self.close = False
-        open_confirmation_popup(self, text = 'Chceš vymazat celý den?', function_to_pass=self.delete_day_func)'''
+    def delete_image(self, clocktime=0):
+        self.op_fi = False
+        open_confirmation_popup(self, text = 'Chceš smazat obrázek?', function_to_pass=self.delete_image_func)
+
+    def delete_image_func(self, obj):
+        dateKey = str(self.date_id)
+        self.dateData[dateKey]['dayImage'] = ''
+        self.manager.get_screen('Calendar').save_data(self.dateData,self.date_id)
+        self.load_day(self.date_id)
+
 
     def on_touch_move(self, touch):
         print(touch.ox - touch.x)
