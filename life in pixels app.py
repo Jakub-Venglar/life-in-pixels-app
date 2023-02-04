@@ -30,7 +30,7 @@ from plyer import filechooser
 
 #TODO: 
 
-# settings bg image je znamy / nakodovat tvrdeji - vyresi i problem syncu
+# pokud najde bg image zapis ho do settings
 
 # apk je potřeba dělat poměřování pro sync jinak (bo metadata nebudou sedet)
 #asi zápisem do settings nebo speciálního file, který se stáhne automaticky a porovná se
@@ -992,12 +992,16 @@ class SettingsWindow(MDScreen):
             
             BG_path = os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), 'BG')
             bg_check = os.listdir(BG_path)
-            destination = os.path.join(BG_path, bg_check[0])
-        
-            if os.path.isfile(destination):
+            print(bg_check)
+
+            try:
+
+                destination = os.path.join(BG_path, bg_check[0])
+
                 for screen in self.manager.screens:
                     screen.bgsource = destination
-            else:
+
+            except IndexError:
                 for screen in self.manager.screens:
                     screen.bgsource = 'pict/default.jpg'
         
