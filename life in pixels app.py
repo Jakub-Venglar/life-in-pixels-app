@@ -12,6 +12,7 @@ from kivy.uix.label import Label
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.core.window import Window
+from kivy.core.image import Image
 from kivy.config import Config
 from kivy import platform
 from kivy.lang import Builder
@@ -25,12 +26,15 @@ from pydrive2.drive import GoogleDrive
 from plyer import filechooser
 
 
-#TODO: nějak podealovat s \\ pro android
-# 
-# 
-# dost možná shutil copy 2 bude fungovat - apk je potřeba dělat poměřování pro sync jinak
+#TODO: 
+
+# settings bg image je znamy / nakodovat tvrdeji - vyresi i problem syncu
+# apk je potřeba dělat poměřování pro sync jinak (bo metadata nebudou sedet)
 #asi zápisem do settings nebo speciálního file, který se stáhne automaticky a porovná se
 #pak už stačí stáhnout/uploadnout jen soubory co mají jiny checksum
+
+
+# kdyz smazu den / nesmaze se obrazek (fuyicky) pridat i moznost smazat obr
 
 
 # lepsi ukladani / done, jeste do stop a close (if on day win screen)
@@ -254,6 +258,7 @@ class CalendarWindow(MDScreen):
 
         Clock.schedule_once(partial(self.make_Cal, True))
         Clock.schedule_once(self.manager.get_screen('Settings').load_settings)
+        Clock.schedule_once(self.manager.get_screen('Settings').imageRefresh)
 
         #if text != '':
             
@@ -440,9 +445,9 @@ class CalendarWindow(MDScreen):
                 call.ids[my_id].background_color = call.choose_color(dateData[str(self.ids[my_id].date_id)]['mood'])
         else: 
             call.ids[my_id].background_color = clearColor
-        Clock.schedule_once(partial(self.create_labels,my_id,dateData,dateKey))
+        Clock.schedule_once(partial(self.create_labels,my_id,dateData,dateKey,date_id))
         
-    def create_labels(self,my_id,dateData, dateKey, clocktime=0):
+    def create_labels(self,my_id, dateData, dateKey, date_id, clocktime=0):
         '''creates labels on canvas of calendar buttons with defined symbols'''
         call = self.manager.get_screen('Calendar')
         calLabels = self.manager.get_screen('CalLabels')
@@ -463,10 +468,14 @@ class CalendarWindow(MDScreen):
             # add small image if is present as Day image
             try:
                 if dateData[dateKey]['dayImage'] != '':
-                    Rectangle(source = dateData[dateKey]['dayImage'], size=(calButtonID.width/3.2,calButtonID.width/3.2), pos=(calButtonID.right-calButtonID.width/3.2,calButtonID.top-calButtonID.width/3.2))
+                    img_source = os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), str(date_id.year),dateData[dateKey]['dayImage'])
+                    img = Image(img_source) # because direct source is cached
+                    img.remove_from_cache()
+                    Rectangle(texture=img.texture, size=(calButtonID.width/3.2,calButtonID.width/3.2), pos=(calButtonID.right-calButtonID.width/3.2,calButtonID.top-calButtonID.width/3.2))
                     call.ids[my_id].canvas.ask_update()
             except KeyError:
                 pass
+
             Rectangle(size=labelIDc.texture_size, pos=(calButtonID.right-labelIDc.texture_size[0], calButtonID.y), texture=labelIDc.texture)
             # health label with heart icon
             Rectangle(size=labelIDd.texture_size, pos=(calButtonID.x+calButtonID.width/3.4,calButtonID.y), texture=labelIDd.texture)
@@ -560,13 +569,12 @@ class DayWindow(MDScreen):
         Window.bind(on_keyboard=self.key_click)
         self.ids.comment.bind(focus=self.focus_change)
         self.ids.healthComment.bind(focus=self.focus_change)
-        self.ids.comment.focus = True
 
     def on_pre_leave(self):
         self.manager.get_screen('Calendar').save_data(self.dateData,self.date_id)
         Window.unbind(on_keyboard=self.key_click)
     
-    def load_day(self, date_id):
+    def load_day(self, date_id, clocktime=0):
         self.dateData = self.manager.get_screen('Calendar').pass_data(self.date_id)
         call = self.manager.get_screen('Calendar')
         dateKey = str(date_id)
@@ -603,8 +611,10 @@ class DayWindow(MDScreen):
             self.ids.dayImage.canvas.after.clear()
 
         if self.dateData[dateKey]['dayImage'] != '':
-            self.ids.dayImage.image_source = self.dateData[dateKey]['dayImage']
+            self.ids.dayImage.image_source = os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), str(self.date_id.year),self.dateData[dateKey]['dayImage'])
             self.ids.dayImage.color = [1,1,1,1]
+            self.ids.dayImage.reload()
+
         else:
             self.ids.dayImage.image_source = self.manager.get_screen('Settings').settings[self.and_or_win('bgPicture')]
             self.ids.dayImage.color = [.6,.6,.6,.6]
@@ -614,6 +624,7 @@ class DayWindow(MDScreen):
     def add_text_on_image(self, clocktime=0):
 
         with self.ids.dayImage.canvas.after:
+
             textonImage = self.manager.get_screen('CalLabels').ids.textOnImage
             Color(rgba = (.95,.95,.95,.95))
             Rectangle( size = textonImage.texture_size, pos=(self.ids.dayImage.center_x-(textonImage.texture_size[0]/2), self.ids.dayImage.center_y), texture=self.manager.get_screen('CalLabels').ids.textOnImage.texture)
@@ -733,14 +744,8 @@ class DayWindow(MDScreen):
         dateData = call.pass_data(self.date_id)
         dateKey = str(self.date_id)
         dateData[dateKey] = emptyDayData.copy()
-        self.ids.comment.text= ''
-        self.ids.healthComment.text = ''
-        self.ids.health.value = 5
-        self.ids.healthLabelValue.questionMark = True
-        self.ids.doubleMoodCheck.active = False
-        self.ids.question.bg1 = clearColor
-        self.ids.question.bg2 = clearColor
         call.save_data(dateData,self.date_id)
+        self.load_day(self.date_id)
     
     def and_or_win(self, key):
         
@@ -753,18 +758,18 @@ class DayWindow(MDScreen):
 
         return result
 
-    def choose_day_pict(self):
+    def open_filemanager(self):
         
         if platform == 'android':
-            self.chooser = Chooser(self.choose_image)
+            self.chooser = Chooser(self.choose_day_image)
             self.chooser.choose_content()
 
         else:
             #openPath = '/'
-            filechooser.open_file(path=self.manager.get_screen('Calendar').get_self_directory(), on_selection=self.choose_image)
+            filechooser.open_file(path=self.manager.get_screen('Calendar').get_self_directory(), on_selection=self.choose_day_image)
         
 
-    def choose_image(self, opened):
+    def choose_day_image(self, opened):
         
         call = self.manager.get_screen('Calendar')
         dateData = call.pass_data(self.date_id)
@@ -775,6 +780,9 @@ class DayWindow(MDScreen):
             if platform == 'android':
                 ss = SharedStorage()
                 path = ss.copy_from_shared(opened[0])
+
+                print('CESTA VYBRANEHO')
+                print(path)
                 
             else:
                 path = opened[0]
@@ -793,36 +801,46 @@ class DayWindow(MDScreen):
                     try:
                         os.makedirs(dest_folder)
                     except FileExistsError:
+                        print('uz existuje')
                         pass
+                    
+                    print('DIRECTORY SET')
 
                     destination = os.path.join(dest_folder, newFilename)
+                    
+                    print('DESTINATION')
+                    print(destination)
+                    
                     shutil.copy2(path, destination)
+                    
+                    print('COPIED')
 
-                    self.ids.dayImage.image_source = destination
-                    dateData[dateKey]['dayImage'] = destination
+                    dateData[dateKey]['dayImage'] = newFilename
                     call.save_data(dateData,self.date_id)
-                    #print('ratio ' + str(self.ids.dayImage.image_ratio)) #landscape is more than 1
 
-                    self.ids.dayImage.reload()
+                    print('SAVED')
+
+                    #print('ratio ' + str(self.ids.dayImage.image_ratio)) #landscape is more than 1
+                    
+                    Clock.schedule_once(partial(self.load_day, self.date_id))
+                    #Clock.schedule_once(partial(self.insert_refresh_image, dest_folder, newFilename))
 
             except Exception as e:
                 print(e)
 
         except Exception as e:
             print(e)
-
-    def imageRefresh(self):
-        for screen in self.manager.screens:
-            for ID in screen.ids:
-                if 'bgImage' in ID:
-                    screen.ids[ID].reload()
+    
+    #def insert_refresh_image(self, dest_folder, newFilename, clocktime=0):
+    #    #self.ids.dayImage.image_source = os.path.join(dest_folder, newFilename)
+#
+    #    print('RELOADED')
         
-
     def on_touch_down(self, touch):
 
         if self.ids.dayImage.collide_point(*touch.pos):
             
-            self.choose_day_pict()           
+            self.open_filemanager()           
         
         return super().on_touch_down(touch)
 
@@ -892,15 +910,15 @@ class SettingsWindow(MDScreen):
 
     def open_filemanager(self):
         if platform == 'android':
-            self.chooser = Chooser(self.choose_file)
+            self.chooser = Chooser(self.choose_BG_img)
             self.chooser.choose_content()
 
         else:
             #openPath = '/'
-            filechooser.open_file(path=self.manager.get_screen('Calendar').get_self_directory(), on_selection=self.choose_file)
+            filechooser.open_file(path=self.manager.get_screen('Calendar').get_self_directory(), on_selection=self.choose_BG_img)
         
 
-    def choose_file(self, opened):
+    def choose_BG_img(self, opened):
 
         daySetting = self.manager.get_screen('DayMood')
         
@@ -909,8 +927,6 @@ class SettingsWindow(MDScreen):
             if platform == 'android':
                 ss = SharedStorage()
                 path = ss.copy_from_shared(opened[0])
-                print('CESTA VYBRANEHO')
-                print(path)
                 
             else:
                 path = opened[0]
@@ -923,7 +939,7 @@ class SettingsWindow(MDScreen):
 
                     destination = os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), 'BG', newFilename)
                     shutil.copy2(path, destination)
-                    print('COPIED')
+                    
                     self.settings[daySetting.and_or_win('bgPicture')] = destination
                     print('SETTINGS SET')
                     Clock.schedule_once(partial(self.insert_image, destination))
@@ -936,11 +952,7 @@ class SettingsWindow(MDScreen):
 
     def insert_image(self, destination, clocktime=0):
         self.bgsource = destination
-        print('SELF BGSOURCE SET')
-        for ID in self.ids:
-            if 'bgImage' in ID:
-                self.ids[ID].reload()
-        print('REFRESH DONE')
+        self.imageRefresh()
 
     def imageRefresh(self, clocktime=0):
         for screen in self.manager.screens:
@@ -950,8 +962,8 @@ class SettingsWindow(MDScreen):
 
 
     def set_default_settings(self, clocktime=0):
-        self.settings.setdefault('and_bgPicture', 'pict\\default.jpg')
-        self.settings.setdefault('win_bgPicture', 'pict\\default.jpg')
+        self.settings.setdefault('and_bgPicture', 'pict/default.jpg')
+        self.settings.setdefault('win_bgPicture', 'pict/default.jpg')
 
     def load_settings(self, clocktime=0):
 
@@ -973,8 +985,6 @@ class SettingsWindow(MDScreen):
 
         for screen in self.manager.screens:
             screen.bgsource = self.settings[daySetting.and_or_win('bgPicture')]
-        
-        Clock.schedule_once(self.imageRefresh)
 
         print('Vsechna aktualni nastaveni: ' + str(self.settings))
 
