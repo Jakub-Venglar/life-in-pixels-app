@@ -297,18 +297,54 @@ ScreenManager:
         #size_hint: 1,1
         orientation: 'vertical'
         Label:
-            text: 'Aktuální obrázek'
+            text: 'Proběhlé synchronizace:'
             font_size: 30
-            size_hint_y: None
-            height: 50
+            size_hint: 1, None
+            valign: 'top'
+            halign: 'center'
+            size: self.size[0], self.texture_size[1]+20
             canvas.before:
                 Color:
                     rgba: root.bg
                 Rectangle:
                     size: self.size
                     pos:self.pos
+        Label:
+            id: sync_info
+            text: ''
+            font_size: 15
+            valign: 'top'
+            halign: 'center'
+            size_hint_y: .6
+            text_size: self.size
+            padding: 15, 15
+            canvas.before:
+                Color:
+                    rgba: root.bg
+                Rectangle:
+                    size: self.size
+                    pos:self.pos
+        Label:
+            text: 'Aktuální obrázek'
+            font_size: 30
+            valign: 'middle'
+            halign: 'center'
+            size_hint_y: .2
+            canvas.before:
+                Color:
+                    rgba: root.bg
+                Rectangle:
+                    size: self.size
+                    pos:self.pos
+            canvas:
+                Color:
+                    rgba: 1,1,1,1
+                Rectangle:
+                    size: self.width, 4
+                    pos:self.x, self.top
         Image:
             id: bgImage2
+            size_hint_y: .75
             canvas.before:
                 Color:
                     rgba: root.bg

@@ -28,7 +28,7 @@ from plyer import filechooser
 
 #TODO: handling pict of the day, sync and load it - zvlášť
 
-#TODO: 
+#TODO: upravit velikosti okna, viz screeny v mobilu
 
 # pokud najde bg image zapis ho do settings
 
@@ -36,7 +36,8 @@ from plyer import filechooser
 #asi zápisem do settings nebo speciálního file, který se stáhne automaticky a porovná se
 #pak už stačí stáhnout/uploadnout jen soubory co mají jiny checksum
 
-#TODO: lepší info po syncu (zvlášť - takhle se nahraje json ale settings se nezmění a hlásí že není potřeba sync (ale provede))
+#TODO: zapsat nekam posledni sync
+# lepší info po syncu (zvlášť - takhle se nahraje json ale settings se nezmění a hlásí že není potřeba sync (ale provede))
 
 #TODO: better view of day color
 #TODO bg image / choose if mine or random +/- 1 month
@@ -245,6 +246,7 @@ class CalendarWindow(MDScreen):
         Clock.schedule_once(self.thread_handle,.5)
     
     syncText = {}
+    noInternet = 'Nemůžu se připojit k internetu. \n Zapni wifi nebo data.'
     
     def thread_handle(self, clocktime=0):
         t = Thread(target=self.sync_data_prep)
@@ -262,8 +264,12 @@ class CalendarWindow(MDScreen):
 
         if text == '':
             toast('Nic nebylo potřeba synchronizovat')
+        elif text == self.noInternet:
+            toast(self.noInternet)
         else:
-            toast(text)
+            toast('Synchronizace dokončena \nDetaily najdeš v nastavení')
+        
+        self.manager.get_screen('Settings').ids.sync_info.text = text
 
     def sync_data_prep(self,clocktime=0):
         try:
@@ -295,7 +301,7 @@ class CalendarWindow(MDScreen):
             self.sync_data(drive, parentID, MIMEtype, local_file_list,local_file_meta,drive_file_list,drive_file_meta)
 
         except httplib2.error.ServerNotFoundError:
-            self.syncText['message'] = 'Nemůžu se připojit k internetu. \n Zapni wifi nebo data.'
+            self.syncText['message'] = self.noInternet
             #self.open_popup(title='Není připojení k internetu', text='Nemůžu se připojit k internetu. \n Zapni wifi nebo data.', button='Zavřít')
         
         os.chdir(self.get_self_directory())
@@ -613,7 +619,7 @@ class DayWindow(MDScreen):
             self.ids.dayImage.reload()
 
         else:
-            self.ids.dayImage.image_source = self.manager.get_screen('Settings').settings[self.and_or_win('bgPicture')]
+            self.ids.dayImage.image_source = self.bgsource
             self.ids.dayImage.color = [.6,.6,.6,.6]
             Clock.schedule_once(self.add_text_on_image)
         
@@ -846,8 +852,8 @@ class DayWindow(MDScreen):
 
     def on_touch_up(self, touch):
         
-        self.event.cancel()
         if self.op_fi == True:
+            self.event.cancel()
             self.open_filemanager()
 
     def delete_image(self, clocktime=0):
