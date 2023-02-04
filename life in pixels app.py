@@ -25,7 +25,15 @@ from pydrive2.drive import GoogleDrive
 from plyer import filechooser
 
 
-#TODO: lepsi ukladani / done, jeste do stop a close (if on day win screen)
+#TODO: nějak podealovat s \\ pro android
+# 
+# 
+# dost možná shutil copy 2 bude fungovat - apk je potřeba dělat poměřování pro sync jinak
+#asi zápisem do settings nebo speciálního file, který se stáhne automaticky a porovná se
+#pak už stačí stáhnout/uploadnout jen soubory co mají jiny checksum
+
+
+# lepsi ukladani / done, jeste do stop a close (if on day win screen)
 #TODO: možnost smazat obrázek / pres long press
 #TODO: lepší info po syncu (zvlášť - takhle se nahraje json ale settings se nezmění a hlásí že není potřeba sync (ale provede))
 
@@ -788,7 +796,7 @@ class DayWindow(MDScreen):
                         pass
 
                     destination = os.path.join(dest_folder, newFilename)
-                    shutil.copy(path, destination)
+                    shutil.copy2(path, destination)
 
                     self.ids.dayImage.image_source = destination
                     dateData[dateKey]['dayImage'] = destination
@@ -797,11 +805,11 @@ class DayWindow(MDScreen):
 
                     self.ids.dayImage.reload()
 
-            except PermissionError:
-                print('CHYBA PERMISSION error')
+            except Exception as e:
+                print(e)
 
-        except IndexError:
-            print('CHYBA INDEX error')
+        except Exception as e:
+            print(e)
 
     def imageRefresh(self):
         for screen in self.manager.screens:
@@ -914,7 +922,7 @@ class SettingsWindow(MDScreen):
                     newFilename = 'BG_' + os.path.splitext(path)[1]
 
                     destination = os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), 'BG', newFilename)
-                    shutil.copy(path, destination)
+                    shutil.copy2(path, destination)
                     print('COPIED')
                     self.settings[daySetting.and_or_win('bgPicture')] = destination
                     print('SETTINGS SET')
