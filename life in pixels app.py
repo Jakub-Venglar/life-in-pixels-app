@@ -985,11 +985,25 @@ class SettingsWindow(MDScreen):
                 file.write('')
                 json.dump(self.settings, file, indent = 4) 
 
-        for screen in self.manager.screens:
-            if self.settings['bgPicture'] == 'default.jpg':
-                screen.bgsource = 'pict/default.jpg'
+        # check if there is something set
+        #if not default? but if there is file, use it
+
+        if self.settings['bgPicture'] == 'default.jpg':
+            
+            BG_path = os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), 'BG')
+            bg_check = os.listdir(BG_path)
+            destination = os.path.join(BG_path, bg_check[0])
+        
+            if os.path.isfile(destination):
+                for screen in self.manager.screens:
+                    screen.bgsource = destination
             else:
-                destination = os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), 'BG', self.settings['bgPicture'])
+                for screen in self.manager.screens:
+                    screen.bgsource = 'pict/default.jpg'
+        
+        else:
+            destination = os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), 'BG', self.settings['bgPicture'])
+            for screen in self.manager.screens:
                 screen.bgsource = destination
 
         print('Vsechna aktualni nastaveni: ' + str(self.settings))
@@ -1073,9 +1087,6 @@ class LifePixels(MDApp):
 
     def stop(self):
         DayWin = self.root.get_screen('DayMood')
-        
-        print(DayWin)
-        print(self.root.current_screen)
 
         if self.root.current_screen == DayWin:
             self.root.get_screen('Calendar').save_data(DayWin.dateData,DayWin.date_id)
