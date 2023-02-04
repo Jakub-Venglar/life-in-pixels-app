@@ -1055,6 +1055,10 @@ class LifePixels(MDApp):
         self.root.current_screen.make_Cal() #- done on the end of sync - maybe after on pause true not needed
 
     def on_pause(self):
+        DayWin = self.root.get_screen('DayMood')
+        if self.root.current_screen == DayWin:
+            self.root.get_screen('Calendar').save_data(DayWin.dateData,DayWin.date_id)
+            print('SAVE ON STOP')
         return True #because othervise it is stopping unpredictably
 
     def on_resume(self):
@@ -1062,6 +1066,14 @@ class LifePixels(MDApp):
         pass
 
     def stop(self):
+        DayWin = self.root.get_screen('DayMood')
+        
+        print(DayWin)
+        print(self.root.current_screen)
+
+        if self.root.current_screen == DayWin:
+            self.root.get_screen('Calendar').save_data(DayWin.dateData,DayWin.date_id)
+            print('SAVE ON THE END')
         print('uzaviram')
 
 if __name__ == "__main__":
