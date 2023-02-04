@@ -144,7 +144,21 @@ class CalendarWindow(MDScreen):
         Window.bind(on_resize = self.labelSize)
 
     def labelSize(self,x=1,y=1,z=1,clocktime=0):
-        self.manager.get_screen('CalLabels').fs = z/fsDivider        
+        self.manager.get_screen('CalLabels').fs = z/fsDivider 
+
+
+    def on_enter(self):
+        Window.bind(on_keyboard=self.key_click)
+
+
+    def on_pre_leave(self):
+        Window.unbind(on_keyboard=self.key_click)
+
+    def key_click(self,window, key, keycode, *largs):
+        #print('key ' + str(key) + '----' + 'keycode ' + str(keycode))
+        if key == 27:
+            MDApp.get_running_app().stop()
+            Window.close()
 
 #create directories if not existing for both platfoms
 
@@ -839,9 +853,9 @@ class DayWindow(MDScreen):
 #
     #    print('RELOADED')
     
-    op_fi = False
-
     def on_touch_down(self, touch):
+
+        self.op_fi = False
 
         if self.ids.dayImage.collide_point(*touch.pos):
             
@@ -855,6 +869,8 @@ class DayWindow(MDScreen):
         if self.op_fi == True:
             self.event.cancel()
             self.open_filemanager()
+
+        return super().on_touch_up(touch)
 
     def delete_image(self, clocktime=0):
         self.op_fi = False
