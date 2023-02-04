@@ -152,7 +152,7 @@ class CalendarWindow(MDScreen):
             except FileExistsError:
                 pass
 
-            path = os.path.join(primary_ext_storage, 'Pictures/', 'lifepixels/', 'user_pictures/', 'BG/')
+            path = os.path.join(primary_ext_storage, 'Pictures', 'lifepixels', 'user_pictures', 'BG')
             try:
                 os.makedirs(path)
             except FileExistsError:
@@ -165,7 +165,7 @@ class CalendarWindow(MDScreen):
             except FileExistsError:
                 pass
 
-            path = os.path.join(os.path.dirname(sys.argv[0]), 'user_pictures', 'BG/')
+            path = os.path.join(os.path.dirname(sys.argv[0]), 'user_pictures', 'BG')
             try:
                 os.mkdir(path)
             except FileExistsError:
@@ -203,7 +203,7 @@ class CalendarWindow(MDScreen):
     
     def get_self_directory(self):
         if platform == 'android':
-            path = os.path.join(MDApp.get_running_app().user_data_dir, 'app/')
+            path = os.path.join(MDApp.get_running_app().user_data_dir, 'app')
         else:
             path = os.path.dirname(sys.argv[0])
         return path
@@ -217,14 +217,14 @@ class CalendarWindow(MDScreen):
 
     def get_user_pictures(self):
         if platform == 'android':
-            path = os.path.join(primary_ext_storage, 'Pictures/', 'lifepixels/', 'user_pictures')
+            path = os.path.join(primary_ext_storage, 'Pictures', 'lifepixels', 'user_pictures')
         else:
             path = os.path.join(os.path.dirname(sys.argv[0]), 'user_pictures')
         return path
     
     def authenticate(self):
-        secrets_path = os.path.join(self.get_self_directory(), 'drivelogin/', 'client_secrets.json')
-        credentials_path = os.path.join(self.get_self_directory(), 'drivelogin/', 'credentials.json')
+        secrets_path = os.path.join(self.get_self_directory(), 'drivelogin', 'client_secrets.json')
+        credentials_path = os.path.join(self.get_self_directory(), 'drivelogin', 'credentials.json')
         # authenticate to google drive (needs my client secrets)
         # google auth settings.yaml is set
         settings={'client_config_file': secrets_path,
@@ -280,7 +280,7 @@ class CalendarWindow(MDScreen):
 
             parentID = '1vZCpinF7V4NT8AiDA3Hbwe3T2DRAvlBH'
             
-            os.chdir(os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), 'BG/'))
+            os.chdir(os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), 'BG'))
             local_file_list = os.listdir()
             local_file_meta = {}
             drive_file_list = drive.ListFile({'q': f"( '{parentID}' in parents) and (trashed=false) and (mimeType != 'application/vnd.google-apps.folder')"}).GetList()
@@ -905,6 +905,8 @@ class SettingsWindow(MDScreen):
             if platform == 'android':
                 ss = SharedStorage()
                 path = ss.copy_from_shared(opened[0])
+                print('CESTA VYBRANEHO')
+                print(path)
                 
             else:
                 path = opened[0]
@@ -912,38 +914,32 @@ class SettingsWindow(MDScreen):
             try:
                 
                 if os.path.isfile(path): #because it can be directory
-                    oldpath = self.settings[daySetting.and_or_win('bgPicture')]
                     
-                    if os.path.exists(oldpath):
-                        os.remove(oldpath)
-
                     newFilename = 'BG_' + os.path.splitext(path)[1]
 
-                    destination = os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), 'BG/', newFilename)
+                    destination = os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), 'BG', newFilename)
                     shutil.copy(path, destination)
 
                     self.bgsource = destination
                     self.settings[daySetting.and_or_win('bgPicture')] = destination
-                    self.imageRefresh()
+                    Clock.schedule_once(self.imageRefresh)
 
-            except PermissionError:
-                print('CHYBA PERMISSION error')
+            except Exception as e:
+                print(e)
 
-        except IndexError:
-            print('CHYBA INDEX error')
+        except Exception as e:
+            print(e)
 
-    def imageRefresh(self):
+    def imageRefresh(self, clocktime=0):
         for screen in self.manager.screens:
             for ID in screen.ids:
                 if 'bgImage' in ID:
                     screen.ids[ID].reload()
 
 
-        #self.ids.bgImage.reload()
-
     def set_default_settings(self, clocktime=0):
-        self.settings.setdefault('and_bgPicture', 'pict/default.jpg')
-        self.settings.setdefault('win_bgPicture', 'pict/default.jpg')
+        self.settings.setdefault('and_bgPicture', 'pict\\default.jpg')
+        self.settings.setdefault('win_bgPicture', 'pict\\default.jpg')
 
     def load_settings(self, clocktime=0):
 
@@ -965,6 +961,8 @@ class SettingsWindow(MDScreen):
 
         for screen in self.manager.screens:
             screen.bgsource = self.settings[daySetting.and_or_win('bgPicture')]
+        
+        Clock.schedule_once(self.imageRefresh)
 
         #screen= self.manager.current_screen
 
@@ -977,6 +975,7 @@ class SettingsWindow(MDScreen):
             file.write('')
             json.dump(self.settings, file, indent = 4)
         self.load_settings()
+        
 
 class WindowManager(ScreenManager):
     pass
