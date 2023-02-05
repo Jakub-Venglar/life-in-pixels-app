@@ -29,8 +29,10 @@ from plyer import filechooser
 
 
 
-#TODO: # handling pict of the day, sync and load it - zakldy hotovy
-# pop up kde si můžu vybrat, jak s nimi naložím (co smazat, co nechat - ukaze mi co kde nasel a ja si vyberu jak s tim nalozim)
+#TODO: # handling pict of the day, sync and load it - zaklady hotovy
+#zapojit i porovnani s cal daty / mohl sem obrazek smazat, ale on na drive zustane a stahne se znovu
+
+TODO: # pop up kde si můžu vybrat, jak s nimi naložím (co smazat, co nechat - ukaze mi co kde nasel a ja si vyberu jak s tim nalozim)
 #aktualne projizdi vse hrozne dlouho
 
 #TODO:  poladit vykon
