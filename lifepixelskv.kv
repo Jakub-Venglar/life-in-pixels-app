@@ -630,7 +630,7 @@
             size_hint:  (1,.1)
             pos_hint: {'center_x': .5}
             text: 'Synchronizuj obrázky pro celý rok'
-            on_release: root.sync_day_pictures()
+            on_release: root.sync_day_pictures(self.date_id)
             #root.delete_data(self.date_id)
 
         Button:

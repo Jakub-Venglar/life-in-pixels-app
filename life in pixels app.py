@@ -30,8 +30,8 @@ from plyer import filechooser
 
 
 #TODO: # handling pict of the day, sync and load it - zvlášť
-# pop up kde si můžu vybrat, jak s nimi naložím (co smazat, co nechat)
-
+# pop up kde si můžu vybrat, jak s nimi naložím (co smazat, co nechat - ukaze mi co kde nasel a ja si vyberu jak s tim nalozim)
+#aktualne projizdi vse hrozne dlouho
 
 #TODO:  poladit vykon
 
@@ -62,7 +62,7 @@ from plyer import filechooser
 #TODO: finish tutorials so I have better idea what I am doing :)
 
 #TODO: add option for set your own colors
-
+#TODO: aktualne sync slozek vytvori na disku vsechny slozky, ktere najde na drive (naplni ale jen jednu), coz je malinko prasarna
 
 #TODO: make printable page, with summary of the year/month
 # maybe todo: add location on the map, later show pins on the map
@@ -106,6 +106,10 @@ noColor = (0,0,0,0)
 
 today = (48/255,60/255,133/255,.9) #(12/255,84/255,179/255,.8)
 notToday = (12/255,84/255,179/255,0)
+
+cal_data_drive_folder = '1QRcc1s1xZQz5fWlMjut8chLO8hsTit8Y'
+BG_drive_folder = '1vZCpinF7V4NT8AiDA3Hbwe3T2DRAvlBH'
+dayPictures_drive_folder = '18vtSYlwb2IrMJ8Hr8JCc6yXBcjdUfOwz'
 
 calList = [['1-1','1-2','1-3','1-4','1-5','1-6','1-7'],
                     ['2-1','2-2','2-3','2-4','2-5','2-6','2-7'],
@@ -174,10 +178,9 @@ class CalendarWindow(MDScreen):
     def create_userdata_directories(self, permissions = [], grant_results = [] ):
         if platform == 'android':
             path = os.path.join(settings_path, 'userdata')
-            try:
+            
+            if not os.path.exists(path):
                 os.mkdir(path)
-            except FileExistsError:
-                pass
 
             path = os.path.join(primary_ext_storage, 'Pictures', 'lifepixels', 'user_pictures', 'BG')
             try:
@@ -187,16 +190,14 @@ class CalendarWindow(MDScreen):
 
         else:
             path = os.path.join(os.path.dirname(sys.argv[0]), 'userdata')
-            try:
+            
+            if not os.path.exists(path):
                 os.mkdir(path)
-            except FileExistsError:
-                pass
 
             path = os.path.join(os.path.dirname(sys.argv[0]), 'user_pictures', 'BG')
-            try:
+            
+            if not os.path.exists(path):
                 os.mkdir(path)
-            except FileExistsError:
-                pass
     
     def pass_data(self,date_id):
         year = str(date_id.year)
@@ -280,16 +281,96 @@ class CalendarWindow(MDScreen):
         # Create local webserver and auto handles authentication.
         gauth.LocalWebserverAuth()
         return gauth
-
-    def sync_day_pictures():
-        pass
-    
-    def sync_data_thread(self):
-        toast('Provádím synchronizaci')
-        Clock.schedule_once(self.thread_handle,.5)
     
     syncText = {'caldata': '', 'settings': ''}
     noInternet = 'Nemůžu se připojit k internetu. \n Zapni wifi nebo data.'
+
+    def sync_day_pictures(self, date_id):
+        
+        try:
+
+        #prepare calendar data
+
+        #load folders and find the correct one
+
+            drive = GoogleDrive(self.authenticate())
+
+            dayPictID = dayPictures_drive_folder
+
+            os.chdir(self.get_user_pictures())
+            local_file_list = os.listdir()
+            local_file_meta = {}
+            drive_file_list = drive.ListFile({'q': f"( '{dayPictID}' in parents) and (trashed=false) and (mimeType = 'application/vnd.google-apps.folder')"}).GetList()
+            drive_file_meta = {}
+
+
+            for file in local_file_list:
+                local_file_meta[file] = {'checksum': None, 'modifiedDate': os.path.getmtime(file),'dtobject': datetime.datetime.fromtimestamp(os.path.getmtime(file))} #datetime.datetime.fromtimestamp
+
+            for file in drive_file_list:
+                drive_file_meta[file['title']] = {'id': file['id'],'checksum': None, 'modifiedDate': datetime.datetime.timestamp(parser.parse(file['modifiedDate'])), 'dtobject': parser.parse(file['modifiedDate'])}
+                
+                if not os.path.exists(file['title']):
+                    os.mkdir(file['title'])
+
+            try:
+                del local_file_meta['BG']
+            except KeyError:
+                pass
+
+            MIMEtype = 'application/vnd.google-apps.folder'
+
+            parentID = dayPictures_drive_folder
+
+            self.sync_data(drive, parentID, MIMEtype, local_file_list,local_file_meta,drive_file_list,drive_file_meta,'folders')
+
+            # switch to current (shown) year folder and make sync
+            
+            year = str(date_id.year)
+
+            drive_file_list = drive.ListFile({'q': f"( '{dayPictID}' in parents) and (trashed=false) and (mimeType = 'application/vnd.google-apps.folder')"}).GetList()
+            drive_file_meta = {}
+
+            for file in drive_file_list:
+                drive_file_meta[file['title']] = {'id': file['id'],'checksum': None, 'modifiedDate': datetime.datetime.timestamp(parser.parse(file['modifiedDate'])), 'dtobject': parser.parse(file['modifiedDate'])}
+
+            yearFolderID = drive_file_meta[year]['id']
+
+            os.chdir(os.path.join(self.get_user_pictures(),year))
+            local_file_list = os.listdir()
+            local_file_meta = {}
+            drive_file_list = drive.ListFile({'q': f"( '{yearFolderID}' in parents) and (trashed=false) and (mimeType = 'image/*')"}).GetList()
+            drive_file_meta = {}
+
+
+            for file in local_file_list:
+                with open(file,'rb') as f:
+                    data = f.read()
+                    md5checksum = hashlib.md5(data).hexdigest()
+                local_file_meta[file] = {'checksum': md5checksum, 'modifiedDate': os.path.getmtime(file),'dtobject': datetime.datetime.fromtimestamp(os.path.getmtime(file))} #datetime.datetime.fromtimestamp
+
+            for file in drive_file_list:
+                drive_file_meta[file['title']] = {'id': file['id'],'checksum': file['md5Checksum'], 'modifiedDate': datetime.datetime.timestamp(parser.parse(file['modifiedDate'])), 'dtobject': parser.parse(file['modifiedDate'])}
+
+            print(local_file_list)
+            print(local_file_meta)
+            print(drive_file_list)
+            print(drive_file_meta)
+
+            MIMEtype = 'image/*'
+        
+            self.sync_data(drive, yearFolderID, MIMEtype, local_file_list,local_file_meta,drive_file_list,drive_file_meta,'dayPictures')
+    
+        except httplib2.error.ServerNotFoundError:
+            self.syncText['message'] = self.noInternet
+            #self.open_popup(title='Není připojení k internetu', text='Nemůžu se připojit k internetu. \n Zapni wifi nebo data.', button='Zavřít')
+        
+        os.chdir(self.get_self_directory())
+
+    def sync_data_thread(self):
+        
+        toast('Provádím synchronizaci', duration = 1.5)
+        Clock.schedule_once(self.thread_handle,.5)
  
     def thread_handle(self, clocktime=0):
         t = Thread(target=self.sync_data_prep)
@@ -316,10 +397,12 @@ class CalendarWindow(MDScreen):
 
     def sync_data_prep(self,clocktime=0):
         try:
-            drive = GoogleDrive(self.authenticate())
-            mimetype = 'application/vnd.google-apps.folder'
 
-            parentID = '1QRcc1s1xZQz5fWlMjut8chLO8hsTit8Y'
+            # first prepare calendar data
+
+            drive = GoogleDrive(self.authenticate())
+
+            parentID = cal_data_drive_folder
 
             os.chdir(self.get_userdata())
             local_file_list = os.listdir()
@@ -327,17 +410,37 @@ class CalendarWindow(MDScreen):
             drive_file_list = drive.ListFile({'q': f"( '{parentID}' in parents) and (trashed=false) and (mimeType != 'application/vnd.google-apps.folder')"}).GetList()
             drive_file_meta = {}
 
+
+            for file in local_file_list:
+                with open(file,'rb') as f:
+                    data = f.read()
+                    md5checksum = hashlib.md5(data).hexdigest()
+                local_file_meta[file] = {'checksum': md5checksum, 'modifiedDate': os.path.getmtime(file),'dtobject': datetime.datetime.fromtimestamp(os.path.getmtime(file))} #datetime.datetime.fromtimestamp
+            for file in drive_file_list:
+                drive_file_meta[file['title']] = {'id': file['id'],'checksum': file['md5Checksum'], 'modifiedDate': datetime.datetime.timestamp(parser.parse(file['modifiedDate'])), 'dtobject': parser.parse(file['modifiedDate'])}
+
             MIMEtype = 'application/json'
         
             self.sync_data(drive, parentID, MIMEtype, local_file_list,local_file_meta,drive_file_list,drive_file_meta,'caldata')
 
-            parentID = '1vZCpinF7V4NT8AiDA3Hbwe3T2DRAvlBH'
+            # then BG picture
+
+            parentID = BG_drive_folder 
             
             os.chdir(os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), 'BG'))
             local_file_list = os.listdir()
             local_file_meta = {}
             drive_file_list = drive.ListFile({'q': f"( '{parentID}' in parents) and (trashed=false) and (mimeType != 'application/vnd.google-apps.folder')"}).GetList()
             drive_file_meta = {}
+
+
+            for file in local_file_list:
+                with open(file,'rb') as f:
+                    data = f.read()
+                    md5checksum = hashlib.md5(data).hexdigest()
+                local_file_meta[file] = {'checksum': md5checksum, 'modifiedDate': os.path.getmtime(file),'dtobject': datetime.datetime.fromtimestamp(os.path.getmtime(file))} #datetime.datetime.fromtimestamp
+            for file in drive_file_list:
+                drive_file_meta[file['title']] = {'id': file['id'],'checksum': file['md5Checksum'], 'modifiedDate': datetime.datetime.timestamp(parser.parse(file['modifiedDate'])), 'dtobject': parser.parse(file['modifiedDate'])}
 
             MIMEtype = 'image/*'
 
@@ -351,14 +454,7 @@ class CalendarWindow(MDScreen):
 
     
     def sync_data(self, drive, parentID, MIMEtype, local_file_list, local_file_meta, drive_file_list, drive_file_meta, what_syncing):
-        for file in local_file_list:
-                with open(file,'rb') as f:
-                    data = f.read()
-                    md5checksum = hashlib.md5(data).hexdigest()
-                local_file_meta[file] = {'checksum': md5checksum, 'modifiedDate': os.path.getmtime(file),'dtobject': datetime.datetime.fromtimestamp(os.path.getmtime(file))} #datetime.datetime.fromtimestamp
-        for file in drive_file_list:
-            drive_file_meta[file['title']] = {'id': file['id'],'checksum': file['md5Checksum'], 'modifiedDate': datetime.datetime.timestamp(parser.parse(file['modifiedDate'])), 'dtobject': parser.parse(file['modifiedDate'])}
-
+        print(1)
         try:
             syncMessage = ''
 
@@ -367,19 +463,21 @@ class CalendarWindow(MDScreen):
                     new_file = drive.CreateFile({'parents': [{'id': parentID }],'title':filename, 'id': drive_file_meta[filename]['id'], 'mimeType': MIMEtype})
                     new_file.GetContentFile(filename)
                     syncMessage = 'V datech nic nebylo, soubory z drive stazeny'
-
+                print(2)
             elif len(local_file_list)<1 and len(drive_file_list)<1:
                 syncMessage = 'Nikde nic, zaciname od nuly'
             else: 
                 pass
 
-            for filename in local_file_list:
+            for filename in local_file_meta:
+                print(3)
                 if filename in drive_file_meta:
                     #self.syncMessage = self.syncMessage + '\n' + filename + ' nalezeno na drive' + '\n'
                     
                     if local_file_meta[filename]['modifiedDate'] > drive_file_meta[filename]['modifiedDate'] and local_file_meta[filename]['checksum'] != drive_file_meta[filename]['checksum']:
                         new_file = drive.CreateFile({'parents': [{'id': parentID }],'title': filename, 'id': drive_file_meta[filename]['id'], 'mimeType': MIMEtype})
-                        new_file.SetContentFile(filename)
+                        if os.path.isfile(filename):
+                            new_file.SetContentFile(filename)
                         new_file.Upload()
                         syncMessage = syncMessage + '\n' + filename + ' - lokální soubor je novější - nahráno na drive' + '\n'
                     
@@ -392,9 +490,11 @@ class CalendarWindow(MDScreen):
                         pass
                         #self.syncMessage = self.syncMessage + '\n' + filename + ' má stejné datum nebo checsksum, nic se neděje' + '\n'
                 else:
+                    print(4)
                     new_file = drive.CreateFile({'parents': [{'id': parentID }],'title':filename, 'mimeType': MIMEtype})
                     # Read file and set it as a content of this instance.
-                    new_file.SetContentFile(filename)
+                    if os.path.isfile(filename):
+                        new_file.SetContentFile(filename)
                     new_file.Upload() # Upload the file.
                     syncMessage = syncMessage + '\n' + filename +' - nově nahráno' + '\n'
             
@@ -404,6 +504,7 @@ class CalendarWindow(MDScreen):
                     new_file.GetContentFile(filename)
                     syncMessage = syncMessage + '\n' + filename + ' - soubor na drive neexistoval na lokálním disku - staženo' + '\n'
 
+            print(5)
             self.syncText[what_syncing] = syncMessage
                 
         except Exception as e: print(e)
@@ -456,7 +557,7 @@ class CalendarWindow(MDScreen):
                 # if mood for date already set then render it, otherwise make field clear
                 Clock.schedule_once(partial(self.colorize,id,self.ids[id].date_id))
         
-        self.ids['syncPictures'].date_id = self.ids['3-3'].date_id #set id for deleting whole calendar
+        self.ids['syncPictures'].date_id = self.ids['3-3'].date_id #set id for deleting whole calendar or handling sync of pictures
 
     def colorize(self,my_id,date_id,clocktime=0):
         call = self.manager.get_screen('Calendar')
