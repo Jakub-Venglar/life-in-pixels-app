@@ -30,7 +30,7 @@ from plyer import filechooser
 
 
 # bugy - pri prechodu sipkama se neulozi
-#pri esc se ulozi ale spadne
+#pri esc se ulozi ale spadne / zavre / asi neunbinduju
 
 #TODO: # handling pict of the day, sync and load it - zvlášť
 # pop up kde si můžu vybrat, jak s nimi naložím (co smazat, co nechat)
@@ -1039,7 +1039,9 @@ class SettingsWindow(MDScreen):
                 for screen in self.manager.screens:
                     screen.bgsource = destination
 
-            except IndexError:
+            except Exception as e:
+                print('EXCEPTION ON SETTING BG')
+                print(e)
                 for screen in self.manager.screens:
                     screen.bgsource = 'pict/default.jpg'
         
@@ -1070,8 +1072,6 @@ class CalendarLabels(MDScreen):
 class LifePixels(MDApp):
     title = 'Life in Pixels'
     def build(self):
-        if platform == 'android':
-            self._show_validation_dialog()
 
         Builder.load_file('lifepixelskv.kv') #same name for kv file causes some events fired twice
         # Create the screen manager
@@ -1167,7 +1167,10 @@ class LifePixels(MDApp):
             #    pass
                 #Clock.schedule_once(self.root.current_screen.sync_data)
 
-        #else: 
+        #else:
+        if platform == 'android':
+            self._show_validation_dialog()
+        
         self.root.current_screen.create_userdata_directories()
             #Clock.schedule_once(self.root.current_screen.sync_data)
         
