@@ -29,7 +29,7 @@ from plyer import filechooser
 
 
 
-#TODO: # handling pict of the day, sync and load it - zvlášť
+#TODO: # handling pict of the day, sync and load it - zakldy hotovy
 # pop up kde si můžu vybrat, jak s nimi naložím (co smazat, co nechat - ukaze mi co kde nasel a ja si vyberu jak s tim nalozim)
 #aktualne projizdi vse hrozne dlouho
 
@@ -324,6 +324,7 @@ class CalendarWindow(MDScreen):
 
             self.sync_data(drive, parentID, MIMEtype, local_file_list,local_file_meta,drive_file_list,drive_file_meta,'folders')
 
+
             # switch to current (shown) year folder and make sync
             
             year = str(date_id.year)
@@ -339,9 +340,8 @@ class CalendarWindow(MDScreen):
             os.chdir(os.path.join(self.get_user_pictures(),year))
             local_file_list = os.listdir()
             local_file_meta = {}
-            drive_file_list = drive.ListFile({'q': f"( '{yearFolderID}' in parents) and (trashed=false) and (mimeType = 'image/*')"}).GetList()
+            drive_file_list = drive.ListFile({'q': f"( '{yearFolderID}' in parents) and (trashed=false) and (mimeType != 'application/vnd.google-apps.folder')"}).GetList()
             drive_file_meta = {}
-
 
             for file in local_file_list:
                 with open(file,'rb') as f:
@@ -352,10 +352,10 @@ class CalendarWindow(MDScreen):
             for file in drive_file_list:
                 drive_file_meta[file['title']] = {'id': file['id'],'checksum': file['md5Checksum'], 'modifiedDate': datetime.datetime.timestamp(parser.parse(file['modifiedDate'])), 'dtobject': parser.parse(file['modifiedDate'])}
 
-            print(local_file_list)
-            print(local_file_meta)
-            print(drive_file_list)
-            print(drive_file_meta)
+            #print(local_file_list)
+            #print(local_file_meta)
+            #print(drive_file_list)
+            #print(drive_file_meta)
 
             MIMEtype = 'image/*'
         
