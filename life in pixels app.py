@@ -1,6 +1,12 @@
 #! python3
 # Life in pixels project
 import calendar, datetime, os, sys, json, hashlib, httplib2, shutil, time
+'''
+#profiling
+import cProfile
+import pstats
+from pstats import SortKey
+'''
 from threading import Thread
 from dateutil import parser
 from kivymd.app import MDApp
@@ -30,10 +36,10 @@ from plyer import filechooser
 
 
 #TODO: # handling pict of the day, sync and load it - zaklady hotovy
-#zapojit i porovnani s cal daty / mohl sem obrazek smazat, ale on na drive zustane a stahne se znovu
+# zapojit i porovnani s cal daty / mohl sem obrazek smazat, ale on na drive zustane a stahne se znovu
 
 #TODO:  pop up kde si můžu vybrat, jak s nimi naložím (co smazat, co nechat - ukaze mi co kde nasel a ja si vyberu jak s tim nalozim)
-#aktualne projizdi vse hrozne dlouho
+# mit zaskrtnuty nahrany rok - smazat(lokalne) nebo stahnout(lokalne)
 
 #TODO:  poladit vykon
 
@@ -1277,7 +1283,10 @@ class LifePixels(MDApp):
     #        return permission_statusREAD
 
     def on_start(self):
-        #self.root.get_screen('Calendar').create_userdata_directory()
+        #self.profile = cProfile.Profile()
+        #self.profile.enable()
+
+
         
         #if platform == 'android':
             #from android.permissions import request_permissions, Permission
@@ -1286,18 +1295,11 @@ class LifePixels(MDApp):
             #    request_permissions([Permission.READ_EXTERNAL_STORAGE, Permission.INTERNET])
             #    Clock.schedule_once(self.root.current_screen.create_userdata_directories)
             #    #Clock.schedule_once(self.root.current_screen.sync_data,4)
-            #else:
-            #    pass
-                #Clock.schedule_once(self.root.current_screen.sync_data)
 
-        #else:
         if platform == 'android':
             self._show_validation_dialog()
         
         self.root.current_screen.create_userdata_directories()
-            #Clock.schedule_once(self.root.current_screen.sync_data)
-        
-        # time.sleep() while true break check for result true
 
         Clock.schedule_once(self.root.get_screen('Settings').load_settings)
         self.root.current_screen.make_Cal() #- done on the end of sync - maybe after on pause true not needed
@@ -1307,13 +1309,19 @@ class LifePixels(MDApp):
         if self.root.current_screen == DayWin:
             self.root.get_screen('Calendar').save_data(DayWin.dateData,DayWin.date_id)
             print('SAVE ON STOP')
-        return True #because othervise it is stopping unpredictably
+        return True #because othervise it is stopping 
 
     def on_resume(self):
-    #self.root.get_screen('Calendar').sync_data()
         pass
 
     def stop(self):
+
+        #self.profile.disable()
+        #p = pstats.Stats(self.profile)
+        #p.sort_stats(SortKey.CUMULATIVE).print_stats(20)
+        #p.strip_dirs().sort_stats(-1).print_stats()
+        #self.profile.dump_stats('myapp.profile')
+
         DayWin = self.root.get_screen('DayMood')
 
         if self.root.current_screen == DayWin:
