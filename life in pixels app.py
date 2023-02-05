@@ -29,11 +29,8 @@ from plyer import filechooser
 
 
 
-# bugy - pri prechodu sipkama se neulozi
-
 #TODO: # handling pict of the day, sync and load it - zvlášť
 # pop up kde si můžu vybrat, jak s nimi naložím (co smazat, co nechat)
-
 
 
 #TODO:  poladit vykon
@@ -43,6 +40,8 @@ from plyer import filechooser
 # na mobilu ani nenacetl ten bg co uz byl z minula ?? jeste otestovat
 # pokud najde bg image zapis ho do settings
 
+#TODO: uzaviram - konec se vola dvakrat
+#TODO: vymyslet jak nezapisovat prazdne dny (momentalne se ulozi)
 #TODO: zapsat nekam posledni sync
 
 #TODO: better view of day color
@@ -158,12 +157,10 @@ class CalendarWindow(MDScreen):
         self.manager.get_screen('CalLabels').fs = z/fsDivider 
 
     def on_enter(self):
-        print('BINDING')
-        Window.bind(on_keyboard=self.key_click)
-
+        Window.bind(on_key_up=self.key_click)
 
     def on_pre_leave(self):
-        Window.unbind(on_keyboard=self.key_click)
+        Window.unbind(on_key_up=self.key_click)
 
     def key_click(self,window, key, keycode, *largs):
         #print('key ' + str(key) + '----' + 'keycode ' + str(keycode))
@@ -615,13 +612,14 @@ class DayWindow(MDScreen):
         pass
 
     def on_enter(self):
-        Window.bind(on_keyboard=self.key_click)
+        print('NAJIZDI DAY WINDOW')
+        Window.bind(on_key_up=self.key_click)
         self.ids.comment.bind(focus=self.focus_change)
         self.ids.healthComment.bind(focus=self.focus_change)
 
     def on_pre_leave(self):
         self.manager.get_screen('Calendar').save_data(self.dateData,self.date_id)
-        Window.unbind(on_keyboard=self.key_click)
+        Window.unbind(on_key_up=self.key_click)
     
     def load_day(self, date_id, clocktime=0):
         self.dateData = self.manager.get_screen('Calendar').pass_data(self.date_id)
@@ -690,7 +688,7 @@ class DayWindow(MDScreen):
             self.store_text(object)
         
     def key_click(self,window, key, keycode, *largs):
-        #print('key ' + str(key) + '----' + 'keycode ' + str(keycode))
+        print('key ' + str(key) + '----' + 'keycode ' + str(keycode))
         if key == 27:
             self.close_day(self.date_id)
         
@@ -706,6 +704,7 @@ class DayWindow(MDScreen):
     # move day
 
     def move_day(self, direction, date_id, my_id):
+        print('MOOOVING')
 
         self.manager.get_screen('Calendar').save_data(self.dateData, date_id)
 
@@ -720,8 +719,7 @@ class DayWindow(MDScreen):
 
         self.my_id = my_id
         self.date_id = date_id
-        self.dateData = self.manager.get_screen('Calendar').pass_data(self.date_id)
-        self.manager.get_screen('Calendar').save_data(self.dateData,self.date_id)
+        #self.dateData = self.manager.get_screen('Calendar').pass_data(self.date_id)
         self.manager.get_screen('Calendar').cal_click(date_id, my_id)
 
     def close_day (self, date_id):
@@ -915,10 +913,10 @@ class DayWindow(MDScreen):
 class HabitsWindow(MDScreen):
 
     def on_enter(self):
-        Window.bind(on_keyboard=self.back_click)
+        Window.bind(on_key_up=self.back_click)
 
     def on_pre_leave(self):
-        Window.unbind(on_keyboard=self.back_click)
+        Window.unbind(on_key_up=self.back_click)
 
     def back_click(self,window, key, keycode, *largs):
         if key == 27:
@@ -943,14 +941,14 @@ class HabitsWindow(MDScreen):
 class SettingsWindow(MDScreen):
 
     def on_pre_enter(self):
-        Window.bind(on_keyboard=self.back_click)
+        Window.bind(on_key_up=self.back_click)
 
         #if os.path.exists(self.settings['bgPicture']) == False:
         #    self.settings['bgPicture'] = 'pict/default.jpg'
         #    self.bgsource = self.settings['bgPicture']
 
     def on_pre_leave(self):
-        Window.unbind(on_keyboard=self.back_click)
+        Window.unbind(on_key_up=self.back_click)
 
     def back_click(self,window, key, keycode, *largs):
         if key == 27:
