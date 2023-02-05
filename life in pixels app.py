@@ -5,6 +5,8 @@ from threading import Thread
 from dateutil import parser
 from kivymd.app import MDApp
 from kivymd.uix.screen import MDScreen
+from kivymd.uix.dialog.dialog import MDDialog
+from kivymd.uix.button.button import MDFlatButton
 from kivymd.toast import toast
 from kivy.uix.screenmanager import ScreenManager
 from kivy.uix.popup import Popup
@@ -26,11 +28,17 @@ from pydrive2.drive import GoogleDrive
 from plyer import filechooser
 
 
-#TODO: pop up kde si můžu vybrat, jak s nimi naložím (co smazat, co nechat)
-# handling pict of the day, sync and load it - zvlášť
+
+# bugy - pri prechodu sipkama se neulozi
+#pri esc se ulozi ale spadne
+
+#TODO: # handling pict of the day, sync and load it - zvlášť
+# pop up kde si můžu vybrat, jak s nimi naložím (co smazat, co nechat)
+
 
 #TODO: upravit velikosti okna, viz screeny v mobilu
 
+# na mobilu ani nenacetl ten bg co uz byl z minula
 # pokud najde bg image zapis ho do settings
 
 # apk je potřeba dělat poměřování pro sync jinak (bo metadata nebudou sedet)
@@ -64,6 +72,10 @@ from plyer import filechooser
 
 
 if platform == 'android':
+
+    from jnius import cast
+    from jnius import autoclass
+    from android import mActivity, api_version
 
     from androidstorage4kivy import Chooser, SharedStorage
     #from kvdroid.tools.network import network_status, wifi_status, mobile_status / not working on android, cant import jnius
@@ -1058,6 +1070,9 @@ class CalendarLabels(MDScreen):
 class LifePixels(MDApp):
     title = 'Life in Pixels'
     def build(self):
+        if platform == 'android':
+            self._show_validation_dialog()
+
         Builder.load_file('lifepixelskv.kv') #same name for kv file causes some events fired twice
         # Create the screen manager
         sm = ScreenManager()
@@ -1068,18 +1083,75 @@ class LifePixels(MDApp):
         sm.add_widget(CalendarLabels(name='CalLabels'))
         sm.current = 'Calendar'
         return sm
+
     
-    def check_permissions(self, clocktime=0):
-        if platform == 'android':
-            from android.permissions import request_permissions, Permission, check_permission
-            permission_statusREAD = check_permission(Permission.READ_EXTERNAL_STORAGE)
-            print('READ:')
-            print(permission_statusREAD)
-            #permission_status = check_permission(Permission.READ_EXTERNAL_STORAGE)
-            #permission_statusWRITE = check_permission(Permission.WRITE_EXTERNAL_STORAGE,)
-            #print('WRITE:')
-            #print(permission_statusWRITE)
-            return permission_statusREAD
+    def permissions_external_storage(self, *args):                  
+        if platform == "android":
+            PythonActivity = autoclass("org.kivy.android.PythonActivity")
+            Environment = autoclass("android.os.Environment")
+            Intent = autoclass("android.content.Intent")
+            Settings = autoclass("android.provider.Settings")
+            Uri = autoclass("android.net.Uri")
+            if api_version > 29:
+                # If you have access to the external storage, do whatever you need
+                if Environment.isExternalStorageManager():
+
+                    # If you don't have access, launch a new activity to show the user the system's dialog
+                    # to allow access to the external storage
+                    pass
+                else:
+                    try:
+                        activity = mActivity.getApplicationContext()
+                        uri = Uri.parse("package:" + activity.getPackageName())
+                        intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, uri)
+                        currentActivity = cast(
+                        "android.app.Activity", PythonActivity.mActivity
+                        )
+                        currentActivity.startActivityForResult(intent, 101)
+                    except:
+                        intent = Intent()
+                        intent.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
+                        currentActivity = cast(
+                        "android.app.Activity", PythonActivity.mActivity
+                        )
+                        currentActivity.startActivityForResult(intent, 101)
+                    self.show_permission_popup.dismiss()
+
+    def _show_validation_dialog(self):
+        if platform == "android":
+            Environment = autoclass("android.os.Environment")
+            if not Environment.isExternalStorageManager():
+                self.show_permission_popup = MDDialog(
+                    title="Alert",
+                    text="Permission to access your device's internal storage and files..",
+                    size_hint=(0.6, 0.5),
+                    buttons=[
+                        MDFlatButton(
+                            text="Allow", on_press=self.permissions_external_storage
+                        ),
+                        MDFlatButton(
+                            text="Decline",
+                            on_release=self._close_validation_dialog,
+                        ),
+                    ],
+                )
+                self.show_permission_popup.open()
+
+    def _close_validation_dialog(self, widget):
+        """Close input fields validation dialog"""
+        self.show_permission_popup.dismiss()
+    
+    #def check_permissions(self, clocktime=0):
+    #    if platform == 'android':
+    #        from android.permissions import request_permissions, Permission, check_permission
+    #        permission_statusREAD = check_permission(Permission.READ_EXTERNAL_STORAGE)
+    #        print('READ:')
+    #        print(permission_statusREAD)
+    #        #permission_status = check_permission(Permission.READ_EXTERNAL_STORAGE)
+    #        #permission_statusWRITE = check_permission(Permission.WRITE_EXTERNAL_STORAGE,)
+    #        #print('WRITE:')
+    #        #print(permission_statusWRITE)
+    #        return permission_statusREAD
 
     def on_start(self):
         #self.root.get_screen('Calendar').create_userdata_directory()
