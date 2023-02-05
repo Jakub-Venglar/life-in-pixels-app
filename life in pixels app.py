@@ -1156,19 +1156,19 @@ class LifePixels(MDApp):
     def on_start(self):
         #self.root.get_screen('Calendar').create_userdata_directory()
         
-        if platform == 'android':
-            from android.permissions import request_permissions, Permission
+        #if platform == 'android':
+            #from android.permissions import request_permissions, Permission
             
-            if self.check_permissions() != True:
-                request_permissions([Permission.READ_EXTERNAL_STORAGE, Permission.INTERNET])
-                Clock.schedule_once(self.root.current_screen.create_userdata_directories)
-                #Clock.schedule_once(self.root.current_screen.sync_data,4)
-            else:
-                pass
+            #if self.check_permissions() != True:
+            #    request_permissions([Permission.READ_EXTERNAL_STORAGE, Permission.INTERNET])
+            #    Clock.schedule_once(self.root.current_screen.create_userdata_directories)
+            #    #Clock.schedule_once(self.root.current_screen.sync_data,4)
+            #else:
+            #    pass
                 #Clock.schedule_once(self.root.current_screen.sync_data)
 
-        else: 
-            self.root.current_screen.create_userdata_directories()
+        #else: 
+        self.root.current_screen.create_userdata_directories()
             #Clock.schedule_once(self.root.current_screen.sync_data)
         
         # time.sleep() while true break check for result true
