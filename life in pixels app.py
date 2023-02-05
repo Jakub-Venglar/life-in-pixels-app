@@ -20,7 +20,7 @@ from kivy import platform
 from kivy.lang import Builder
 from kivy.clock import Clock
 from functools import partial
-from sortedcontainers import SortedDict
+#from sortedcontainers import SortedDict
 from kivy.graphics import Rectangle, Color, Line
 from babel.dates import format_date, format_datetime
 from pydrive2.auth import GoogleAuth
@@ -30,28 +30,26 @@ from plyer import filechooser
 
 
 # bugy - pri prechodu sipkama se neulozi
-#pri esc se ulozi ale spadne / zavre / asi neunbinduju
 
 #TODO: # handling pict of the day, sync and load it - zvlášť
 # pop up kde si můžu vybrat, jak s nimi naložím (co smazat, co nechat)
 
 
-#TODO: upravit velikosti okna, viz screeny v mobilu
 
-# na mobilu ani nenacetl ten bg co uz byl z minula
+#TODO:  poladit vykon
+
+# upravit velikosti okna, viz screeny v mobilu
+
+# na mobilu ani nenacetl ten bg co uz byl z minula ?? jeste otestovat
 # pokud najde bg image zapis ho do settings
 
-# apk je potřeba dělat poměřování pro sync jinak (bo metadata nebudou sedet)
-#asi zápisem do settings nebo speciálního file, který se stáhne automaticky a porovná se
-#pak už stačí stáhnout/uploadnout jen soubory co mají jiny checksum
-
 #TODO: zapsat nekam posledni sync
-# lepší info po syncu (zvlášť - takhle se nahraje json ale settings se nezmění a hlásí že není potřeba sync (ale provede))
 
 #TODO: better view of day color
 #TODO bg image / choose if mine or random +/- 1 month
 
-#TODO: see text comment on long press in calendar
+#TODO: see text comment on long press in calendar / not working on mobile
+
 #TODO: make menu screen
 #TODO: create graph view for healt
 #TODO: create year stats for mood and health - make it separate screen
@@ -65,7 +63,7 @@ from plyer import filechooser
 #TODO: finish tutorials so I have better idea what I am doing :)
 
 #TODO: add option for set your own colors
-#TODO: choice from default pictures or your own as BG
+
 
 #TODO: make printable page, with summary of the year/month
 # maybe todo: add location on the map, later show pins on the map
@@ -221,9 +219,26 @@ class CalendarWindow(MDScreen):
         year = str(date_id.year)
         userdata = self.get_userdata()
         filename = f'{userdata}/caldata-{year}.json'
-        with open(filename, 'w', encoding='utf-8') as file:
-            file.write('')
-            json.dump(SortedDict(newData), file, indent = 4)
+
+        try:
+
+            with open(filename, 'r', encoding='utf-8') as file: #readfile first and compare
+                oldata = json.loads(file.read())
+            
+            if oldata != newData:
+
+                with open(filename, 'w', encoding='utf-8') as file:
+                    json.dump(newData, file, indent = 4, sort_keys=True)
+                
+                print('NOVE, UKLADAM')
+            
+            else:
+                print('STEJNE NEUKLADAM')
+        
+        except FileNotFoundError:
+            with open(filename, 'w', encoding='utf-8') as file:
+                json.dump(newData, file, indent = 4, sort_keys=True)
+
     
     def delete_data(self,date_id):
         year = str(date_id.year)
@@ -691,6 +706,9 @@ class DayWindow(MDScreen):
     # move day
 
     def move_day(self, direction, date_id, my_id):
+
+        self.manager.get_screen('Calendar').save_data(self.dateData, date_id)
+
         index = listOfMyIds.index(my_id)
         if direction == 'backward':
             date_id = date_id - datetime.timedelta(days=1)
@@ -780,17 +798,6 @@ class DayWindow(MDScreen):
         dateData[dateKey] = emptyDayData.copy()
         call.save_data(dateData,self.date_id)
         self.load_day(self.date_id)
-    
-    def and_or_win(self, key):
-        
-        '''function to find correct path for key in dictionary'''
-
-        if platform == 'android':
-            result = 'and_'+key
-        else:
-            result = 'win_'+key
-
-        return result
 
     def open_filemanager(self):
         
