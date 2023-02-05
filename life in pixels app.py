@@ -162,7 +162,7 @@ class CalendarWindow(MDScreen):
     def on_enter(self):
         print('BINDING')
         Window.bind(on_keyboard=self.key_click)
-        
+
 
     def on_pre_leave(self):
         Window.unbind(on_keyboard=self.key_click)
@@ -835,29 +835,30 @@ class DayWindow(MDScreen):
                     try:
                         os.makedirs(dest_folder)
                     except FileExistsError:
-                        print('uz existuje')
                         pass
                     
-                    print('DIRECTORY SET')
-
                     destination = os.path.join(dest_folder, newFilename)
                     
-                    print('DESTINATION')
-                    print(destination)
+                    print('ORIGINAL')
+                    print(os.path.getmtime(path))
                     
                     shutil.copy2(path, destination)
                     
-                    print('COPIED')
+                    now = datetime.datetime.now().timestamp()
+                    print('NOW')
+                    print(now)
+
+                    os.utime(destination,(now,now))
+
+                    print('RESULT')
+                    print(os.path.getmtime(destination))
 
                     dateData[dateKey]['dayImage'] = newFilename
                     call.save_data(dateData,self.date_id)
 
-                    print('SAVED')
-
                     #print('ratio ' + str(self.ids.dayImage.image_ratio)) #landscape is more than 1
                     
                     Clock.schedule_once(partial(self.load_day, self.date_id))
-                    #Clock.schedule_once(partial(self.insert_refresh_image, dest_folder, newFilename))
 
             except Exception as e:
                 print(e)
@@ -981,7 +982,19 @@ class SettingsWindow(MDScreen):
                     newFilename = 'BG_' + os.path.splitext(path)[1]
 
                     destination = os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), 'BG', newFilename)
+                    print('ORIGINAL')
+                    print(os.path.getmtime(path))
+                    
+                    
                     shutil.copy2(path, destination)
+                    now = datetime.datetime.now().timestamp()
+                    print('NOW')
+                    print(now)
+
+                    os.utime(destination,(now,now))
+
+                    print('RESULT')
+                    print(os.path.getmtime(destination))
                     
                     self.settings['bgPicture'] = newFilename
                     Clock.schedule_once(partial(self.insert_image, destination))
