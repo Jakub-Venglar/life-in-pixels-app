@@ -159,10 +159,10 @@ class CalendarWindow(MDScreen):
     def labelSize(self,x=1,y=1,z=1,clocktime=0):
         self.manager.get_screen('CalLabels').fs = z/fsDivider 
 
-
     def on_enter(self):
+        print('BINDING')
         Window.bind(on_keyboard=self.key_click)
-
+        
 
     def on_pre_leave(self):
         Window.unbind(on_keyboard=self.key_click)
@@ -170,6 +170,7 @@ class CalendarWindow(MDScreen):
     def key_click(self,window, key, keycode, *largs):
         #print('key ' + str(key) + '----' + 'keycode ' + str(keycode))
         if key == 27:
+            print('ESCAPING')
             MDApp.get_running_app().stop()
             Window.close()
 
@@ -913,6 +914,7 @@ class HabitsWindow(MDScreen):
 
     def back_click(self,window, key, keycode, *largs):
         if key == 27:
+            print('backbackback')
             self.manager.transition.direction = 'right'
             self.manager.current = 'Calendar'
 
