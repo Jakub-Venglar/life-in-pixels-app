@@ -38,6 +38,9 @@ from plyer import filechooser
 #TODO: # handling pict of the day, sync and load it - zaklady hotovy
 # zapojit i porovnani s cal daty / mohl sem obrazek smazat, ale on na drive zustane a stahne se znovu
 
+#TODO: vygenerovat mensi verzi a tu zobrazovat
+
+
 #TODO:  pop up kde si můžu vybrat, jak s nimi naložím (co smazat, co nechat - ukaze mi co kde nasel a ja si vyberu jak s tim nalozim)
 # mit zaskrtnuty nahrany rok - smazat(lokalne) nebo stahnout(lokalne)
 
@@ -301,8 +304,11 @@ class CalendarWindow(MDScreen):
         call = self.manager.get_screen('Calendar')
         dateData = call.pass_data(date_id)
         pict_list = []
-        for day in dateData:
-            pict_list.append(day['dayImage'])
+        for day, dicti in dateData.items():
+            try:
+                if dicti['dayImage'] != '':
+                    pict_list.append(dicti['dayImage'])
+            except: pass
         
         print(pict_list)
 
@@ -368,6 +374,8 @@ class CalendarWindow(MDScreen):
 
             pict_list = self.get_pict_list(date_id)
 
+            print(pict_list)
+
             #somehow compare pict list and drive file list and delete what is not found
 
             ####function to delete things from drive
@@ -390,8 +398,10 @@ class CalendarWindow(MDScreen):
             #print(drive_file_meta)
 
             MIMEtype = 'image/*'
-        
-            self.sync_data(drive, yearFolderID, MIMEtype, local_file_list,local_file_meta,drive_file_list,drive_file_meta,'dayPictures')
+
+
+            #LATER ON
+            #self.sync_data(drive, yearFolderID, MIMEtype, local_file_list,local_file_meta,drive_file_list,drive_file_meta,'dayPictures')
     
         except httplib2.error.ServerNotFoundError:
             self.syncText['message'] = self.noInternet
