@@ -225,11 +225,14 @@ class CalendarWindow(MDScreen):
         year = str(date_id.year)
         userdata = self.get_userdata()
         filename = f'{userdata}/caldata-{year}.json'
+        print('JEDU SAVE')
 
         try:
 
             with open(filename, 'r', encoding='utf-8') as file: #readfile first and compare
                 oldata = json.loads(file.read())
+
+                print('OPEN')
             
             if oldata != newData:
 
@@ -242,6 +245,7 @@ class CalendarWindow(MDScreen):
                 print('STEJNE NEUKLADAM')
         
         except FileNotFoundError:
+            print('NOT FOUND')
             with open(filename, 'w', encoding='utf-8') as file:
                 json.dump(newData, file, indent = 4, sort_keys=True)
 
@@ -292,6 +296,17 @@ class CalendarWindow(MDScreen):
     
     syncText = {'caldata': '', 'settings': ''}
     noInternet = 'Nemůžu se připojit k internetu. \n Zapni wifi nebo data.'
+
+    def get_pict_list(self, date_id):
+        call = self.manager.get_screen('Calendar')
+        dateData = call.pass_data(date_id)
+        pict_list = []
+        for day in dateData:
+            pict_list.append(day['dayImage'])
+        
+        print(pict_list)
+
+        return pict_list
 
     def sync_day_pictures(self, date_id):
         
@@ -350,6 +365,15 @@ class CalendarWindow(MDScreen):
             local_file_meta = {}
             drive_file_list = drive.ListFile({'q': f"( '{yearFolderID}' in parents) and (trashed=false) and (mimeType != 'application/vnd.google-apps.folder')"}).GetList()
             drive_file_meta = {}
+
+            pict_list = self.get_pict_list(date_id)
+
+            #somehow compare pict list and drive file list and delete what is not found
+
+            ####function to delete things from drive
+
+            #populate dict and sync based on them
+
 
             for file in local_file_list:
                 with open(file,'rb') as f:
@@ -920,7 +944,6 @@ class DayWindow(MDScreen):
     def choose_day_image(self, opened):
         
         call = self.manager.get_screen('Calendar')
-        dateData = call.pass_data(self.date_id)
         dateKey = str(self.date_id)
         
         try:
@@ -928,9 +951,6 @@ class DayWindow(MDScreen):
             if platform == 'android':
                 ss = SharedStorage()
                 path = ss.copy_from_shared(opened[0])
-
-                print('CESTA VYBRANEHO')
-                print(path)
                 
             else:
                 path = opened[0]
@@ -946,6 +966,7 @@ class DayWindow(MDScreen):
                     newFilename = dateKey + os.path.splitext(path)[1]
 
                     dest_folder = os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), str(self.date_id.year))
+                    
                     try:
                         os.makedirs(dest_folder)
                     except FileExistsError:
@@ -953,22 +974,13 @@ class DayWindow(MDScreen):
                     
                     destination = os.path.join(dest_folder, newFilename)
                     
-                    print('ORIGINAL')
-                    print(os.path.getmtime(path))
-                    
                     shutil.copy2(path, destination)
                     
                     now = datetime.datetime.now().timestamp()
-                    print('NOW')
-                    print(now)
-
                     os.utime(destination,(now,now))
 
-                    print('RESULT')
-                    print(os.path.getmtime(destination))
-
-                    dateData[dateKey]['dayImage'] = newFilename
-                    call.save_data(dateData,self.date_id)
+                    self.dateData[dateKey]['dayImage'] = newFilename
+                    call.save_data(self.dateData,self.date_id)
 
                     #print('ratio ' + str(self.ids.dayImage.image_ratio)) #landscape is more than 1
                     
