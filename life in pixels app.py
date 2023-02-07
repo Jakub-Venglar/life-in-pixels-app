@@ -7,6 +7,7 @@ import cProfile
 import pstats
 from pstats import SortKey
 '''
+from PIL import Image as pilIMG
 from threading import Thread
 from dateutil import parser
 from kivymd.app import MDApp
@@ -34,10 +35,7 @@ from pydrive2.drive import GoogleDrive
 from plyer import filechooser
 
 
-
-#TODO: # handling pict of the day, sync and load it - zaklady hotovy
-
-#TODO: vygenerovat mensi verzi a tu zobrazovat
+#TODO: verze thumbnailu / generovat je po stazeni
 
 #TODO: placeholder - misto velkeho obrazku (pres text na labelu), kdyz obrazek neni fyzicky pritomny
 # v kalendari nejakou malou znacku
@@ -123,6 +121,8 @@ notToday = (12/255,84/255,179/255,0)
 cal_data_drive_folder = '1QRcc1s1xZQz5fWlMjut8chLO8hsTit8Y'
 BG_drive_folder = '1vZCpinF7V4NT8AiDA3Hbwe3T2DRAvlBH'
 dayPictures_drive_folder = '18vtSYlwb2IrMJ8Hr8JCc6yXBcjdUfOwz'
+
+thumbDict = {'_mini':(70,70), '_thumb':(800,800), '_medi':(1500,1500)}
 
 calList = [['1-1','1-2','1-3','1-4','1-5','1-6','1-7'],
                     ['2-1','2-2','2-3','2-4','2-5','2-6','2-7'],
@@ -326,7 +326,6 @@ class CalendarWindow(MDScreen):
         try:
 
         #prepare calendar data
-
         #load folders and find the correct one
 
             drive = GoogleDrive(self.authenticate())
@@ -377,6 +376,17 @@ class CalendarWindow(MDScreen):
             local_file_meta = {}
             drive_file_list = drive.ListFile({'q': f"( '{yearFolderID}' in parents) and (trashed=false) and (mimeType != 'application/vnd.google-apps.folder')"}).GetList()
             drive_file_meta = {}
+
+            #remove thumbnails form list for uploading
+
+            for add in thumbDict:
+                for item in local_file_list:
+                    if add in item:
+                        local_file_list.remove(item)
+                        print(add)
+                        print(item)
+                        print('removed from list')
+
 
             #compare pict list and drive file list and delete what is not found
             #populate dict and sync based on them
@@ -469,6 +479,13 @@ class CalendarWindow(MDScreen):
             drive_file_list = drive.ListFile({'q': f"( '{parentID}' in parents) and (trashed=false) and (mimeType != 'application/vnd.google-apps.folder')"}).GetList()
             drive_file_meta = {}
 
+            for add in thumbDict:
+                for item in local_file_list:
+                    if add in item:
+                        local_file_list.remove(item)
+                        print(add)
+                        print(item)
+                        print('removed from list')
 
             for file in local_file_list:
                 with open(file,'rb') as f:
@@ -490,18 +507,31 @@ class CalendarWindow(MDScreen):
 
     
     def sync_data(self, drive, parentID, MIMEtype, local_file_list, local_file_meta, drive_file_list, drive_file_meta, what_syncing):
-        print(1)
+        print(11111)
+        print(MIMEtype)
         try:
             syncMessage = ''
 
-            if len(local_file_list)<1:
+            if len(local_file_list)<1 and len(drive_file_list)>0:
                 for filename in drive_file_meta:
                     new_file = drive.CreateFile({'parents': [{'id': parentID }],'title':filename, 'id': drive_file_meta[filename]['id'], 'mimeType': MIMEtype})
                     new_file.GetContentFile(filename)
+                    
+                    if MIMEtype == 'image/*':
+                        self.call_for_thumbs(filename)
+
                     syncMessage = 'V datech nic nebylo, soubory z drive stazeny'
+
                 print(2)
+                
+                return
+
             elif len(local_file_list)<1 and len(drive_file_list)<1:
+
                 syncMessage = 'Nikde nic, zaciname od nuly'
+                
+                return 
+
             else: 
                 pass
 
@@ -520,7 +550,11 @@ class CalendarWindow(MDScreen):
                     elif (local_file_meta[filename]['modifiedDate'] < drive_file_meta[filename]['modifiedDate']) and (local_file_meta[filename]['checksum'] != drive_file_meta[filename]['checksum']):
                         new_file = drive.CreateFile({'parents': [{'id': parentID }],'title':filename, 'id': drive_file_meta[filename]['id'], 'mimeType': MIMEtype})
                         new_file.GetContentFile(filename)
+                        
                         syncMessage = syncMessage + '\n' + filename + ' - soubor na drive je novější - staženo' + '\n'
+
+                        if MIMEtype == 'image/*':
+                            self.call_for_thumbs(filename)
                     
                     else:
                         pass
@@ -536,16 +570,28 @@ class CalendarWindow(MDScreen):
             
             for filename in drive_file_meta:
                 if filename not in local_file_meta:
+                    print('stahuju')
                     new_file = drive.CreateFile({'parents': [{'id': parentID }],'title':filename, 'id': drive_file_meta[filename]['id'], 'mimeType': MIMEtype})
                     new_file.GetContentFile(filename)
+                    
                     syncMessage = syncMessage + '\n' + filename + ' - soubor na drive neexistoval na lokálním disku - staženo' + '\n'
+                    
+                    if MIMEtype == 'image/*':
+                        self.call_for_thumbs(filename)
 
             print(5)
             self.syncText[what_syncing] = syncMessage
-                
+
+            
+                    
         except Exception as e: print(e)
 
-    #create calendar view
+    def call_for_thumbs(self, filename):
+        print('generuju nahledy')
+        destination = os.path.join(os.getcwd(),filename)
+        self.manager.get_screen('DayMood').generate_thumbnails(destination, os.getcwd(), filename)
+
+        #create calendar view
 
     def make_Cal(self,now=True, year=2020, month=6):
         self.manager.get_screen('CalLabels').fs = Window.size[1]/fsDivider
@@ -634,6 +680,7 @@ class CalendarWindow(MDScreen):
         '''creates labels on canvas of calendar buttons with defined symbols'''
         call = self.manager.get_screen('Calendar')
         calLabels = self.manager.get_screen('CalLabels')
+        dayWin = self.manager.get_screen('DayMood')
         labelIDa = calLabels.ids[my_id+'a']
         labelIDb = calLabels.ids[my_id+'b']
         labelIDc = calLabels.ids[my_id+'c']
@@ -652,14 +699,14 @@ class CalendarWindow(MDScreen):
             try:
                 if dateData[dateKey]['dayImage'] != '':
                     img_source = os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), str(date_id.year),dateData[dateKey]['dayImage'])
-                    img = Image(img_source) # because direct source is cached
+                    img = Image(dayWin.get_thumb_path(img_source, '_mini')) # because direct source is cached
                     img.remove_from_cache()
                     Rectangle(texture=img.texture, size=(calButtonID.width/3.2,calButtonID.width/3.2), pos=(calButtonID.right-calButtonID.width/3.2,calButtonID.top-calButtonID.width/3.2))
                     call.ids[my_id].canvas.ask_update()
             
             except KeyError:
-                print('obrazek neni1')
-                
+                #print('obrazek neni1')
+                pass
 
             except AttributeError:
                 print('obrazek neni2')
@@ -761,6 +808,8 @@ class DayWindow(MDScreen):
     
     def load_day(self, date_id, clocktime=0):
         self.dateData = self.manager.get_screen('Calendar').pass_data(self.date_id)
+        settings = self.manager.get_screen('Settings').settings
+
         call = self.manager.get_screen('Calendar')
         dateKey = str(date_id)
 
@@ -796,15 +845,28 @@ class DayWindow(MDScreen):
             self.ids.dayImage.canvas.after.clear()
 
         if self.dateData[dateKey]['dayImage'] != '':
-            self.ids.dayImage.image_source = os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), str(self.date_id.year),self.dateData[dateKey]['dayImage'])
+            
+            path = os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), str(self.date_id.year),self.dateData[dateKey]['dayImage'])
+            
+            self.ids.dayImage.image_source = self.get_thumb_path(path, '_thumb')
             self.ids.dayImage.color = [1,1,1,1]
             self.ids.dayImage.reload()
 
         else:
-            self.ids.dayImage.image_source = self.bgsource
+            path = os.path.join(self.manager.get_screen('Calendar').get_user_pictures(),'BG',settings['bgPicture'])
+            self.ids.dayImage.image_source =  self.get_thumb_path(path, '_thumb')
             self.ids.dayImage.color = [.6,.6,.6,.6]
             Clock.schedule_once(self.add_text_on_image)
         
+    def get_thumb_path(self, path, addition):
+
+        first = os.path.dirname(path)
+        second_third = os.path.splitext(os.path.basename(path))
+        result = os.path.join(first,second_third[0]+addition+second_third[1])
+
+        return result
+
+
 
     def add_text_on_image(self, clocktime=0):
 
@@ -983,6 +1045,8 @@ class DayWindow(MDScreen):
                     self.dateData[dateKey]['dayImage'] = newFilename
                     call.save_data(self.dateData,self.date_id)
 
+                    self.generate_thumbnails(destination, dest_folder, newFilename)
+
                     #print('ratio ' + str(self.ids.dayImage.image_ratio)) #landscape is more than 1
                     
                     Clock.schedule_once(partial(self.load_day, self.date_id))
@@ -999,6 +1063,24 @@ class DayWindow(MDScreen):
     #    #self.ids.dayImage.image_source = os.path.join(dest_folder, newFilename)
 #
     #    print('RELOADED')
+
+    def generate_thumbnails(self, destination, dest_folder, newFilename):
+
+        original_name = os.path.splitext(newFilename)[0]
+        extension = os.path.splitext(newFilename)[1]
+        
+        for add, size in thumbDict.items():
+        
+            thumbnail_name = original_name + add + extension
+        
+            image = pilIMG.open(destination)
+            image.thumbnail(size)
+
+            new_path = os.path.join(dest_folder, thumbnail_name)
+            image.save(new_path)
+            print(new_path)
+            print(image.size)
+       
     
     def on_touch_down(self, touch):
 
@@ -1029,10 +1111,22 @@ class DayWindow(MDScreen):
         filename = self.dateData[dateKey]['dayImage']
         file_path = os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), str(self.date_id.year), filename)
         
+        # ADD FOR ALL THUMBNAILS
+
+        for add in thumbDict:
+            path = self.get_thumb_path(file_path, add)
+            try:
+                os.remove(path)
+            except:
+                print('jiz neexistuje')
+        
+        #don't forget to remov original file
+
         try:
             os.remove(file_path)
         except:
-            print('jiz neexistuje')
+            print('original jiz neexistuje')
+
 
         self.dateData[dateKey]['dayImage'] = ''
         self.manager.get_screen('Calendar').save_data(self.dateData,self.date_id)
@@ -1076,10 +1170,6 @@ class SettingsWindow(MDScreen):
     def on_pre_enter(self):
         Window.bind(on_key_up=self.back_click)
 
-        #if os.path.exists(self.settings['bgPicture']) == False:
-        #    self.settings['bgPicture'] = 'pict/default.jpg'
-        #    self.bgsource = self.settings['bgPicture']
-
     def on_pre_leave(self):
         Window.unbind(on_key_up=self.back_click)
 
@@ -1120,21 +1210,21 @@ class SettingsWindow(MDScreen):
                     newFilename = 'BG_' + os.path.splitext(path)[1]
 
                     destination = os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), 'BG', newFilename)
-                    print('ORIGINAL')
-                    print(os.path.getmtime(path))
-                    
+
+                    print(os.path.getmtime(path))                  
                     
                     shutil.copy2(path, destination)
                     now = datetime.datetime.now().timestamp()
-                    print('NOW')
-                    print(now)
 
                     os.utime(destination,(now,now))
 
-                    print('RESULT')
                     print(os.path.getmtime(destination))
                     
                     self.settings['bgPicture'] = newFilename
+
+                    dest_folder = os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), 'BG')
+                    daySetting.generate_thumbnails(destination, dest_folder, newFilename)
+
                     Clock.schedule_once(partial(self.insert_image, destination))
 
             except Exception as e:
@@ -1144,8 +1234,11 @@ class SettingsWindow(MDScreen):
             print(e)
 
     def insert_image(self, destination, clocktime=0):
+
+        daySetting = self.manager.get_screen('DayMood')
+
         for screen in self.manager.screens:
-            screen.bgsource = destination
+            screen.bgsource = daySetting.get_thumb_path(destination, '_medi')
             self.imageRefresh()
 
     def imageRefresh(self, clocktime=0):
@@ -1183,25 +1276,26 @@ class SettingsWindow(MDScreen):
             
             BG_path = os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), 'BG')
             bg_check = os.listdir(BG_path)
-            print(bg_check)
 
             try:
 
                 destination = os.path.join(BG_path, bg_check[0])
 
+                self.settings['bgPicture'] = destination
+
                 for screen in self.manager.screens:
-                    screen.bgsource = destination
+                    screen.bgsource = daySetting.get_thumb_path(destination, '_medi')
 
             except Exception as e:
                 print('EXCEPTION ON SETTING BG')
                 print(e)
                 for screen in self.manager.screens:
-                    screen.bgsource = 'pict/default.jpg'
+                    screen.bgsource = 'pict/default_medi.jpg'
         
         else:
-            destination = os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), 'BG', self.settings['bgPicture'])
+            destination = os.path.join(BG_path, self.settings['bgPicture'])
             for screen in self.manager.screens:
-                screen.bgsource = destination
+                screen.bgsource = daySetting.get_thumb_path(destination, '_medi')
 
         print('Vsechna aktualni nastaveni: ' + str(self.settings))
 
