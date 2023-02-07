@@ -309,10 +309,16 @@ class CalendarWindow(MDScreen):
                 if dicti['dayImage'] != '':
                     pict_list.append(dicti['dayImage'])
             except: pass
-        
-        print(pict_list)
 
         return pict_list
+
+    def delete_unlisted_picts(self,drive,drive_file_meta, pict_list, parentID, MIMEtype):
+
+        for filename in drive_file_meta:
+            if filename not in pict_list:
+                file = drive.CreateFile({'parents': [{'id': parentID }],'title':filename, 'id': drive_file_meta[filename]['id'], 'mimeType': MIMEtype})               
+                file.Trash()
+
 
     def sync_day_pictures(self, date_id):
         
@@ -353,7 +359,6 @@ class CalendarWindow(MDScreen):
 
             self.sync_data(drive, parentID, MIMEtype, local_file_list,local_file_meta,drive_file_list,drive_file_meta,'folders')
 
-
             # switch to current (shown) year folder and make sync
             
             year = str(date_id.year)
@@ -372,16 +377,8 @@ class CalendarWindow(MDScreen):
             drive_file_list = drive.ListFile({'q': f"( '{yearFolderID}' in parents) and (trashed=false) and (mimeType != 'application/vnd.google-apps.folder')"}).GetList()
             drive_file_meta = {}
 
-            pict_list = self.get_pict_list(date_id)
-
-            print(pict_list)
-
-            #somehow compare pict list and drive file list and delete what is not found
-
-            ####function to delete things from drive
-
+            #compare pict list and drive file list and delete what is not found
             #populate dict and sync based on them
-
 
             for file in local_file_list:
                 with open(file,'rb') as f:
@@ -392,20 +389,16 @@ class CalendarWindow(MDScreen):
             for file in drive_file_list:
                 drive_file_meta[file['title']] = {'id': file['id'],'checksum': file['md5Checksum'], 'modifiedDate': datetime.datetime.timestamp(parser.parse(file['modifiedDate'])), 'dtobject': parser.parse(file['modifiedDate'])}
 
-            #print(local_file_list)
-            #print(local_file_meta)
-            #print(drive_file_list)
-            #print(drive_file_meta)
 
             MIMEtype = 'image/*'
 
+            pict_list = self.get_pict_list(date_id)
+            self.delete_unlisted_picts(drive, drive_file_meta, pict_list, yearFolderID, MIMEtype)
 
-            #LATER ON
-            #self.sync_data(drive, yearFolderID, MIMEtype, local_file_list,local_file_meta,drive_file_list,drive_file_meta,'dayPictures')
+            self.sync_data(drive, yearFolderID, MIMEtype, local_file_list,local_file_meta,drive_file_list,drive_file_meta,'dayPictures')
     
         except httplib2.error.ServerNotFoundError:
             self.syncText['message'] = self.noInternet
-            #self.open_popup(title='Není připojení k internetu', text='Nemůžu se připojit k internetu. \n Zapni wifi nebo data.', button='Zavřít')
         
         os.chdir(self.get_self_directory())
 
