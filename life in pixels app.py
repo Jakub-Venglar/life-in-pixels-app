@@ -36,9 +36,11 @@ from plyer import filechooser
 
 
 #TODO: # handling pict of the day, sync and load it - zaklady hotovy
-# zapojit i porovnani s cal daty / mohl sem obrazek smazat, ale on na drive zustane a stahne se znovu
 
 #TODO: vygenerovat mensi verzi a tu zobrazovat
+
+#TODO: placeholder - misto velkeho obrazku (pres text na labelu), kdyz obrazek neni fyzicky pritomny
+# v kalendari nejakou malou znacku
 
 
 #TODO:  pop up kde si můžu vybrat, jak s nimi naložím (co smazat, co nechat - ukaze mi co kde nasel a ja si vyberu jak s tim nalozim)
@@ -180,7 +182,6 @@ class CalendarWindow(MDScreen):
     def key_click(self,window, key, keycode, *largs):
         #print('key ' + str(key) + '----' + 'keycode ' + str(keycode))
         if key == 27:
-            print('ESCAPING')
             MDApp.get_running_app().stop()
             Window.close()
 
@@ -655,8 +656,13 @@ class CalendarWindow(MDScreen):
                     img.remove_from_cache()
                     Rectangle(texture=img.texture, size=(calButtonID.width/3.2,calButtonID.width/3.2), pos=(calButtonID.right-calButtonID.width/3.2,calButtonID.top-calButtonID.width/3.2))
                     call.ids[my_id].canvas.ask_update()
+            
             except KeyError:
-                pass
+                print('obrazek neni1')
+                
+
+            except AttributeError:
+                print('obrazek neni2')
 
             Rectangle(size=labelIDc.texture_size, pos=(calButtonID.right-labelIDc.texture_size[0], calButtonID.y), texture=labelIDc.texture)
             # health label with heart icon
@@ -739,16 +745,12 @@ class CalendarWindow(MDScreen):
         toast(dateData[dateKey]['comment'], duration=5)
         
 
-    def textuj(self, touch):
-        print('neco')
-
 class DayWindow(MDScreen):
 
     def on_pre_enter(self):
         pass
 
     def on_enter(self):
-        print('NAJIZDI DAY WINDOW')
         Window.bind(on_key_up=self.key_click)
         self.ids.comment.bind(focus=self.focus_change)
         self.ids.healthComment.bind(focus=self.focus_change)
@@ -824,7 +826,7 @@ class DayWindow(MDScreen):
             self.store_text(object)
         
     def key_click(self,window, key, keycode, *largs):
-        print('key ' + str(key) + '----' + 'keycode ' + str(keycode))
+        #print('key ' + str(key) + '----' + 'keycode ' + str(keycode))
         if key == 27:
             self.close_day(self.date_id)
         
@@ -961,10 +963,6 @@ class DayWindow(MDScreen):
             try:
                 
                 if os.path.isfile(path): #because it can be directory
-                    
-                    #oldpath = dateData[dateKey]['dayImage']
-                    #if os.path.exists(oldpath):
-                    #    os.remove(oldpath)
 
                     newFilename = dateKey + os.path.splitext(path)[1]
 
@@ -990,9 +988,11 @@ class DayWindow(MDScreen):
                     Clock.schedule_once(partial(self.load_day, self.date_id))
 
             except Exception as e:
+                print('exception')
                 print(e)
 
         except Exception as e:
+            print('exception')
             print(e)
     
     #def insert_refresh_image(self, dest_folder, newFilename, clocktime=0):
@@ -1024,7 +1024,16 @@ class DayWindow(MDScreen):
         open_confirmation_popup(self, text = 'Chceš smazat obrázek?', function_to_pass=self.delete_image_func)
 
     def delete_image_func(self, obj):
+        
         dateKey = str(self.date_id)
+        filename = self.dateData[dateKey]['dayImage']
+        file_path = os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), str(self.date_id.year), filename)
+        
+        try:
+            os.remove(file_path)
+        except:
+            print('jiz neexistuje')
+
         self.dateData[dateKey]['dayImage'] = ''
         self.manager.get_screen('Calendar').save_data(self.dateData,self.date_id)
         self.load_day(self.date_id)
