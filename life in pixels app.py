@@ -35,6 +35,7 @@ from pydrive2.drive import GoogleDrive
 from plyer import filechooser
 
 
+#TODO: zapsat nekam posledni sync - zvlast obrazky a zvlast zbytek, do souboru a ten zobrazit v nastaveni
 #TODO: placeholder - misto velkeho obrazku (pres text na labelu), kdyz obrazek neni fyzicky pritomny
 # v kalendari nejakou malou znacku
 
@@ -47,12 +48,9 @@ from plyer import filechooser
 
 # upravit velikosti okna, viz screeny v mobilu
 
-# na mobilu ani nenacetl ten bg co uz byl z minula ?? jeste otestovat
-# pokud najde bg image zapis ho do settings
-
 #TODO: uzaviram - konec se vola dvakrat
 #TODO: vymyslet jak nezapisovat prazdne dny (momentalne se ulozi)
-#TODO: zapsat nekam posledni sync
+
 
 #TODO: better view of day color
 #TODO bg image / choose if mine or random +/- 1 month
@@ -411,6 +409,8 @@ class CalendarWindow(MDScreen):
             self.syncText['message'] = self.noInternet
         
         os.chdir(self.get_self_directory())
+    
+        self.make_Cal(False,date_id.year, date_id.month)
 
     def sync_data_thread(self):
         
