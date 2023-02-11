@@ -35,16 +35,15 @@ from pydrive2.drive import GoogleDrive
 from plyer import filechooser
 
 
-#TODO: verze thumbnailu / generovat je po stazeni
-
 #TODO: placeholder - misto velkeho obrazku (pres text na labelu), kdyz obrazek neni fyzicky pritomny
 # v kalendari nejakou malou znacku
 
+#TODO: pokud nenajde thumbnail, zkus mrknout po puvodnim obrazku a vygeneruj ho
 
 #TODO:  pop up kde si můžu vybrat, jak s nimi naložím (co smazat, co nechat - ukaze mi co kde nasel a ja si vyberu jak s tim nalozim)
 # mit zaskrtnuty nahrany rok - smazat(lokalne) nebo stahnout(lokalne)
 
-#TODO:  poladit vykon
+#TODO:  poladit vykon (asyncio, trio, threads - zjistit co muze jit do nich - napr generovani thumbnailu)
 
 # upravit velikosti okna, viz screeny v mobilu
 
