@@ -1271,9 +1271,11 @@ class SettingsWindow(MDScreen):
         # check if there is something set
         #if not default? but if there is file, use it
 
+        BG_path = os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), 'BG')
+
         if self.settings['bgPicture'] == 'default.jpg':
             
-            BG_path = os.path.join(self.manager.get_screen('Calendar').get_user_pictures(), 'BG')
+            
             bg_check = os.listdir(BG_path)
 
             try:
