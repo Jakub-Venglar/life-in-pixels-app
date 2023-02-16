@@ -7,7 +7,8 @@ import cProfile
 import pstats
 from pstats import SortKey
 '''
-from pygame import image as pyimg, transform as pytrans
+
+from PIL import Image as pilIMG
 from threading import Thread
 from dateutil import parser
 from kivymd.app import MDApp
@@ -39,7 +40,6 @@ from plyer import filechooser
 #TODO: placeholder - misto velkeho obrazku (pres text na labelu), kdyz obrazek neni fyzicky pritomny
 # v kalendari nejakou malou znacku
 
-#TODO: swipe mesice i dny
 #TODO: pokud nenajde thumbnail, zkus mrknout po puvodnim obrazku a vygeneruj ho
 
 #TODO:  pop up kde si můžu vybrat, jak s nimi naložím (co smazat, co nechat - ukaze mi co kde nasel a ja si vyberu jak s tim nalozim)
@@ -48,10 +48,10 @@ from plyer import filechooser
 #TODO:  poladit vykon (asyncio, trio, threads - zjistit co muze jit do nich - napr generovani thumbnailu)
 
 # upravit velikosti okna, viz screeny v mobilu
-
-#TODO: uzaviram - konec se vola dvakrat
 #TODO: vymyslet jak nezapisovat prazdne dny (momentalne se ulozi)
 
+
+#TODO: uzaviram - konec se vola dvakrat
 
 #TODO: better view of day color
 #TODO bg image / choose if mine or random +/- 1 month
@@ -149,36 +149,6 @@ def open_confirmation_popup(self, function_to_pass = None , title='Potvrzení', 
     box.add_widget(Button(text = button2, size_hint=(.9,.3), pos_hint={'center_x': .5 }, on_release=popup.dismiss))
     #popup.bind(on_touch_down=popup.dismiss)
     popup.open()
-
-def aspect_scale(img,size):
-    """ Scales 'img' to fit into box bx/by.
-     This method will retain the original image's aspect ratio """
-    bx = size[0]
-    by = size[1]
-    ix,iy = img.get_size()
-    if ix > iy:
-        # fit to width
-        scale_factor = bx/float(ix)
-        sy = scale_factor * iy
-        if sy > by:
-            scale_factor = by/float(iy)
-            sx = scale_factor * ix
-            sy = by
-        else:
-            sx = bx
-    else:
-        # fit to height
-        scale_factor = by/float(iy)
-        sx = scale_factor * ix
-        if sx > bx:
-            scale_factor = bx/float(ix)
-            sx = bx
-            sy = scale_factor * iy
-        else:
-            sy = by
-
-    return pytrans.scale(img, (sx,sy))
-
 
 def empty_function(self, obj):
     pass
@@ -1103,13 +1073,14 @@ class DayWindow(MDScreen):
         
             thumbnail_name = original_name + add + extension
         
-            image = pyimg.load(destination)
-            image = aspect_scale(image,size)
+            image = pilIMG.open(destination)
+            image.thumbnail(size)
 
             new_path = os.path.join(dest_folder, thumbnail_name)
-            pyimg.save(image, new_path)
+            image.save(new_path)
             print(new_path)
-            #print(image.size)
+            print(image.size)
+       
     
     def on_touch_down(self, touch):
 
